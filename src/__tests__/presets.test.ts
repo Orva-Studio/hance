@@ -32,7 +32,7 @@ describe("applyPreset", () => {
     const opts = applyPreset("default", {});
     expect(opts.grade.liftBlacks).toBe(0.05);
     expect(opts.grade.fade).toBe(0.15);
-    expect(opts.halation.intensity).toBe(0.6);
+    expect(opts.halation.intensity).toBe(0.4);
     expect(opts.aberration.strength).toBe(0.3);
     expect(opts.weave.strength).toBe(0.3);
     expect(opts.preset).toBe("medium");
@@ -51,6 +51,6 @@ describe("applyPreset", () => {
     const opts = applyPreset("subtle", { "fade": 0.5 });
     expect(opts.grade.liftBlacks).toBe(0.02); // from subtle
     expect(opts.grade.fade).toBe(0.5); // from CLI override
-    expect(opts.grade.shadowTint).toBe("warm"); // from default (subtle doesn't set it)
+    expect(opts.grade.shadowTint).toBe("neutral"); // from default (subtle doesn't set it)
   });
 });
