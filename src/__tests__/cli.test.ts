@@ -17,15 +17,52 @@ describe("parseArgs", () => {
     expect(result.output).toBe("out.mp4");
   });
 
-  it("parses numeric flags with validation", () => {
-    const result = parseArgs(["input.mp4", "--lift", "0.1", "--crf", "23"]);
-    expect(result.grade.liftBlacks).toBe(0.1);
-    expect(result.crf).toBe(23);
+  it("parses color settings flags", () => {
+    const result = parseArgs(["input.mp4", "--exposure", "0.12", "--contrast", "1.2"]);
+    expect(result.colorSettings.exposure).toBe(0.12);
+    expect(result.colorSettings.contrast).toBe(1.2);
   });
 
-  it("parses tint flags", () => {
-    const result = parseArgs(["input.mp4", "--shadow-tint", "cool"]);
-    expect(result.grade.shadowTint).toBe("cool");
+  it("parses halation flags with new names", () => {
+    const result = parseArgs(["input.mp4", "--halation-amount", "0.5"]);
+    expect(result.halation.amount).toBe(0.5);
+  });
+
+  it("parses --no-halation to disable", () => {
+    const result = parseArgs(["input.mp4", "--no-halation"]);
+    expect(result.halation.enabled).toBe(false);
+  });
+
+  it("parses --blend for global blend", () => {
+    const result = parseArgs(["input.mp4", "--blend", "0.5"]);
+    expect(result.blend).toBe(0.5);
+  });
+
+  it("parses new effect flags", () => {
+    const result = parseArgs([
+      "input.mp4",
+      "--bloom-amount", "0.3",
+      "--grain-amount", "0.2",
+      "--vignette-amount", "0.4",
+    ]);
+    expect(result.bloom.amount).toBe(0.3);
+    expect(result.grain.amount).toBe(0.2);
+    expect(result.vignette.amount).toBe(0.4);
+  });
+
+  it("parses --preset to load a named preset", () => {
+    const result = parseArgs(["input.mp4", "--preset", "subtle"]);
+    expect(result.halation.amount).toBe(0.1);
+  });
+
+  it("CLI flags override preset values", () => {
+    const result = parseArgs(["input.mp4", "--preset", "subtle", "--aberration", "0.8"]);
+    expect(result.aberration.amount).toBe(0.8);
+  });
+
+  it("parses --encode-preset for FFmpeg speed", () => {
+    const result = parseArgs(["input.mp4", "--encode-preset", "fast"]);
+    expect(result.encodePreset).toBe("fast");
   });
 
   it("throws on unknown flag", () => {
@@ -33,7 +70,7 @@ describe("parseArgs", () => {
   });
 
   it("throws on out-of-range value", () => {
-    expect(() => parseArgs(["input.mp4", "--lift", "0.5"])).toThrow();
+    expect(() => parseArgs(["input.mp4", "--exposure", "10"])).toThrow();
   });
 
   it("throws with no input", () => {
@@ -47,18 +84,15 @@ describe("parseArgs", () => {
 });
 
 describe("getDefaultOutput", () => {
-  it("appends _openhanced with timestamp before extension", () => {
-    const result = getDefaultOutput("video.mp4");
-    expect(result).toMatch(/^video_openhanced_\d{14}\.mp4$/);
+  it("appends _openhanced before extension", () => {
+    expect(getDefaultOutput("video.mp4")).toBe("video_openhanced.mp4");
   });
 
   it("handles .mov files", () => {
-    const result = getDefaultOutput("clip.mov");
-    expect(result).toMatch(/^clip_openhanced_\d{14}\.mov$/);
+    expect(getDefaultOutput("clip.mov")).toBe("clip_openhanced.mov");
   });
 
   it("handles paths with directories", () => {
-    const result = getDefaultOutput("/path/to/video.mp4");
-    expect(result).toMatch(/^\/path\/to\/video_openhanced_\d{14}\.mp4$/);
+    expect(getDefaultOutput("/path/to/video.mp4")).toBe("/path/to/video_openhanced.mp4");
   });
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
-import { existsSync, unlinkSync, readdirSync } from "fs";
+import { existsSync, unlinkSync } from "fs";
 import path from "path";
 
 const FIXTURES_DIR = path.join(import.meta.dir, "fixtures");
@@ -18,20 +18,11 @@ async function runOpenhancer(args: string[]): Promise<{ exitCode: number; stdout
   return { exitCode, stdout, stderr };
 }
 
-// Clean up output files matching a pattern
-function cleanup(patterns: string[]) {
-  for (const pattern of patterns) {
-    const p = path.join(FIXTURES_DIR, pattern);
+// Clean up output files after tests
+function cleanup(files: string[]) {
+  for (const f of files) {
+    const p = path.join(FIXTURES_DIR, f);
     if (existsSync(p)) unlinkSync(p);
-  }
-}
-
-// Clean up files matching a prefix glob in fixtures dir
-function cleanupGlob(prefix: string, ext: string) {
-  for (const f of readdirSync(FIXTURES_DIR)) {
-    if (f.startsWith(prefix) && f.endsWith(ext)) {
-      unlinkSync(path.join(FIXTURES_DIR, f));
-    }
   }
 }
 
@@ -48,10 +39,12 @@ describe("e2e: openhancer", () => {
   });
 
   afterAll(() => {
-    cleanupGlob("test_openhanced", ".mp4");
-    cleanupGlob("test_openhanced", ".png");
-    cleanupGlob("test_openhanced", ".mov");
-    cleanup(["custom_output.mp4"]);
+    cleanup([
+      "test_openhanced.mp4",
+      "test_openhanced.png",
+      "test_openhanced.mov",
+      "custom_output.mp4",
+    ]);
   });
 
   it("prints help with --help", async () => {
@@ -59,6 +52,8 @@ describe("e2e: openhancer", () => {
     expect(exitCode).toBe(0);
     expect(stdout).toContain("openhancer <input>");
     expect(stdout).toContain("--output");
+    expect(stdout).toContain("--bloom-amount");
+    expect(stdout).toContain("--grain-amount");
   });
 
   it("exits with error on no input", async () => {
@@ -74,7 +69,7 @@ describe("e2e: openhancer", () => {
   });
 
   it("exits with error on out-of-range flag", async () => {
-    const { exitCode, stderr } = await runOpenhancer(["test.mp4", "--lift", "0.9"]);
+    const { exitCode, stderr } = await runOpenhancer(["test.mp4", "--exposure", "10"]);
     expect(exitCode).not.toBe(0);
     expect(stderr).toContain("must be between");
   });
@@ -86,7 +81,7 @@ describe("e2e: openhancer", () => {
   });
 
   it("processes an image (png) with defaults", async () => {
-    cleanupGlob("test_openhanced", ".png");
+    cleanup(["test_openhanced.png"]);
     const { exitCode, stdout, stderr } = await runOpenhancer([
       path.join(FIXTURES_DIR, "test.png"),
     ]);
@@ -94,30 +89,27 @@ describe("e2e: openhancer", () => {
     expect(exitCode).toBe(0);
     expect(stdout).toContain("(image)");
     expect(stdout).toContain("Done.");
-    const outputFiles = readdirSync(FIXTURES_DIR).filter(f => f.startsWith("test_openhanced") && f.endsWith(".png"));
-    expect(outputFiles.length).toBeGreaterThan(0);
+    expect(existsSync(path.join(FIXTURES_DIR, "test_openhanced.png"))).toBe(true);
   });
 
   it("processes a video (mp4) with defaults", async () => {
-    cleanupGlob("test_openhanced", ".mp4");
+    cleanup(["test_openhanced.mp4"]);
     const { exitCode, stderr } = await runOpenhancer([
       path.join(FIXTURES_DIR, "test.mp4"),
     ]);
     if (exitCode !== 0) console.error("FFmpeg stderr:", stderr);
     expect(exitCode).toBe(0);
-    const outputFiles = readdirSync(FIXTURES_DIR).filter(f => f.startsWith("test_openhanced") && f.endsWith(".mp4"));
-    expect(outputFiles.length).toBeGreaterThan(0);
+    expect(existsSync(path.join(FIXTURES_DIR, "test_openhanced.mp4"))).toBe(true);
   });
 
   it("processes a .mov file", async () => {
-    cleanupGlob("test_openhanced", ".mov");
+    cleanup(["test_openhanced.mov"]);
     const { exitCode, stderr } = await runOpenhancer([
       path.join(FIXTURES_DIR, "test.mov"),
     ]);
     if (exitCode !== 0) console.error("FFmpeg stderr:", stderr);
     expect(exitCode).toBe(0);
-    const outputFiles = readdirSync(FIXTURES_DIR).filter(f => f.startsWith("test_openhanced") && f.endsWith(".mov"));
-    expect(outputFiles.length).toBeGreaterThan(0);
+    expect(existsSync(path.join(FIXTURES_DIR, "test_openhanced.mov"))).toBe(true);
   });
 
   it("respects --output flag", async () => {
@@ -133,21 +125,47 @@ describe("e2e: openhancer", () => {
   });
 
   it("processes video with custom effect parameters", async () => {
-    cleanupGlob("test_openhanced", ".mp4");
+    cleanup(["test_openhanced.mp4"]);
     const { exitCode, stderr } = await runOpenhancer([
       path.join(FIXTURES_DIR, "test.mp4"),
-      "--lift", "0.1",
-      "--crush", "0.08",
+      "--exposure", "0.1",
+      "--contrast", "1.2",
       "--fade", "0.3",
-      "--halation-intensity", "0.8",
+      "--halation-amount", "0.5",
       "--aberration", "0.5",
-      "--weave", "0.5",
+      "--bloom-amount", "0.3",
+      "--grain-amount", "0.2",
+      "--vignette-amount", "0.4",
+      "--camera-shake-amount", "0.3",
       "--encode-preset", "fast",
       "--crf", "28",
     ]);
     if (exitCode !== 0) console.error("FFmpeg stderr:", stderr);
     expect(exitCode).toBe(0);
-    const outputFiles = readdirSync(FIXTURES_DIR).filter(f => f.startsWith("test_openhanced") && f.endsWith(".mp4"));
-    expect(outputFiles.length).toBeGreaterThan(0);
+    expect(existsSync(path.join(FIXTURES_DIR, "test_openhanced.mp4"))).toBe(true);
+  });
+
+  it("processes with disabled effects via --no flags", async () => {
+    cleanup(["test_openhanced.png"]);
+    const { exitCode, stderr } = await runOpenhancer([
+      path.join(FIXTURES_DIR, "test.png"),
+      "--no-halation",
+      "--no-bloom",
+      "--no-grain",
+    ]);
+    if (exitCode !== 0) console.error("FFmpeg stderr:", stderr);
+    expect(exitCode).toBe(0);
+    expect(existsSync(path.join(FIXTURES_DIR, "test_openhanced.png"))).toBe(true);
+  });
+
+  it("processes with global blend", async () => {
+    cleanup(["test_openhanced.png"]);
+    const { exitCode, stderr } = await runOpenhancer([
+      path.join(FIXTURES_DIR, "test.png"),
+      "--blend", "0.5",
+    ]);
+    if (exitCode !== 0) console.error("FFmpeg stderr:", stderr);
+    expect(exitCode).toBe(0);
+    expect(existsSync(path.join(FIXTURES_DIR, "test_openhanced.png"))).toBe(true);
   });
 });

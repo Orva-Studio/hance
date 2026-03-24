@@ -1,29 +1,26 @@
 import type { FilterResult, HalationOptions } from "../types";
+import { passthrough } from "./utils";
 
 export function halationFilter(input: string, options: HalationOptions): FilterResult {
-  const { intensity, threshold, warmth } = options;
-  let { radius } = options;
+  if (!options.enabled) return passthrough(input, "halation_out");
 
-  // Enforce odd radius
-  if (radius % 2 === 0) radius += 1;
+  const { amount, radius, saturation, hue, highlightsOnly } = options;
 
-  // Threshold as 0-1 range for curves
-  const thresh = (threshold / 255).toFixed(4);
-  const threshLow = Math.max(0, threshold / 255 - 0.05).toFixed(4);
+  const sigma = Math.max(1, radius).toFixed(2);
+  const hueDeg = (hue * 360).toFixed(2);
 
-  // Warmth: -1 (cool/blue) to 0 (neutral) to 1 (warm/red)
-  // At 0: both channels at 1.0 (neutral white glow)
-  // Positive: red stays 1.0, blue reduced. Negative: blue stays 1.0, red reduced.
-  const w = Math.abs(warmth);
-  const redLevel = warmth >= 0 ? "1.0000" : (1 - w * 0.4).toFixed(4);
-  const blueLevel = warmth >= 0 ? (1 - w * 0.4).toFixed(4) : "1.0000";
+  const steps: string[] = [];
 
-  const fragment = [
-    `[${input}]format=gbrp,split=2[hal_orig][hal_glowsrc];`,
-    `[hal_glowsrc]curves=r='0/0 ${threshLow}/0 ${thresh}/1 1/1':g='0/0 ${threshLow}/0 ${thresh}/1 1/1':b='0/0 ${threshLow}/0 ${thresh}/1 1/1',hue=s=0,curves=r='0/0 1/${redLevel}':b='0/0 1/${blueLevel}'[hal_tinted];`,
-    `[hal_tinted]gblur=sigma=${radius}[hal_blurred];`,
-    `[hal_orig][hal_blurred]blend=all_mode=screen:all_opacity=${intensity.toFixed(4)},format=yuv444p[halation_out]`,
-  ].join("");
+  steps.push(`[${input}]split=2[hal_orig][hal_glowsrc]`);
 
-  return { fragment, output: "halation_out" };
+  if (highlightsOnly) {
+    steps.push(`[hal_glowsrc]curves=r='0/0 0.65/0 0.75/1 1/1':g='0/0 0.65/0 0.75/1 1/1':b='0/0 0.65/0 0.75/1 1/1'[hal_highlights]`);
+    steps.push(`[hal_highlights]hue=h=${hueDeg}:s=${saturation.toFixed(4)},gblur=sigma=${sigma}[hal_blurred]`);
+  } else {
+    steps.push(`[hal_glowsrc]hue=h=${hueDeg}:s=${saturation.toFixed(4)},gblur=sigma=${sigma}[hal_blurred]`);
+  }
+
+  steps.push(`[hal_orig][hal_blurred]blend=all_mode=screen:all_opacity=${amount.toFixed(4)}[halation_out]`);
+
+  return { fragment: steps.join(";"), output: "halation_out" };
 }

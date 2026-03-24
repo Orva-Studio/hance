@@ -1,40 +1,57 @@
-import type { FilmOptions, ProbeResult } from "./types";
-import { gradeFilter } from "./effects/grade";
+import type { FilmOptions, FilterResult, ProbeResult } from "./types";
+import { colorSettingsFilter } from "./effects/colorSettings";
 import { halationFilter } from "./effects/halation";
 import { aberrationFilter } from "./effects/aberration";
-import { weaveFilter } from "./effects/weave";
+import { bloomFilter } from "./effects/bloom";
+import { grainFilter } from "./effects/grain";
+import { vignetteFilter } from "./effects/vignette";
+import { splitToneFilter } from "./effects/splitTone";
+import { cameraShakeFilter } from "./effects/cameraShake";
 import { parseProgress, renderProgressBar } from "./progress";
+
+function applyEffect(
+  fragments: string[],
+  currentLabel: string,
+  fn: (input: string, opts: never) => FilterResult,
+  opts: unknown,
+): string {
+  const result = fn(currentLabel, opts as never);
+  fragments.push(result.fragment);
+  return result.output;
+}
 
 export function buildFilterGraph(
   options: FilmOptions,
   isImage: boolean
 ): { graph: string; finalLabel: string } {
   const fragments: string[] = [];
-  let currentLabel = "0:v";
+  let label = "0:v";
 
-  // Grade
-  const grade = gradeFilter(currentLabel, options.grade);
-  fragments.push(grade.fragment);
-  currentLabel = grade.output;
-
-  // Halation
-  const halation = halationFilter(currentLabel, options.halation);
-  fragments.push(halation.fragment);
-  currentLabel = halation.output;
-
-  // Aberration
-  const aberration = aberrationFilter(currentLabel, options.aberration);
-  fragments.push(aberration.fragment);
-  currentLabel = aberration.output;
-
-  // Weave (skip for images)
-  if (!isImage) {
-    const weave = weaveFilter(currentLabel, options.weave);
-    fragments.push(weave.fragment);
-    currentLabel = weave.output;
+  const needsBlend = options.blend < 1;
+  if (needsBlend) {
+    fragments.push(`[0:v]split=2[gb_orig][gb_proc]`);
+    label = "gb_proc";
   }
 
-  return { graph: fragments.join(";"), finalLabel: currentLabel };
+  label = applyEffect(fragments, label, colorSettingsFilter, options.colorSettings);
+  label = applyEffect(fragments, label, halationFilter, options.halation);
+  label = applyEffect(fragments, label, aberrationFilter, options.aberration);
+  label = applyEffect(fragments, label, bloomFilter, options.bloom);
+  label = applyEffect(fragments, label, grainFilter, options.grain);
+  label = applyEffect(fragments, label, vignetteFilter, options.vignette);
+  label = applyEffect(fragments, label, splitToneFilter, options.splitTone);
+
+  if (!isImage) {
+    label = applyEffect(fragments, label, cameraShakeFilter, options.cameraShake);
+  }
+
+  if (needsBlend) {
+    const opacity = options.blend.toFixed(4);
+    fragments.push(`[gb_orig][${label}]blend=all_mode=normal:all_opacity=${opacity}[blend_out]`);
+    label = "blend_out";
+  }
+
+  return { graph: fragments.join(";"), finalLabel: label };
 }
 
 export async function runPipeline(
@@ -55,7 +72,6 @@ export async function runPipeline(
   }
 
   if (probeResult.isImage) {
-    // Output as image — no video codec needed for png/jpg
     args.push(options.output);
   } else {
     args.push(
