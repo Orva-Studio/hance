@@ -1,8 +1,12 @@
 import type { FilmOptions, ProbeResult } from "./types";
-import { gradeFilter } from "./effects/grade";
+import { colorSettingsFilter } from "./effects/colorSettings";
 import { halationFilter } from "./effects/halation";
 import { aberrationFilter } from "./effects/aberration";
-import { weaveFilter } from "./effects/weave";
+import { bloomFilter } from "./effects/bloom";
+import { grainFilter } from "./effects/grain";
+import { vignetteFilter } from "./effects/vignette";
+import { splitToneFilter } from "./effects/splitTone";
+import { cameraShakeFilter } from "./effects/cameraShake";
 import { parseProgress, renderProgressBar } from "./progress";
 
 export function buildFilterGraph(
@@ -12,10 +16,17 @@ export function buildFilterGraph(
   const fragments: string[] = [];
   let currentLabel = "0:v";
 
-  // Grade
-  const grade = gradeFilter(currentLabel, options.grade);
-  fragments.push(grade.fragment);
-  currentLabel = grade.output;
+  // For global blend: save original input reference
+  const needsBlend = options.blend < 1;
+  if (needsBlend) {
+    fragments.push(`[0:v]split=2[gb_orig][gb_proc]`);
+    currentLabel = "gb_proc";
+  }
+
+  // Color Settings
+  const color = colorSettingsFilter(currentLabel, options.colorSettings);
+  fragments.push(color.fragment);
+  currentLabel = color.output;
 
   // Halation
   const halation = halationFilter(currentLabel, options.halation);
@@ -27,11 +38,38 @@ export function buildFilterGraph(
   fragments.push(aberration.fragment);
   currentLabel = aberration.output;
 
-  // Weave (skip for images)
+  // Bloom
+  const bloom = bloomFilter(currentLabel, options.bloom);
+  fragments.push(bloom.fragment);
+  currentLabel = bloom.output;
+
+  // Grain
+  const grain = grainFilter(currentLabel, options.grain);
+  fragments.push(grain.fragment);
+  currentLabel = grain.output;
+
+  // Vignette
+  const vignette = vignetteFilter(currentLabel, options.vignette);
+  fragments.push(vignette.fragment);
+  currentLabel = vignette.output;
+
+  // Split Tone
+  const splitTone = splitToneFilter(currentLabel, options.splitTone);
+  fragments.push(splitTone.fragment);
+  currentLabel = splitTone.output;
+
+  // Camera Shake (skip for images)
   if (!isImage) {
-    const weave = weaveFilter(currentLabel, options.weave);
-    fragments.push(weave.fragment);
-    currentLabel = weave.output;
+    const shake = cameraShakeFilter(currentLabel, options.cameraShake);
+    fragments.push(shake.fragment);
+    currentLabel = shake.output;
+  }
+
+  // Global Blend
+  if (needsBlend) {
+    const opacity = options.blend.toFixed(4);
+    fragments.push(`[gb_orig][${currentLabel}]blend=all_mode=normal:all_opacity=${opacity}[blend_out]`);
+    currentLabel = "blend_out";
   }
 
   return { graph: fragments.join(";"), finalLabel: currentLabel };
@@ -55,7 +93,6 @@ export async function runPipeline(
   }
 
   if (probeResult.isImage) {
-    // Output as image — no video codec needed for png/jpg
     args.push(options.output);
   } else {
     args.push(
