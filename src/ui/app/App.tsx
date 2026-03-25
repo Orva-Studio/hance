@@ -3,6 +3,7 @@ import { useUpload } from "./hooks/useUpload";
 import { UploadPanel } from "./components/UploadPanel";
 import { VideoPlayer } from "./components/VideoPlayer";
 import { ControlsPanel } from "./components/ControlsPanel";
+import { RenderBar } from "./components/RenderBar";
 import type { Renderer, PreviewParams } from "./gpu/renderer";
 
 export function App() {
@@ -52,6 +53,7 @@ export function App() {
         </div>
         <div style={{ width: 320, borderLeft: "1px solid #1a1a1a", overflowY: "auto", padding: 16 }}>
           <ControlsPanel values={params} onChange={handleParamChange} />
+          {file && <RenderBar file={file} params={params} />}
         </div>
       </div>
     </div>

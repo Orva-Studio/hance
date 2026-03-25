@@ -124,3 +124,67 @@ export async function runPipeline(
     console.log("Done.");
   }
 }
+
+export async function runPipelineWithProgress(
+  options: FilmOptions,
+  probeResult: ProbeResult,
+  onProgress: (ratio: number) => void,
+): Promise<void> {
+  const { graph, finalLabel } = buildFilterGraph(options, probeResult.isImage);
+
+  const args = [
+    "ffmpeg", "-y",
+    "-i", options.input,
+    "-filter_complex", graph,
+    "-map", `[${finalLabel}]`,
+  ];
+
+  if (!probeResult.isImage) {
+    args.push("-map", "0:a?", "-c:a", "copy");
+  }
+
+  if (probeResult.isImage) {
+    args.push(options.output);
+  } else {
+    args.push(
+      "-c:v", "libx264",
+      "-preset", options.encodePreset,
+      "-crf", String(options.crf),
+      "-progress", "pipe:1",
+      "-nostats",
+      options.output
+    );
+  }
+
+  const proc = Bun.spawn(args, {
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+
+  if (!probeResult.isImage && probeResult.duration) {
+    const reader = proc.stdout.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const ratio = parseProgress(buffer, probeResult.duration);
+      if (ratio !== null) {
+        onProgress(ratio);
+        buffer = "";
+      }
+    }
+  }
+
+  const exitCode = await proc.exited;
+
+  if (exitCode !== 0) {
+    const stderr = await new Response(proc.stderr).text();
+    throw new Error(`FFmpeg failed (exit ${exitCode}):\n${stderr.trim()}`);
+  }
+
+  onProgress(1);
+}
