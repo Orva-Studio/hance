@@ -1,8 +1,11 @@
 import { EFFECT_SCHEMA } from "../schema";
-import { loadPreset } from "../presets";
-import { join } from "path";
-import { existsSync, readdirSync, mkdirSync, writeFileSync } from "fs";
-import { homedir } from "os";
+import { loadPreset, applyPreset } from "../presets";
+import type { PresetData } from "../presets";
+import { runPipelineWithProgress } from "../pipeline";
+import { probe } from "../probe";
+import { join } from "node:path";
+import { existsSync, readdirSync, mkdirSync, writeFileSync } from "node:fs";
+import { homedir, tmpdir } from "node:os";
 
 function builtinPresetsDir(): string {
   return join(import.meta.dir, "..", "..", "presets");
@@ -58,7 +61,60 @@ export function createServer(port: number) {
       }
 
       if (url.pathname === "/api/export" && req.method === "POST") {
-        return new Response("Not implemented", { status: 501 });
+        const formData = await req.formData();
+        const file = formData.get("file") as File | null;
+        const paramsJson = formData.get("params") as string | null;
+        if (!file || !paramsJson) {
+          return new Response("file and params required", { status: 400 });
+        }
+
+        const params: PresetData = JSON.parse(paramsJson);
+        const tempDir = join(tmpdir(), "openhancer-export");
+        if (!existsSync(tempDir)) mkdirSync(tempDir, { recursive: true });
+        const inputPath = join(tempDir, file.name);
+        await Bun.write(inputPath, file);
+
+        const ext = file.name.includes(".") ? file.name.split(".").pop() : "mp4";
+        const outputPath = join(tempDir, `export_${Date.now()}.${ext}`);
+        const effectOpts = applyPreset("default", params);
+        const probeResult = await probe(inputPath);
+
+        const stream = new ReadableStream({
+          async start(controller) {
+            const encoder = new TextEncoder();
+            try {
+              await runPipelineWithProgress(
+                { ...effectOpts, input: inputPath, output: outputPath },
+                probeResult,
+                (ratio) => {
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ progress: ratio })}\n\n`));
+                },
+              );
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true, downloadUrl: `/api/download?path=${encodeURIComponent(outputPath)}` })}\n\n`));
+            } catch (err) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: (err as Error).message })}\n\n`));
+            }
+            controller.close();
+          },
+        });
+
+        return new Response(stream, {
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+          },
+        });
+      }
+
+      if (url.pathname === "/api/download" && req.method === "GET") {
+        const filePath = url.searchParams.get("path");
+        if (!filePath || !existsSync(filePath)) {
+          return new Response("File not found", { status: 404 });
+        }
+        return new Response(Bun.file(filePath), {
+          headers: { "Content-Disposition": `attachment; filename="${filePath.split("/").pop()}"` },
+        });
       }
 
       // Static file serving (SPA)
