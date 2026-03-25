@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from "react";
 import { useUpload } from "./hooks/useUpload";
 import { UploadPanel } from "./components/UploadPanel";
 import { VideoPlayer } from "./components/VideoPlayer";
+import { ControlsPanel } from "./components/ControlsPanel";
 import type { Renderer, PreviewParams } from "./gpu/renderer";
 
 export function App() {
@@ -11,6 +12,17 @@ export function App() {
 
   const handleRendererReady = useCallback((renderer: Renderer) => {
     rendererRef.current = renderer;
+  }, []);
+
+  const handleParamChange = useCallback((key: string, value: number | string | boolean) => {
+    setParams(prev => {
+      const next = { ...prev, [key]: value };
+      if (rendererRef.current) {
+        rendererRef.current.setParams(next);
+        rendererRef.current.renderFrame();
+      }
+      return next;
+    });
   }, []);
 
   if (!objectUrl) {
@@ -39,8 +51,7 @@ export function App() {
           />
         </div>
         <div style={{ width: 320, borderLeft: "1px solid #1a1a1a", overflowY: "auto", padding: 16 }}>
-          {/* Controls panel will be added in Task 7 */}
-          <div style={{ opacity: 0.5 }}>Controls loading...</div>
+          <ControlsPanel values={params} onChange={handleParamChange} />
         </div>
       </div>
     </div>
