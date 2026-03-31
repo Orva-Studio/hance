@@ -24,11 +24,11 @@ interface EffectOptions {
   cameraShake: CameraShakeOptions;
 }
 
-function builtinPresetsDir(): string {
+export function builtinPresetsDir(): string {
   return join(import.meta.dir, "..", "presets");
 }
 
-function userPresetsDir(): string {
+export function userPresetsDir(): string {
   return join(homedir(), ".openhancer", "presets");
 }
 
@@ -46,10 +46,14 @@ export function loadPreset(name: string): PresetData {
   throw new Error(`Preset "${name}" not found. Looked in:\n  ${userPresetsDir()}\n  ${builtinPresetsDir()}`);
 }
 
+interface ApplyPresetResult extends EffectOptions {
+  mergedParams: PresetData;
+}
+
 export function applyPreset(
   name: string,
   overrides: PresetData
-): EffectOptions {
+): ApplyPresetResult {
   const defaults = loadPreset("default");
   const named = name === "default" ? {} : loadPreset(name);
   const merged = { ...defaults, ...named, ...overrides };
@@ -121,5 +125,5 @@ export function applyPreset(
   const crf = Number(merged["crf"] ?? 18);
   const blend = Number(merged["blend"] ?? 1);
 
-  return { encodePreset, crf, blend, colorSettings, halation, aberration, bloom, grain, vignette, splitTone, cameraShake };
+  return { encodePreset, crf, blend, colorSettings, halation, aberration, bloom, grain, vignette, splitTone, cameraShake, mergedParams: merged };
 }

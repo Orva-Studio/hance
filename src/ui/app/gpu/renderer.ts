@@ -366,9 +366,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
     // Track the last rendered output for readPixels
     lastOutputTex = current;
 
-    // Final: copy current to canvas
-    // We need one more pass to output to the canvas texture
-    // Use a simple passthrough via color settings with neutral params
+    // Canvas texture can't be used mid-chain, so blit via neutral passthrough
     device.queue.writeBuffer(colorUB, 0, new Float32Array([1, 0, 1, 1, 6500, 0, 0, 0]));
     const finalBG = makeStdBindGroup(current, colorUB);
     runPass(encoder, colorPipeline, finalBG, ctx.getCurrentTexture().createView());
@@ -379,9 +377,6 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   let lastOutputTex: GPUTexture = texA;
 
   async function readPixels(): Promise<Uint8Array> {
-    // Re-render to ensure textures are fresh, then read from the last output texture
-    renderFrame();
-
     const encoder = device.createCommandEncoder();
 
     const bytesPerRow = Math.ceil(previewWidth * 4 / 256) * 256;
@@ -398,35 +393,37 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
 
     device.queue.submit([encoder.finish()]);
 
-    await readBuf.mapAsync(GPUMapMode.READ);
-    const mapped = new Uint8Array(readBuf.getMappedRange());
+    try {
+      await readBuf.mapAsync(GPUMapMode.READ);
+      const mapped = new Uint8Array(readBuf.getMappedRange());
 
-    const result = new Uint8Array(previewWidth * previewHeight * 4);
-    const isBGRA = format === "bgra8unorm";
-    for (let y = 0; y < previewHeight; y++) {
-      const srcOffset = y * bytesPerRow;
-      const dstOffset = y * previewWidth * 4;
-      for (let x = 0; x < previewWidth; x++) {
-        const s = srcOffset + x * 4;
-        const d = dstOffset + x * 4;
-        if (isBGRA) {
-          result[d]     = mapped[s + 2]; // R <- B
-          result[d + 1] = mapped[s + 1]; // G
-          result[d + 2] = mapped[s];     // B <- R
-          result[d + 3] = mapped[s + 3]; // A
-        } else {
-          result[d]     = mapped[s];
-          result[d + 1] = mapped[s + 1];
-          result[d + 2] = mapped[s + 2];
-          result[d + 3] = mapped[s + 3];
+      const result = new Uint8Array(previewWidth * previewHeight * 4);
+      const isBGRA = format === "bgra8unorm";
+      for (let y = 0; y < previewHeight; y++) {
+        const srcOffset = y * bytesPerRow;
+        const dstOffset = y * previewWidth * 4;
+        for (let x = 0; x < previewWidth; x++) {
+          const s = srcOffset + x * 4;
+          const d = dstOffset + x * 4;
+          if (isBGRA) {
+            result[d]     = mapped[s + 2]; // R <- B
+            result[d + 1] = mapped[s + 1]; // G
+            result[d + 2] = mapped[s];     // B <- R
+            result[d + 3] = mapped[s + 3]; // A
+          } else {
+            result[d]     = mapped[s];
+            result[d + 1] = mapped[s + 1];
+            result[d + 2] = mapped[s + 2];
+            result[d + 3] = mapped[s + 3];
+          }
         }
       }
+
+      return result;
+    } finally {
+      readBuf.unmap();
+      readBuf.destroy();
     }
-
-    readBuf.unmap();
-    readBuf.destroy();
-
-    return result;
   }
 
   return {

@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { probe } from "./probe";
-import { applyPreset, loadPreset } from "./presets";
+import { applyPreset } from "./presets";
 import type { PresetData } from "./presets";
 import type { FilmOptions } from "./types";
 import { runGpuExport } from "./pipeline";
@@ -232,8 +232,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
   }
 
   const effectOpts = applyPreset(presetName, overrides);
-  const presetData = loadPreset(presetName);
-  const params: PresetData = { ...presetData, ...overrides };
+  const params = effectOpts.mergedParams;
 
   return {
     input,
