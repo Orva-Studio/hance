@@ -43,22 +43,38 @@ export async function runGpuExport(
 
   // Process frames
   const reader = decoder.stdout.getReader();
-  let buffer = new Uint8Array(0);
+  const chunks: Uint8Array[] = [];
+  let bufferedBytes = 0;
   let frameCount = 0;
+
+  function drainBuffer(needed: number): Uint8Array {
+    const result = new Uint8Array(needed);
+    let offset = 0;
+    while (offset < needed) {
+      const chunk = chunks[0];
+      const take = Math.min(chunk.length, needed - offset);
+      result.set(chunk.subarray(0, take), offset);
+      offset += take;
+      if (take === chunk.length) {
+        chunks.shift();
+      } else {
+        chunks[0] = chunk.subarray(take);
+      }
+    }
+    bufferedBytes -= needed;
+    return result;
+  }
 
   try {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
 
-      const combined = new Uint8Array(buffer.length + value.length);
-      combined.set(buffer);
-      combined.set(value, buffer.length);
-      buffer = combined;
+      chunks.push(value);
+      bufferedBytes += value.length;
 
-      while (buffer.length >= frameSize) {
-        const frame = buffer.slice(0, frameSize);
-        buffer = buffer.slice(frameSize);
+      while (bufferedBytes >= frameSize) {
+        const frame = drainBuffer(frameSize);
 
         const rendered = await renderer.renderFrame(frame, width, height, params);
         encoder.stdin.write(rendered);

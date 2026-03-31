@@ -1,19 +1,11 @@
 import { EFFECT_SCHEMA } from "../schema";
-import { loadPreset } from "../presets";
+import { loadPreset, builtinPresetsDir, userPresetsDir } from "../presets";
 import type { PresetData } from "../presets";
 import { runGpuExport } from "../pipeline";
 import { probe } from "../probe";
 import { join } from "node:path";
 import { existsSync, readdirSync, mkdirSync, writeFileSync } from "node:fs";
-import { homedir, tmpdir } from "node:os";
-
-function builtinPresetsDir(): string {
-  return join(import.meta.dir, "..", "..", "presets");
-}
-
-function userPresetsDir(): string {
-  return join(homedir(), ".openhancer", "presets");
-}
+import { tmpdir } from "node:os";
 
 function listPresets(): string[] {
   const names: string[] = [];
@@ -114,7 +106,8 @@ export function createServer(port: number) {
 
       if (url.pathname === "/api/download" && req.method === "GET") {
         const filePath = url.searchParams.get("path");
-        if (!filePath || !existsSync(filePath)) {
+        const allowedDir = join(tmpdir(), "openhancer-export");
+        if (!filePath || !filePath.startsWith(allowedDir + "/") || !existsSync(filePath)) {
           return new Response("File not found", { status: 404 });
         }
         return new Response(Bun.file(filePath), {

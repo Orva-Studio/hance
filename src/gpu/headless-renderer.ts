@@ -34,23 +34,25 @@ class HeadlessRendererImpl implements HeadlessRenderer {
     height: number,
     params: Record<string, unknown>
   ): Promise<Uint8Array> {
+    const b64 = Buffer.from(rgba).toString("base64");
     await this.page.evaluate(
-      ({
-        data,
-        w,
-        h,
-        p,
-      }: {
-        data: number[];
-        w: number;
-        h: number;
-        p: Record<string, unknown>;
-      }) => window.__renderFrame(new Uint8Array(data), w, h, p as never),
-      { data: Array.from(rgba), w: width, h: height, p: params }
+      ({ data, w, h, p }: { data: string; w: number; h: number; p: Record<string, unknown> }) => {
+        const binary = atob(data);
+        const arr = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+        return window.__renderFrame(arr, w, h, p as never);
+      },
+      { data: b64, w: width, h: height, p: params }
     );
 
-    const pixelArray = await this.page.evaluate(() => window.__readPixels());
-    return new Uint8Array(pixelArray as unknown as number[]);
+    const resultB64 = await this.page.evaluate(() => {
+      const pixels = window.__readPixels();
+      const arr = pixels instanceof Uint8Array ? pixels : new Uint8Array(pixels as number[]);
+      let binary = "";
+      for (let i = 0; i < arr.length; i++) binary += String.fromCharCode(arr[i]);
+      return btoa(binary);
+    });
+    return new Uint8Array(Buffer.from(resultB64 as string, "base64"));
   }
 
   async close(): Promise<void> {
