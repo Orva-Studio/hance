@@ -13,8 +13,9 @@ All effects compose into a single FFmpeg `-filter_complex` graph for efficient p
 
 ## Requirements
 
-- [Bun](https://bun.sh) (for building)
-- [FFmpeg](https://ffmpeg.org) (runtime dependency)
+- [Bun](https://bun.sh) (for building and running)
+- [FFmpeg](https://ffmpeg.org) (runtime dependency for encoding/decoding)
+- [Rust](https://rustup.rs) (for building the GPU sidecar)
 
 ## Install
 
@@ -23,10 +24,17 @@ All effects compose into a single FFmpeg `-filter_complex` graph for efficient p
 git clone https://github.com/RichardBray/openhancer.git
 cd openhancer
 bun install
-bun run build
+bun run build    # builds Rust sidecar + UI + CLI binary
 
 # Optional: add to PATH
 ln -s $(pwd)/openhancer /usr/local/bin/openhancer
+```
+
+### Building components individually
+
+```bash
+bun run build:gpu   # Build Rust wgpu sidecar (sidecar/target/release/openhancer-gpu)
+bun run build:ui    # Build browser UI bundle
 ```
 
 ## Usage
@@ -73,19 +81,27 @@ openhancer video.mp4 --preset fast --crf 28
 | `--aberration` | 0–1 | 0.3 | Chromatic aberration strength |
 | `--weave` | 0–1 | 0.3 | Gate weave strength |
 
+## Architecture
+
+Effects are rendered on the GPU via a native Rust [wgpu](https://wgpu.rs) sidecar binary. WGSL shaders in `src/shaders/` are shared between the browser preview (via Bun text imports) and the Rust sidecar (via `include_str!`). The sidecar communicates with the Bun CLI over stdin/stdout using a length-prefixed JSON init message followed by raw RGBA frames.
+
 ## Development
 
 ```bash
-# Run in dev mode
+# Run in dev mode (requires sidecar built first)
+bun run build:gpu
 bun run src/cli.ts <input> [options]
 
-# Run tests
+# Run Bun tests
 bun test
 
 # Run e2e tests only
 bun test src/__tests__/e2e/
 
-# Build binary
+# Run Rust tests
+cd sidecar && cargo test
+
+# Build everything
 bun run build
 ```
 
