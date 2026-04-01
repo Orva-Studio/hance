@@ -81,7 +81,7 @@ impl GpuRenderer {
         .ok_or("No GPU adapter found")?;
 
         let (device, queue) = pollster::block_on(adapter.request_device(&DeviceDescriptor {
-            label: Some("openhancer-gpu"),
+            label: Some("hancer-gpu"),
             ..Default::default()
         }, None))
         .map_err(|e| format!("Device request failed: {e}"))?;
@@ -196,14 +196,14 @@ impl GpuRenderer {
 
         // Upload source
         self.queue.write_texture(
-            ImageCopyTexture {
+            TexelCopyTextureInfo {
                 texture: &self.src_tex,
                 mip_level: 0,
                 origin: Origin3d::ZERO,
                 aspect: TextureAspect::All,
             },
             input,
-            ImageDataLayout {
+            TexelCopyBufferLayout {
                 offset: 0,
                 bytes_per_row: Some(self.width * 4),
                 rows_per_image: Some(self.height),
@@ -410,15 +410,15 @@ impl GpuRenderer {
         // --- Readback ---
         let bytes_per_row = ((self.width * 4 + 255) / 256) * 256;
         encoder.copy_texture_to_buffer(
-            ImageCopyTexture {
+            TexelCopyTextureInfo {
                 texture: current_tex!(),
                 mip_level: 0,
                 origin: Origin3d::ZERO,
                 aspect: TextureAspect::All,
             },
-            ImageCopyBuffer {
+            TexelCopyBufferInfo {
                 buffer: &self.staging_buf,
-                layout: ImageDataLayout {
+                layout: TexelCopyBufferLayout {
                     offset: 0,
                     bytes_per_row: Some(bytes_per_row),
                     rows_per_image: Some(self.height),

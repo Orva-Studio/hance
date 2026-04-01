@@ -3,7 +3,7 @@ use std::process::{Command, Stdio};
 
 #[test]
 fn sidecar_processes_one_frame() {
-    let binary = env!("CARGO_BIN_EXE_openhancer-gpu");
+    let binary = env!("CARGO_BIN_EXE_hancer-gpu");
 
     let mut child = Command::new(binary)
         .stdin(Stdio::piped())

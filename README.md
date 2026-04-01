@@ -1,18 +1,24 @@
-# Openhancer
+# Hancer
 
-Single-binary CLI that applies cinematic film effects to video and images in one FFmpeg pass.
+**Cinematic film look in one command.** Drop hancer into any video pipeline — batch processing, CI/CD, content automation — and get GPU-accelerated colour grading, halation, chromatic aberration, and gate weave without opening an editor. One binary, one pass, no plugins, no subscriptions.
 
-## Effects
+### Why hancer?
+
+- **One-pass processing** — all effects compose into a single filter graph. No intermediate files, no re-encoding chains.
+- **GPU-accelerated** — native wgpu sidecar renders effects on the GPU. Fast enough for batch workflows.
+- **Pipeline-first** — a single binary with CLI flags. Script it, cron it, plug it into your ingest pipeline.
+- **No vendor lock-in** — runs on your machine, processes your files locally. Your footage never leaves your disk.
+
+### Effects
 
 - **Grade** — Lift blacks, crush whites, shadow/highlight tinting, fade
 - **Halation** — Highlight glow with warm tint (simulates light scattering in film)
 - **Chromatic Aberration** — Red/blue channel offset for lens fringing
 - **Gate Weave** — Sine-based frame drift simulating projector instability
 
-All effects compose into a single FFmpeg `-filter_complex` graph for efficient processing.
-
 ## Requirements
 
+- **macOS** (primary supported platform — Linux/Windows untested)
 - [Bun](https://bun.sh) (for building and running)
 - [FFmpeg](https://ffmpeg.org) (runtime dependency for encoding/decoding)
 - [Rust](https://rustup.rs) (for building the GPU sidecar)
@@ -21,54 +27,55 @@ All effects compose into a single FFmpeg `-filter_complex` graph for efficient p
 
 ```bash
 # Clone and build
-git clone https://github.com/RichardBray/openhancer.git
-cd openhancer
+git clone https://github.com/RichardBray/hancer.git
+cd hancer
 bun install
 bun run build    # builds Rust sidecar + UI + CLI binary
 
 # Optional: add to PATH
-ln -s $(pwd)/openhancer /usr/local/bin/openhancer
+ln -s $(pwd)/hancer /usr/local/bin/hancer
 ```
 
 ### Building components individually
 
 ```bash
-bun run build:gpu   # Build Rust wgpu sidecar (sidecar/target/release/openhancer-gpu)
+bun run build:gpu   # Build Rust wgpu sidecar (sidecar/target/release/hancer-gpu)
 bun run build:ui    # Build browser UI bundle
 ```
 
 ## Usage
 
 ```bash
-openhancer <input> [options]
+hancer <input> [options]
 ```
 
 ### Examples
 
 ```bash
 # Process video with defaults
-openhancer video.mp4
+hancer video.mp4
 
 # Process image
-openhancer photo.png
+hancer photo.png
 
 # Custom output path
-openhancer video.mp4 -o output.mp4
+hancer video.mp4 -o output.mp4
 
 # Adjust effects
-openhancer video.mp4 --lift 0.1 --fade 0.3 --aberration 0.5
+hancer video.mp4 --lift 0.1 --fade 0.3 --aberration 0.5
 
 # Fast encode, lower quality
-openhancer video.mp4 --preset fast --crf 28
+hancer video.mp4 --preset fast --crf 28
 ```
 
 ### Options
 
 | Flag | Range | Default | Description |
 |------|-------|---------|-------------|
-| `--output, -o` | | `<input>_openhanced.<ext>` | Output path |
-| `--preset` | fast/medium/slow | medium | FFmpeg encoding preset |
-| `--crf` | 0–51 | 18 | Quality (lower = better) |
+| `--output, -o` | | `<input>_hanced.<ext>` | Output path |
+| `--codec` | h264/prores/h265 | h264 | Output video codec |
+| `--encode-preset` | fast/medium/slow | medium | FFmpeg encoding speed preset |
+| `--crf` | 0–51 | 18 | Quality (lower = better, ignored for prores) |
 | `--lift` | 0–0.15 | 0.05 | Black lift amount |
 | `--crush` | 0–0.15 | 0.04 | White crush amount |
 | `--fade` | 0–1 | 0.15 | Contrast fade |
@@ -105,6 +112,29 @@ cd sidecar && cargo test
 bun run build
 ```
 
+## Output Quality
+
+By default, hancer encodes output as H.264 with CRF 18. If your source is a high-quality format like ProRes (common with `.mov` files from cameras or editing software), the default H.264 output will be lower quality than the original due to lossy compression and 4:2:0 chroma subsampling.
+
+To preserve quality closer to the original:
+
+```bash
+# Use ProRes output (near-lossless, 4:2:2 10-bit, larger files)
+hancer video.mov -o output.mov --codec prores
+
+# Use a lower CRF for higher-quality H.264 (0 = lossless)
+hancer video.mov -o output.mp4 --crf 8
+
+# Use H.265 for better quality at similar file sizes
+hancer video.mov -o output.mp4 --codec h265 --crf 12
+```
+
+| Codec | Quality | File Size | Compatibility |
+|-------|---------|-----------|---------------|
+| `h264` (default) | Good (CRF-dependent) | Smallest | Universal |
+| `h265` | Better at same CRF | ~30% smaller than h264 | Most modern players |
+| `prores` | Near-lossless (4:2:2 10-bit) | Largest | macOS, editing software |
+
 ## License
 
-[MIT](LICENSE)
+[FSL-1.1-Apache-2.0](LICENSE) — free to use, modify, and redistribute. Cannot be used to build a competing product or service. Converts to Apache 2.0 on April 1, 2028.

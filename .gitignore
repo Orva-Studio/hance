@@ -3,14 +3,14 @@ node_modules/
 
 # Build output
 dist/
-openhancer
+hancer
 oph
 
 # E2E test fixtures (generated, not committed)
 src/__tests__/e2e/fixtures/test.mp4
 src/__tests__/e2e/fixtures/test.png
 src/__tests__/e2e/fixtures/test.mov
-*_openhanced.*
+*_hanced.*
 
 # UI build output
 src/ui/dist/

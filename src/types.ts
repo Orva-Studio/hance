@@ -65,6 +65,7 @@ export interface FilmOptions {
   input: string;
   output: string;
   encodePreset: "fast" | "medium" | "slow";
+  codec: OutputCodec;
   crf: number;
   blend: number;
   colorSettings: ColorSettingsOptions;
@@ -76,6 +77,8 @@ export interface FilmOptions {
   splitTone: SplitToneOptions;
   cameraShake: CameraShakeOptions;
 }
+
+export type OutputCodec = "h264" | "prores" | "h265";
 
 export interface ProbeResult {
   duration: number | null;

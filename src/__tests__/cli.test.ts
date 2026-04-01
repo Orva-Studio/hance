@@ -93,15 +93,15 @@ describe("subcommand routing", () => {
 });
 
 describe("getDefaultOutput", () => {
-  it("appends _openhanced before extension", () => {
-    expect(getDefaultOutput("video.mp4")).toBe("video_openhanced.mp4");
+  it("appends _hanced before extension", () => {
+    expect(getDefaultOutput("video.mp4")).toBe("video_hanced.mp4");
   });
 
   it("handles .mov files", () => {
-    expect(getDefaultOutput("clip.mov")).toBe("clip_openhanced.mov");
+    expect(getDefaultOutput("clip.mov")).toBe("clip_hanced.mov");
   });
 
   it("handles paths with directories", () => {
-    expect(getDefaultOutput("/path/to/video.mp4")).toBe("/path/to/video_openhanced.mp4");
+    expect(getDefaultOutput("/path/to/video.mp4")).toBe("/path/to/video_hanced.mp4");
   });
 });

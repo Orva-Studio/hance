@@ -61,7 +61,7 @@ export function createServer(port: number) {
         }
 
         const params: PresetData = JSON.parse(paramsJson);
-        const tempDir = join(tmpdir(), "openhancer-export");
+        const tempDir = join(tmpdir(), "hancer-export");
         if (!existsSync(tempDir)) mkdirSync(tempDir, { recursive: true });
         const inputPath = join(tempDir, file.name);
         await Bun.write(inputPath, file);
@@ -106,7 +106,7 @@ export function createServer(port: number) {
 
       if (url.pathname === "/api/download" && req.method === "GET") {
         const filePath = url.searchParams.get("path");
-        const allowedDir = join(tmpdir(), "openhancer-export");
+        const allowedDir = join(tmpdir(), "hancer-export");
         if (!filePath || !filePath.startsWith(allowedDir + "/") || !existsSync(filePath)) {
           return new Response("File not found", { status: 404 });
         }
@@ -132,7 +132,7 @@ export function createServer(port: number) {
 
 export async function startUI(port: number): Promise<void> {
   const server = createServer(port);
-  console.log(`openhancer UI running at http://localhost:${server.port}`);
+  console.log(`hancer UI running at http://localhost:${server.port}`);
   const open = process.platform === "darwin" ? "open" : "xdg-open";
   Bun.spawn([open, `http://localhost:${server.port}`], { stdout: "ignore", stderr: "ignore" });
 }

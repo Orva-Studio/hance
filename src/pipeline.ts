@@ -1,5 +1,39 @@
-import type { ProbeResult } from "./types";
+import type { ProbeResult, OutputCodec } from "./types";
 import { createHeadlessRenderer } from "./gpu/wgpu-renderer";
+
+interface EncoderSettings {
+  codec: OutputCodec;
+  crf: number;
+  encodePreset: string;
+}
+
+function buildEncoderArgs(settings: EncoderSettings, width: number, height: number, fps: number, input: string, output: string): string[] {
+  const base = [
+    "ffmpeg", "-y",
+    "-f", "rawvideo", "-pix_fmt", "rgba",
+    "-s", `${width}x${height}`, "-r", `${fps}`,
+    "-i", "pipe:0",
+    "-i", input,
+    "-map", "0:v", "-map", "1:a?",
+    "-c:a", "copy",
+  ];
+
+  switch (settings.codec) {
+    case "prores":
+      base.push("-c:v", "prores_ks", "-profile:v", "3", "-pix_fmt", "yuv422p10le");
+      break;
+    case "h265":
+      base.push("-c:v", "libx265", "-preset", settings.encodePreset, "-crf", String(settings.crf), "-pix_fmt", "yuv420p", "-tag:v", "hvc1");
+      break;
+    case "h264":
+    default:
+      base.push("-c:v", "libx264", "-preset", settings.encodePreset, "-crf", String(settings.crf), "-pix_fmt", "yuv420p");
+      break;
+  }
+
+  base.push(output);
+  return base;
+}
 
 export async function runGpuExport(
   input: string,
@@ -7,6 +41,7 @@ export async function runGpuExport(
   params: Record<string, unknown>,
   probeResult: ProbeResult,
   onProgress: (ratio: number) => void,
+  encoderSettings?: EncoderSettings,
 ): Promise<void> {
   const { width, height, fps, duration } = probeResult;
   if (!width || !height || !fps || !duration) {
@@ -24,19 +59,10 @@ export async function runGpuExport(
     "pipe:1",
   ], { stdout: "pipe", stderr: "pipe" });
 
-  // Spawn FFmpeg encoder: PNG frames from stdin, copy audio from original
-  const encoder = Bun.spawn([
-    "ffmpeg", "-y",
-    "-f", "rawvideo", "-pix_fmt", "rgba",
-    "-s", `${width}x${height}`, "-r", `${fps}`,
-    "-i", "pipe:0",
-    "-i", input,
-    "-map", "0:v", "-map", "1:a?",
-    "-c:a", "copy",
-    "-c:v", "libx264", "-preset", "medium", "-crf", "18",
-    "-pix_fmt", "yuv420p",
-    output,
-  ], { stdin: "pipe", stdout: "pipe", stderr: "pipe" });
+  // Spawn FFmpeg encoder
+  const settings = encoderSettings ?? { codec: "h264", crf: 18, encodePreset: "medium" };
+  const encoderArgs = buildEncoderArgs(settings, width, height, fps, input, output);
+  const encoder = Bun.spawn(encoderArgs, { stdin: "pipe", stdout: "pipe", stderr: "pipe" });
 
   // Create headless renderer
   const renderer = await createHeadlessRenderer();
