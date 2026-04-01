@@ -1,11 +1,11 @@
-# Openhancer
+# Hancer
 Single-binary CLI that applies cinematic film effects to video/images in one FFmpeg pass.
 
 ## Stack
 - Runtime: Bun
 - Language: TypeScript
 - FFmpeg: via Bun.spawn (must be installed on system)
-- Build: `bun build src/cli.ts --compile --outfile openhancer`
+- Build: `bun build src/cli.ts --compile --outfile hancer`
 
 ## Commands
 - Run dev: `bun run src/cli.ts <input> [options]`

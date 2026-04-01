@@ -1,10 +1,10 @@
 {
-  "name": "openhancer",
+  "name": "hancer",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "start": "bun run src/cli.ts",
-    "build": "bun run build:gpu && bun run build:ui && bun build src/cli.ts --compile --outfile openhancer",
+    "build": "bun run build:gpu && bun run build:ui && bun build src/cli.ts --compile --outfile hancer",
     "build:ui": "bun run scripts/build-ui.ts",
     "build:gpu": "cd sidecar && ~/.cargo/bin/cargo build --release",
     "test": "bun test"

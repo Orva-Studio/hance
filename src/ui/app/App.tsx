@@ -32,7 +32,7 @@ export function App() {
     return (
       <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
         <div style={{ padding: "16px 24px", borderBottom: "1px solid #1a1a1a", fontSize: 14, fontWeight: 600 }}>
-          openhancer
+          hancer
         </div>
         <UploadPanel onFile={upload} />
       </div>
@@ -42,7 +42,7 @@ export function App() {
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={{ padding: "16px 24px", borderBottom: "1px solid #1a1a1a", fontSize: 14, fontWeight: 600 }}>
-        openhancer
+        hancer
       </div>
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         <div style={{ flex: 1, display: "flex", padding: 16 }}>

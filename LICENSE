@@ -1,21 +1,52 @@
-MIT License
+Functional Source License, Version 1.1, Apache 2.0 Future License
 
-Copyright (c) 2026 Richard Bray
+Abbreviation
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+    FSL-1.1-Apache-2.0
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Notice
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+    Copyright 2026 Richard Bray
+
+Terms and Conditions
+
+Licensor:             Richard Bray
+Software:             Hancer
+Use Limitation:       You may not use the Software to provide a commercial
+                      product or service that competes with the Software or
+                      any product or service offered by the Licensor that
+                      includes the Software.
+
+License Grant. Subject to the Use Limitation and the terms and conditions of
+this License, the Licensor hereby grants you a non-exclusive, worldwide,
+non-transferable, non-sublicensable, royalty-free license to use, copy, modify,
+create derivative works of, and redistribute the Software, in each case subject
+to the Use Limitation.
+
+Use Limitation. You may not use the Software in any manner that competes with
+the Licensor's products or services. A competitive use includes, without
+limitation, (a) offering the Software, or any derivative work of the Software,
+to third parties as a hosted or managed service that allows third parties to
+apply cinematic effects or video/image processing, or (b) incorporating the
+Software into a product or service that is substantially similar to the
+Software.
+
+Change License. On the second anniversary of the date the Software is made
+available under this License (the "Change Date"), the Software will
+automatically be released under the Apache License, Version 2.0 (the "Change
+License"). From and after the Change Date, you may use the Software under the
+terms of the Change License.
+
+    Change Date:          April 1, 2028
+
+Redistribution. You may redistribute the Software, provided that you include a
+complete copy of this License with the redistribution and do not remove or alter
+any license notices, copyright notices, or this License in the Software.
+
+Disclaimer. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.

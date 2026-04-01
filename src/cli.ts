@@ -7,12 +7,13 @@ import { runGpuExport } from "./pipeline";
 import path from "node:path";
 
 const HELP_TEXT = `
-openhancer <input> [options]
+hancer <input> [options]
 
   Input/Output:
-  --output, -o <path>       Output path (default: <input>_openhanced.<ext>)
+  --output, -o <path>       Output path (default: <input>_hanced.<ext>)
+  --codec      <string>     Output codec: h264/prores/h265 (default: h264)
   --encode-preset <string>  FFmpeg preset: fast/medium/slow (default: medium)
-  --crf        <0-51>       Quality — lower is better (default: 18)
+  --crf        <0-51>       Quality — lower is better (default: 18, ignored for prores)
   --blend      <0-1>        Global blend with original (default: 1)
 
   Preset:
@@ -78,7 +79,7 @@ openhancer <input> [options]
 `.trim();
 
 const KNOWN_FLAGS = new Set([
-  "--output", "-o", "--preset", "--encode-preset", "--crf", "--blend",
+  "--output", "-o", "--preset", "--codec", "--encode-preset", "--crf", "--blend",
   "--exposure", "--contrast", "--highlights", "--fade",
   "--white-balance", "--tint", "--subtractive-sat", "--richness", "--bleach-bypass",
   "--no-color-settings",
@@ -109,7 +110,7 @@ export function isSubcommand(args: string[]): boolean {
 export function getDefaultOutput(inputPath: string): string {
   const ext = path.extname(inputPath);
   const base = inputPath.slice(0, -ext.length);
-  return `${base}_openhanced${ext}`;
+  return `${base}_hanced${ext}`;
 }
 
 function parseNum(value: string, flag: string, min: number, max: number): number {
@@ -170,6 +171,11 @@ export function parseArgs(argv: string[]): ParsedArgs {
       switch (arg) {
         case "--output": case "-o": output = val; break;
         case "--preset": presetName = val; break;
+        case "--codec":
+          if (val !== "h264" && val !== "prores" && val !== "h265") {
+            throw new Error(`--codec must be h264, prores, or h265, got ${val}`);
+          }
+          overrides["codec"] = val; break;
         case "--encode-preset":
           if (val !== "fast" && val !== "medium" && val !== "slow") {
             throw new Error(`--encode-preset must be fast, medium, or slow, got ${val}`);
@@ -224,7 +230,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
   }
 
   if (!help && !input) {
-    throw new Error("No input file provided. Usage: openhancer <input> [options]");
+    throw new Error("No input file provided. Usage: hancer <input> [options]");
   }
 
   if (!output && input) {
@@ -238,6 +244,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
     input,
     output,
     encodePreset: effectOpts.encodePreset,
+    codec: effectOpts.codec,
     crf: effectOpts.crf,
     blend: effectOpts.blend,
     colorSettings: effectOpts.colorSettings,
@@ -337,7 +344,7 @@ async function main() {
     await runGpuExport(parsed.input, parsed.output, parsed.params, probeResult, (ratio) => {
       const pct = Math.round(ratio * 100);
       process.stdout.write(`\rProcessing... ${pct}%`);
-    });
+    }, { codec: parsed.codec, crf: parsed.crf, encodePreset: parsed.encodePreset });
     process.stdout.write("\n");
   }
 }

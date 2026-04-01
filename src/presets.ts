@@ -4,6 +4,7 @@ import { homedir } from "os";
 import type {
   ColorSettingsOptions, HalationOptions, AberrationOptions,
   BloomOptions, GrainOptions, VignetteOptions, SplitToneOptions, CameraShakeOptions,
+  OutputCodec,
 } from "./types";
 
 export interface PresetData {
@@ -12,6 +13,7 @@ export interface PresetData {
 
 interface EffectOptions {
   encodePreset: "fast" | "medium" | "slow";
+  codec: OutputCodec;
   crf: number;
   blend: number;
   colorSettings: ColorSettingsOptions;
@@ -29,7 +31,7 @@ export function builtinPresetsDir(): string {
 }
 
 export function userPresetsDir(): string {
-  return join(homedir(), ".openhancer", "presets");
+  return join(homedir(), ".hancer", "presets");
 }
 
 export function loadPreset(name: string): PresetData {
@@ -122,8 +124,9 @@ export function applyPreset(
   };
 
   const encodePreset = (merged["encode-preset"] as EffectOptions["encodePreset"]) ?? "medium";
+  const codec = (merged["codec"] as OutputCodec) ?? "h264";
   const crf = Number(merged["crf"] ?? 18);
   const blend = Number(merged["blend"] ?? 1);
 
-  return { encodePreset, crf, blend, colorSettings, halation, aberration, bloom, grain, vignette, splitTone, cameraShake, mergedParams: merged };
+  return { encodePreset, codec, crf, blend, colorSettings, halation, aberration, bloom, grain, vignette, splitTone, cameraShake, mergedParams: merged };
 }

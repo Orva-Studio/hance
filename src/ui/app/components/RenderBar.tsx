@@ -32,7 +32,7 @@ export function RenderBar({ file, params, canvas, renderer, isVideo }: Props) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = file.name.replace(/\.[^.]+$/, "_openhanced.png");
+    a.download = file.name.replace(/\.[^.]+$/, "_hanced.png");
     a.click();
     URL.revokeObjectURL(url);
   }, [renderer, canvas, file.name]);
