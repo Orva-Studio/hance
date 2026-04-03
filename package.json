@@ -2,20 +2,15 @@
   "name": "hancer",
   "version": "1.0.0",
   "type": "module",
+  "workspaces": ["packages/core", "packages/cli", "packages/ui"],
   "scripts": {
-    "start": "bun run src/cli.ts",
-    "build": "bun run build:gpu && bun run build:ui && bun build src/cli.ts --compile --outfile hancer",
+    "start": "bun run packages/cli/src/cli.ts",
+    "build": "bun run build:wgpu && bun run build:ui && bun build packages/cli/src/cli.ts --compile --outfile hancer",
     "build:ui": "bun run scripts/build-ui.ts",
-    "build:gpu": "cd sidecar && ~/.cargo/bin/cargo build --release",
+    "build:wgpu": "cd packages/wgpu && ~/.cargo/bin/cargo build --release",
     "test": "bun test"
   },
   "devDependencies": {
-    "@types/bun": "^1.3.11",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3"
-  },
-  "dependencies": {
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "@types/bun": "^1.3.11"
   }
 }

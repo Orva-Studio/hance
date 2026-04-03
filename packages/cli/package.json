@@ -1,0 +1,9 @@
+{
+  "name": "@hancer/cli",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/cli.ts",
+  "dependencies": {
+    "@hancer/core": "workspace:*"
+  }
+}
