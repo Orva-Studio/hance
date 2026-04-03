@@ -27,7 +27,7 @@ interface EffectOptions {
 }
 
 export function builtinPresetsDir(): string {
-  return join(import.meta.dir, "..", "presets");
+  return join(import.meta.dir, "..", "..", "..", "presets");
 }
 
 export function userPresetsDir(): string {
