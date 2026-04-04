@@ -35,17 +35,16 @@ export function userPresetsDir(): string {
 }
 
 export function loadPreset(name: string): PresetData {
-  const userPath = join(userPresetsDir(), `${name}.json`);
-  if (existsSync(userPath)) {
-    return JSON.parse(readFileSync(userPath, "utf-8"));
+  for (const dir of [userPresetsDir(), builtinPresetsDir()]) {
+    for (const ext of [".hlook", ".json"]) {
+      const filePath = join(dir, `${name}${ext}`);
+      if (existsSync(filePath)) {
+        return JSON.parse(readFileSync(filePath, "utf-8"));
+      }
+    }
   }
 
-  const builtinPath = join(builtinPresetsDir(), `${name}.json`);
-  if (existsSync(builtinPath)) {
-    return JSON.parse(readFileSync(builtinPath, "utf-8"));
-  }
-
-  throw new Error(`Preset "${name}" not found. Looked in:\n  ${userPresetsDir()}\n  ${builtinPresetsDir()}`);
+  throw new Error(`Look "${name}" not found. Looked in:\n  ${userPresetsDir()}\n  ${builtinPresetsDir()}`);
 }
 
 interface ApplyPresetResult extends EffectOptions {

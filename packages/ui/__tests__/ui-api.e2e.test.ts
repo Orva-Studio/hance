@@ -16,8 +16,8 @@ describe("UI API e2e", () => {
     expect(data[0].key).toBe("colorSettings");
   });
 
-  test("GET /api/presets lists built-in presets", async () => {
-    const res = await fetch(`${base}/api/presets`);
+  test("GET /api/looks lists built-in looks", async () => {
+    const res = await fetch(`${base}/api/looks`);
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data).toContain("default");
@@ -25,25 +25,25 @@ describe("UI API e2e", () => {
     expect(data).toContain("heavy");
   });
 
-  test("GET /api/preset?name=default returns preset data", async () => {
-    const res = await fetch(`${base}/api/preset?name=default`);
+  test("GET /api/look?name=default returns look data", async () => {
+    const res = await fetch(`${base}/api/look?name=default`);
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data["exposure"]).toBe(0);
     expect(data["halation-amount"]).toBe(0.25);
   });
 
-  test("GET /api/preset?name=nonexistent returns 404", async () => {
-    const res = await fetch(`${base}/api/preset?name=nonexistent`);
+  test("GET /api/look?name=nonexistent returns 404", async () => {
+    const res = await fetch(`${base}/api/look?name=nonexistent`);
     expect(res.status).toBe(404);
   });
 
-  test("POST /api/presets saves a user preset", async () => {
-    const res = await fetch(`${base}/api/presets`, {
+  test("POST /api/looks saves a user look", async () => {
+    const res = await fetch(`${base}/api/looks`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: "test-e2e-preset",
+        name: "test-e2e-look",
         data: { exposure: 0.5, contrast: 1.2 },
       }),
     });
@@ -52,9 +52,9 @@ describe("UI API e2e", () => {
     expect(body.ok).toBe(true);
 
     // Verify it shows up in list
-    const listRes = await fetch(`${base}/api/presets`);
-    const presets = await listRes.json();
-    expect(presets).toContain("test-e2e-preset");
+    const listRes = await fetch(`${base}/api/looks`);
+    const looks = await listRes.json();
+    expect(looks).toContain("test-e2e-look");
   });
 
   test("SPA fallback serves index.html for unknown routes", async () => {
