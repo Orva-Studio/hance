@@ -15,15 +15,15 @@ describe("API server", () => {
     expect(data[0].key).toBe("colorSettings");
   });
 
-  test("GET /api/presets lists available presets", async () => {
-    const res = await fetch(`${base}/api/presets`);
+  test("GET /api/looks lists available looks", async () => {
+    const res = await fetch(`${base}/api/looks`);
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data).toContain("default");
   });
 
-  test("GET /api/preset?name=default returns preset data", async () => {
-    const res = await fetch(`${base}/api/preset?name=default`);
+  test("GET /api/look?name=default returns look data", async () => {
+    const res = await fetch(`${base}/api/look?name=default`);
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data["exposure"]).toBe(0);

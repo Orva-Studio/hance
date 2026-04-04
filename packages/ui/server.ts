@@ -2,19 +2,26 @@ import { EFFECT_SCHEMA, loadPreset, builtinPresetsDir, userPresetsDir, probe } f
 import type { PresetData } from "@hancer/core";
 import { runGpuExport } from "@hancer/cli/src/pipeline";
 import { join } from "node:path";
-import { existsSync, readdirSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, mkdirSync, writeFileSync, unlinkSync, renameSync } from "node:fs";
 import { tmpdir } from "node:os";
 
-function listPresets(): string[] {
+function listLooks(): string[] {
   const names: string[] = [];
   for (const dir of [builtinPresetsDir(), userPresetsDir()]) {
     if (existsSync(dir)) {
       for (const f of readdirSync(dir)) {
-        if (f.endsWith(".json")) names.push(f.replace(".json", ""));
+        if (f.endsWith(".hlook") || f.endsWith(".json")) {
+          names.push(f.replace(/\.(hlook|json)$/, ""));
+        }
       }
     }
   }
   return [...new Set(names)];
+}
+
+function invalidateThumbnailCache(name: string) {
+  const cachePath = join(tmpdir(), "hancer-thumbnails", `${name}.jpg`);
+  if (existsSync(cachePath)) unlinkSync(cachePath);
 }
 
 export function createServer(port: number) {
@@ -27,27 +34,107 @@ export function createServer(port: number) {
         return Response.json(EFFECT_SCHEMA);
       }
 
-      if (url.pathname === "/api/presets" && req.method === "GET") {
-        return Response.json(listPresets());
+      if (url.pathname === "/api/looks" && req.method === "GET") {
+        return Response.json(listLooks());
       }
 
-      if (url.pathname === "/api/preset" && req.method === "GET") {
+      if (url.pathname === "/api/look" && req.method === "GET") {
         const name = url.searchParams.get("name") || "default";
         try {
-          return Response.json(loadPreset(name));
+          const raw = loadPreset(name);
+          // .hlook files have params nested; .json files have them at top level
+          const params = raw.params ?? raw;
+          return Response.json(params);
         } catch {
-          return new Response("Preset not found", { status: 404 });
+          return new Response("Look not found", { status: 404 });
         }
       }
 
-      if (url.pathname === "/api/presets" && req.method === "POST") {
+      if (url.pathname === "/api/looks" && req.method === "POST") {
+        const body = await req.json();
+        const { name, data, description, keywords, characteristics } = body;
+        if (!name || !data) return new Response("name and data required", { status: 400 });
+        const dir = userPresetsDir();
+        if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+        const lookData = { name, description: description || "", keywords: keywords || [], characteristics: characteristics || [], params: data };
+        writeFileSync(join(dir, `${name}.hlook`), JSON.stringify(lookData, null, 2));
+        invalidateThumbnailCache(name);
+        return Response.json({ ok: true });
+      }
+
+      if (url.pathname === "/api/look" && req.method === "PUT") {
         const body = await req.json();
         const { name, data } = body;
         if (!name || !data) return new Response("name and data required", { status: 400 });
         const dir = userPresetsDir();
         if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-        writeFileSync(join(dir, `${name}.json`), JSON.stringify(data, null, 2));
+        const filePath = join(dir, `${name}.hlook`);
+        let existing: Record<string, unknown> = {};
+        try {
+          existing = JSON.parse(await Bun.file(filePath).text());
+        } catch {
+          for (const ext of [".hlook", ".json"]) {
+            const builtinPath = join(builtinPresetsDir(), `${name}${ext}`);
+            if (existsSync(builtinPath)) {
+              try { existing = JSON.parse(await Bun.file(builtinPath).text()); } catch {}
+              break;
+            }
+          }
+        }
+        const updated = { ...existing, params: data };
+        writeFileSync(filePath, JSON.stringify(updated, null, 2));
+        invalidateThumbnailCache(name);
         return Response.json({ ok: true });
+      }
+
+      if (url.pathname === "/api/look" && req.method === "DELETE") {
+        const name = url.searchParams.get("name");
+        if (!name) return new Response("name required", { status: 400 });
+        for (const dir of [userPresetsDir(), builtinPresetsDir()]) {
+          for (const ext of [".hlook", ".json"]) {
+            const filePath = join(dir, `${name}${ext}`);
+            if (existsSync(filePath)) unlinkSync(filePath);
+          }
+        }
+        return Response.json({ ok: true });
+      }
+
+      if (url.pathname === "/api/look/rename" && req.method === "POST") {
+        const body = await req.json();
+        const { oldName, newName } = body;
+        if (!oldName || !newName) return new Response("oldName and newName required", { status: 400 });
+        for (const dir of [userPresetsDir(), builtinPresetsDir()]) {
+          for (const ext of [".hlook", ".json"]) {
+            const oldPath = join(dir, `${oldName}${ext}`);
+            if (existsSync(oldPath)) {
+              invalidateThumbnailCache(oldName);
+              const newPath = join(dir, `${newName}.hlook`);
+              renameSync(oldPath, newPath);
+              return Response.json({ ok: true });
+            }
+          }
+        }
+        return new Response("Look not found", { status: 404 });
+      }
+
+      if (url.pathname === "/api/look/import" && req.method === "POST") {
+        const formData = await req.formData();
+        const file = formData.get("file") as File | null;
+        if (!file || !file.name.endsWith(".hlook")) {
+          return new Response("Valid .hlook file required", { status: 400 });
+        }
+        const text = await file.text();
+        let parsed: Record<string, unknown>;
+        try {
+          parsed = JSON.parse(text);
+        } catch {
+          return new Response("Invalid JSON in .hlook file", { status: 400 });
+        }
+        const dir = userPresetsDir();
+        if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+        const name = (parsed.name as string) || file.name.replace(".hlook", "");
+        writeFileSync(join(dir, `${name}.hlook`), JSON.stringify(parsed, null, 2));
+        return Response.json({ ok: true, name });
       }
 
       if (url.pathname === "/api/export" && req.method === "POST") {

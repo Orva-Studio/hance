@@ -4,6 +4,7 @@
 - [x] Restructure into monorepo (packages/core, cli, ui, wgpu + apps/desktop)
 - [x] Separate CLI and UI into independent Bun-compiled binaries
 - [x] Set up Bun workspaces
+- [ ] Delete `docs/superpowers/` planning documents
 
 ## Web UI
 - [ ] Revamp UI — Lightroom/Final Cut Pro hybrid design with Tailwind
