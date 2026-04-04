@@ -126,21 +126,33 @@ Each group:
 
 Only rendered when loaded media is a video file.
 
-### Layout (left to right)
-- Play/pause button (triangle / double bar)
-- Current timecode (`HH:MM:SS`)
-- Scrub bar — full-width track, draggable thumb, click-to-seek
-- Total duration (`HH:MM:SS`)
+### Layout
+- **Transport controls** (left): Play/pause button, current timecode (`HH:MM:SS`)
+- **Timeline track** (center, flex-1): Timecode ruler along the top, video thumbnail strip below
+- **Duration** (right): Total duration (`HH:MM:SS`)
+
+### Playhead
+- Thick vertical bar spanning the full height of the timeline track (FCP-style)
+- Bright accent color (blue or white) so it's clearly visible
+- Draggable — click and drag to scrub
+- Click anywhere on the timeline track to reposition the playhead
 
 ### Behavior
-- Click anywhere on scrub bar to seek
-- Drag thumb to scrub
+- Drag playhead to scrub
+- Click on timeline track to seek
 - Spacebar toggles play/pause
 - Timecode updates in real-time during playback
+- Playhead moves with playback
 
 ### Styling
 - `zinc-800` background, subtle top border
-- Scrub track: `zinc-700` background, `zinc-500` elapsed portion
+- Timecode ruler: small tick marks with time labels
+- Thumbnail strip: frame thumbnails extracted from the video (future enhancement — solid `zinc-700` bar for now)
+
+### Future (not in this spec)
+- Cut, delete, ripple delete
+- Markers
+- Multiple clips
 
 ## Upload State
 
