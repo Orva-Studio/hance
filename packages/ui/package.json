@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "main": "server.ts",
+  "exports": {
+    ".": "./server.ts",
+    "./server": "./server.ts"
+  },
   "dependencies": {
     "@hancer/core": "workspace:*",
     "@hancer/cli": "workspace:*",
