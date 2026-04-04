@@ -13,6 +13,7 @@
       "version": "1.0.0",
       "dependencies": {
         "@hancer/core": "workspace:*",
+        "@hancer/ui": "workspace:*",
       },
     },
     "packages/core": {

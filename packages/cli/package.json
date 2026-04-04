@@ -4,6 +4,7 @@
   "type": "module",
   "main": "src/cli.ts",
   "dependencies": {
-    "@hancer/core": "workspace:*"
+    "@hancer/core": "workspace:*",
+    "@hancer/ui": "workspace:*"
   }
 }
