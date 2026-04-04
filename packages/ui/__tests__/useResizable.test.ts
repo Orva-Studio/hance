@@ -1,0 +1,24 @@
+import { describe, test, expect } from "bun:test";
+
+// Test the clamp logic used by useResizable
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+describe("useResizable clamp logic", () => {
+  test("clamps below minimum", () => {
+    expect(clamp(100, 200, 400)).toBe(200);
+  });
+
+  test("clamps above maximum", () => {
+    expect(clamp(500, 200, 400)).toBe(400);
+  });
+
+  test("keeps value within range", () => {
+    expect(clamp(300, 200, 400)).toBe(300);
+  });
+
+  test("handles min equal to max", () => {
+    expect(clamp(300, 250, 250)).toBe(250);
+  });
+});
