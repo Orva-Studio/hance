@@ -34,6 +34,11 @@ export function Canvas({ src, isVideo, params, onRendererReady, onCanvasReady, o
           video.onloadeddata = () => resolve();
           if (video.readyState >= 2) resolve();
         });
+        // Seek to start to ensure first frame is decoded and visible
+        await new Promise<void>(resolve => {
+          video.onseeked = () => resolve();
+          video.currentTime = 0;
+        });
         const sourceWidth = video.videoWidth;
         const sourceHeight = video.videoHeight;
         const previewSize = fitPreviewSize(sourceWidth, sourceHeight);
