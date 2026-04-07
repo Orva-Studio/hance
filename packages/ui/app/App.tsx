@@ -81,9 +81,9 @@ export function App() {
   const handleLookSelect = useCallback(async (name: string) => {
     const lookParams = await loadLook(name);
     setAnimating(true);
-    handleBatchChange(lookParams);
+    setParams(lookParams);
     setTimeout(() => setAnimating(false), 350);
-  }, [loadLook, handleBatchChange]);
+  }, [loadLook]);
 
   const handleLookHover = useCallback((name: string) => {
     if (!renderer) return;
