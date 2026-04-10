@@ -52,24 +52,42 @@ function buildEncoderArgs(settings: EncoderSettings, width: number, height: numb
 
   const vtQ = crfToVideoToolboxQ(settings.crf);
 
+  // Convert full-range RGB (from the GPU sidecar) to limited-range BT.709 YUV
+  // so players don't display a washed-out, muted image.
+  const bt709Filter = "scale=in_range=full:out_range=tv:in_color_matrix=bt709:out_color_matrix=bt709,format=yuv420p";
+  const bt709Tags = [
+    "-color_range", "tv",
+    "-colorspace", "bt709",
+    "-color_primaries", "bt709",
+    "-color_trc", "bt709",
+  ];
+
   switch (settings.codec) {
     case "prores":
-      base.push("-c:v", "prores_ks", "-profile:v", "3", "-pix_fmt", "yuv422p10le");
+      base.push(
+        "-vf", "scale=in_range=full:out_range=tv:in_color_matrix=bt709:out_color_matrix=bt709,format=yuv422p10le",
+        "-c:v", "prores_ks", "-profile:v", "3",
+        ...bt709Tags,
+      );
       break;
     case "h265":
+      base.push("-vf", bt709Filter);
       if (encoders.has("hevc_videotoolbox")) {
-        base.push("-c:v", "hevc_videotoolbox", "-q:v", String(vtQ), "-pix_fmt", "yuv420p", "-tag:v", "hvc1");
+        base.push("-c:v", "hevc_videotoolbox", "-q:v", String(vtQ), "-tag:v", "hvc1");
       } else {
-        base.push("-c:v", "libx265", "-preset", settings.encodePreset, "-crf", String(settings.crf), "-pix_fmt", "yuv420p", "-tag:v", "hvc1");
+        base.push("-c:v", "libx265", "-preset", settings.encodePreset, "-crf", String(settings.crf), "-tag:v", "hvc1");
       }
+      base.push(...bt709Tags);
       break;
     case "h264":
     default:
+      base.push("-vf", bt709Filter);
       if (encoders.has("h264_videotoolbox")) {
-        base.push("-c:v", "h264_videotoolbox", "-q:v", String(vtQ), "-pix_fmt", "yuv420p");
+        base.push("-c:v", "h264_videotoolbox", "-q:v", String(vtQ));
       } else {
-        base.push("-c:v", "libx264", "-preset", settings.encodePreset, "-crf", String(settings.crf), "-pix_fmt", "yuv420p");
+        base.push("-c:v", "libx264", "-preset", settings.encodePreset, "-crf", String(settings.crf));
       }
+      base.push(...bt709Tags);
       break;
   }
 
