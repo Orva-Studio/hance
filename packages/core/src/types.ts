@@ -68,6 +68,7 @@ export interface FilmOptions {
   codec: OutputCodec;
   crf: number;
   blend: number;
+  pixelFormat: PixelFormat;
   colorSettings: ColorSettingsOptions;
   halation: HalationOptions;
   aberration: AberrationOptions;
@@ -79,6 +80,8 @@ export interface FilmOptions {
 }
 
 export type OutputCodec = "h264" | "prores" | "h265";
+export type ExportPreset = "low" | "medium" | "high" | "max";
+export type PixelFormat = "yuv420p" | "yuv420p10le" | "yuv422p10le";
 
 export interface ProbeResult {
   duration: number | null;

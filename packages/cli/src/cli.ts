@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
-import { probe, applyPreset } from "@hance/core";
-import type { PresetData, FilmOptions } from "@hance/core";
+import { probe, applyPreset, resolveExportPreset } from "@hance/core";
+import type { PresetData, FilmOptions, ExportPreset, OutputCodec } from "@hance/core";
 import { runGpuExport } from "./pipeline";
 import path from "node:path";
 
@@ -12,6 +12,7 @@ hance <input> [options]
   --codec      <string>     Output codec: h264/prores/h265 (default: h264)
   --encode-preset <string>  FFmpeg preset: fast/medium/slow (default: medium)
   --crf        <0-51>       Quality — lower is better (default: 18, ignored for prores)
+  --export     <preset>     Export quality: low/medium/high/max (default: none)
   --blend      <0-1>        Global blend with original (default: 1)
 
   Preset:
@@ -77,7 +78,7 @@ hance <input> [options]
 `.trim();
 
 const KNOWN_FLAGS = new Set([
-  "--output", "-o", "--preset", "--codec", "--encode-preset", "--crf", "--blend",
+  "--output", "-o", "--preset", "--codec", "--encode-preset", "--crf", "--blend", "--export",
   "--exposure", "--contrast", "--highlights", "--fade",
   "--white-balance", "--tint", "--subtractive-sat", "--richness", "--bleach-bypass",
   "--no-color-settings",
@@ -129,6 +130,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
   let output = "";
   let help = false;
   let presetName = "default";
+  let exportPreset: ExportPreset | undefined;
   const overrides: PresetData = {};
 
   let i = 0;
@@ -179,6 +181,14 @@ export function parseArgs(argv: string[]): ParsedArgs {
             throw new Error(`--encode-preset must be fast, medium, or slow, got ${val}`);
           }
           overrides["encode-preset"] = val; break;
+        case "--export":
+          if (val !== "low" && val !== "medium" && val !== "high" && val !== "max") {
+            throw new Error(`--export must be low, medium, high, or max, got ${val}`);
+          }
+          if (val === "max" && process.platform !== "darwin") {
+            throw new Error("ProRes export is only available on macOS. Use --codec prores for cross-platform ProRes via prores_ks.");
+          }
+          exportPreset = val; break;
         case "--crf": overrides["crf"] = parseNum(val, "--crf", 0, 51); break;
         case "--blend": overrides["blend"] = parseNum(val, "--blend", 0, 1); break;
         case "--exposure": overrides["exposure"] = parseNum(val, "--exposure", -2, 2); break;
@@ -238,13 +248,35 @@ export function parseArgs(argv: string[]): ParsedArgs {
   const effectOpts = applyPreset(presetName, overrides);
   const params = effectOpts.mergedParams;
 
+  let resolvedCodec = effectOpts.codec;
+  let resolvedCrf = effectOpts.crf;
+  let resolvedEncodePreset = effectOpts.encodePreset;
+  let resolvedPixelFormat = "yuv420p";
+
+  if (exportPreset) {
+    const exportSettings = resolveExportPreset(exportPreset, {
+      codec: overrides["codec"] as OutputCodec | undefined,
+      crf: overrides["crf"] as number | undefined,
+      encodePreset: overrides["encode-preset"] as "fast" | "medium" | "slow" | undefined,
+    });
+    resolvedCodec = exportSettings.codec;
+    resolvedCrf = exportSettings.crf;
+    resolvedEncodePreset = exportSettings.encodePreset;
+    resolvedPixelFormat = exportSettings.pixelFormat;
+
+    if (exportPreset === "high") {
+      console.error("High quality export — expect larger file sizes");
+    }
+  }
+
   return {
     input,
     output,
-    encodePreset: effectOpts.encodePreset,
-    codec: effectOpts.codec,
-    crf: effectOpts.crf,
+    encodePreset: resolvedEncodePreset,
+    codec: resolvedCodec,
+    crf: resolvedCrf,
     blend: effectOpts.blend,
+    pixelFormat: resolvedPixelFormat,
     colorSettings: effectOpts.colorSettings,
     halation: effectOpts.halation,
     aberration: effectOpts.aberration,
@@ -343,7 +375,7 @@ async function main() {
     await runGpuExport(parsed.input, parsed.output, parsed.params, probeResult, (ratio) => {
       const pct = Math.round(ratio * 100);
       process.stdout.write(`\rProcessing... ${pct}%`);
-    }, { codec: parsed.codec, crf: parsed.crf, encodePreset: parsed.encodePreset });
+    }, { codec: parsed.codec, crf: parsed.crf, encodePreset: parsed.encodePreset, pixelFormat: parsed.pixelFormat });
     process.stdout.write("\n");
   }
 }
