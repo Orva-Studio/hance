@@ -16,6 +16,7 @@ interface EffectOptions {
   codec: OutputCodec;
   crf: number;
   blend: number;
+  pixelFormat: string;
   colorSettings: ColorSettingsOptions;
   halation: HalationOptions;
   aberration: AberrationOptions;
@@ -133,6 +134,7 @@ export function applyPreset(
   const codec = (merged["codec"] as OutputCodec) ?? "h264";
   const crf = Number(merged["crf"] ?? 18);
   const blend = Number(merged["blend"] ?? 1);
+  const pixelFormat = "yuv420p";
 
-  return { encodePreset, codec, crf, blend, colorSettings, halation, aberration, bloom, grain, vignette, splitTone, cameraShake, mergedParams: merged };
+  return { encodePreset, codec, crf, blend, pixelFormat, colorSettings, halation, aberration, bloom, grain, vignette, splitTone, cameraShake, mergedParams: merged };
 }

@@ -81,6 +81,36 @@ describe("parseArgs", () => {
     const result = parseArgs(["--help"]);
     expect(result.help).toBe(true);
   });
+
+  it("parses --export low", () => {
+    const result = parseArgs(["input.mp4", "--export", "low"]);
+    expect(result.codec).toBe("h264");
+    expect(result.crf).toBe(23);
+    expect(result.encodePreset).toBe("fast");
+  });
+
+  it("parses --export high", () => {
+    const result = parseArgs(["input.mp4", "--export", "high"]);
+    expect(result.codec).toBe("h265");
+    expect(result.crf).toBe(16);
+    expect(result.encodePreset).toBe("slow");
+  });
+
+  it("--export with individual override: codec wins", () => {
+    const result = parseArgs(["input.mp4", "--export", "high", "--codec", "h264"]);
+    expect(result.codec).toBe("h264");
+    expect(result.crf).toBe(16);
+    expect(result.encodePreset).toBe("slow");
+  });
+
+  it("--export with individual override: crf wins", () => {
+    const result = parseArgs(["input.mp4", "--export", "high", "--crf", "20"]);
+    expect(result.crf).toBe(20);
+  });
+
+  it("throws on invalid --export value", () => {
+    expect(() => parseArgs(["input.mp4", "--export", "ultra"])).toThrow();
+  });
 });
 
 describe("subcommand routing", () => {

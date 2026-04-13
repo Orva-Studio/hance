@@ -8,6 +8,7 @@ interface EncoderSettings {
   codec: OutputCodec;
   crf: number;
   encodePreset: string;
+  pixelFormat: string;
 }
 
 function sidecarPath(): string {
@@ -54,7 +55,7 @@ function buildEncoderArgs(settings: EncoderSettings, width: number, height: numb
 
   // Convert full-range RGB (from the GPU sidecar) to limited-range BT.709 YUV
   // so players don't display a washed-out, muted image.
-  const bt709Filter = "scale=in_range=full:out_range=tv:in_color_matrix=bt709:out_color_matrix=bt709,format=yuv420p";
+  const bt709Filter = `scale=in_range=full:out_range=tv:in_color_matrix=bt709:out_color_matrix=bt709,format=${settings.pixelFormat}`;
   const bt709Tags = [
     "-color_range", "tv",
     "-colorspace", "bt709",
@@ -65,7 +66,7 @@ function buildEncoderArgs(settings: EncoderSettings, width: number, height: numb
   switch (settings.codec) {
     case "prores":
       base.push(
-        "-vf", "scale=in_range=full:out_range=tv:in_color_matrix=bt709:out_color_matrix=bt709,format=yuv422p10le",
+        "-vf", `scale=in_range=full:out_range=tv:in_color_matrix=bt709:out_color_matrix=bt709,format=${settings.pixelFormat}`,
         "-c:v", "prores_ks", "-profile:v", "3",
         ...bt709Tags,
       );
@@ -120,7 +121,7 @@ export async function runGpuExport(
 
   const sidecarCmd = `${shellEscape(sidecarPath())} ${shellEscape(initJson)}`;
 
-  const settings = encoderSettings ?? { codec: "h264", crf: 18, encodePreset: "medium" };
+  const settings = encoderSettings ?? { codec: "h264", crf: 18, encodePreset: "medium", pixelFormat: "yuv420p" };
   const encoders = await detectEncoders();
   const encoderArgs = buildEncoderArgs(settings, width, height, fps, input, output, progressPath, encoders);
   const encoderCmd = encoderArgs.map((a, i) => i === 0 ? a : shellEscape(a)).join(" ");
