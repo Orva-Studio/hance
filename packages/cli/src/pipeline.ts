@@ -1,14 +1,14 @@
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { unlink } from "node:fs/promises";
-import type { ProbeResult, OutputCodec } from "@hance/core";
+import type { ProbeResult, OutputCodec, PixelFormat } from "@hance/core";
 import { parseProgress } from "./progress";
 
 interface EncoderSettings {
   codec: OutputCodec;
   crf: number;
   encodePreset: string;
-  pixelFormat: string;
+  pixelFormat: PixelFormat;
 }
 
 function sidecarPath(): string {
@@ -66,7 +66,7 @@ function buildEncoderArgs(settings: EncoderSettings, width: number, height: numb
   switch (settings.codec) {
     case "prores":
       base.push(
-        "-vf", `scale=in_range=full:out_range=tv:in_color_matrix=bt709:out_color_matrix=bt709,format=${settings.pixelFormat}`,
+        "-vf", bt709Filter,
         "-c:v", "prores_ks", "-profile:v", "3",
         ...bt709Tags,
       );

@@ -94,6 +94,15 @@ describe("parseArgs", () => {
     expect(result.codec).toBe("h265");
     expect(result.crf).toBe(16);
     expect(result.encodePreset).toBe("slow");
+    expect(result.pixelFormat).toBe("yuv420p10le");
+  });
+
+  it("parses --export medium and returns correct pixelFormat", () => {
+    const result = parseArgs(["input.mp4", "--export", "medium"]);
+    expect(result.codec).toBe("h264");
+    expect(result.crf).toBe(18);
+    expect(result.encodePreset).toBe("medium");
+    expect(result.pixelFormat).toBe("yuv420p");
   });
 
   it("--export with individual override: codec wins", () => {
