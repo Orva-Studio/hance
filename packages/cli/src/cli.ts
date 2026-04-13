@@ -131,6 +131,9 @@ export function parseArgs(argv: string[]): ParsedArgs {
   let help = false;
   let presetName = "default";
   let exportPreset: ExportPreset | undefined;
+  let overrideCodec: OutputCodec | undefined;
+  let overrideCrf: number | undefined;
+  let overrideEncodePreset: "fast" | "medium" | "slow" | undefined;
   const overrides: PresetData = {};
 
   let i = 0;
@@ -175,21 +178,13 @@ export function parseArgs(argv: string[]): ParsedArgs {
           if (val !== "h264" && val !== "prores" && val !== "h265") {
             throw new Error(`--codec must be h264, prores, or h265, got ${val}`);
           }
-          overrides["codec"] = val; break;
+          overrideCodec = val; overrides["codec"] = val; break;
         case "--encode-preset":
           if (val !== "fast" && val !== "medium" && val !== "slow") {
             throw new Error(`--encode-preset must be fast, medium, or slow, got ${val}`);
           }
-          overrides["encode-preset"] = val; break;
-        case "--export":
-          if (val !== "low" && val !== "medium" && val !== "high" && val !== "max") {
-            throw new Error(`--export must be low, medium, high, or max, got ${val}`);
-          }
-          if (val === "max" && process.platform !== "darwin") {
-            throw new Error("ProRes export is only available on macOS. Use --codec prores for cross-platform ProRes via prores_ks.");
-          }
-          exportPreset = val; break;
-        case "--crf": overrides["crf"] = parseNum(val, "--crf", 0, 51); break;
+          overrideEncodePreset = val; overrides["encode-preset"] = val; break;
+        case "--crf": overrideCrf = parseNum(val, "--crf", 0, 51); overrides["crf"] = overrideCrf; break;
         case "--blend": overrides["blend"] = parseNum(val, "--blend", 0, 1); break;
         case "--exposure": overrides["exposure"] = parseNum(val, "--exposure", -2, 2); break;
         case "--contrast": overrides["contrast"] = parseNum(val, "--contrast", 0, 3); break;
@@ -251,20 +246,20 @@ export function parseArgs(argv: string[]): ParsedArgs {
   let resolvedCodec = effectOpts.codec;
   let resolvedCrf = effectOpts.crf;
   let resolvedEncodePreset = effectOpts.encodePreset;
-  let resolvedPixelFormat = "yuv420p";
+  let resolvedPixelFormat = effectOpts.pixelFormat;
 
   if (exportPreset) {
     const exportSettings = resolveExportPreset(exportPreset, {
-      codec: overrides["codec"] as OutputCodec | undefined,
-      crf: overrides["crf"] as number | undefined,
-      encodePreset: overrides["encode-preset"] as "fast" | "medium" | "slow" | undefined,
+      codec: overrideCodec,
+      crf: overrideCrf,
+      encodePreset: overrideEncodePreset,
     });
     resolvedCodec = exportSettings.codec;
     resolvedCrf = exportSettings.crf;
     resolvedEncodePreset = exportSettings.encodePreset;
     resolvedPixelFormat = exportSettings.pixelFormat;
 
-    if (exportPreset === "high") {
+    if (exportPreset === "high" || exportPreset === "max") {
       console.error("High quality export — expect larger file sizes");
     }
   }
