@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { unlink } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import type { ProbeResult, OutputCodec, PixelFormat } from "@hance/core";
 import { parseProgress } from "./progress";
 
@@ -109,6 +110,15 @@ export async function runGpuExport(
     throw new Error("Video metadata incomplete — need width, height, fps, duration");
   }
 
+  const sidecar = sidecarPath();
+  if (!existsSync(sidecar)) {
+    throw new Error(
+      `GPU sidecar binary not found at ${sidecar}\n` +
+      `Build it first with:\n` +
+      `  cargo build --release --manifest-path packages/wgpu/Cargo.toml`
+    );
+  }
+
   const progressPath = join(tmpdir(), `hance-progress-${process.pid}-${Date.now()}.log`);
   const initJson = JSON.stringify({ width, height, params });
 
@@ -119,7 +129,7 @@ export async function runGpuExport(
     "pipe:1",
   ].join(" ");
 
-  const sidecarCmd = `${shellEscape(sidecarPath())} ${shellEscape(initJson)}`;
+  const sidecarCmd = `${shellEscape(sidecar)} ${shellEscape(initJson)}`;
 
   const settings = encoderSettings ?? { codec: "h264", crf: 18, encodePreset: "medium", pixelFormat: "yuv420p" };
   const encoders = await detectEncoders();
