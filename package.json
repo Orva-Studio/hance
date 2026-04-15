@@ -9,6 +9,7 @@
     "build:ui": "bun run scripts/build-ui.ts",
     "build:wgpu": "cd packages/wgpu && ~/.cargo/bin/cargo build --release",
     "release:local": "HANCE_VERSION=${HANCE_VERSION:-0.0.0-local} bun run build && bun run scripts/stage-release.ts && bun run scripts/pack-local.ts",
+    "release": "bun run scripts/release.ts",
     "test": "bun test"
   },
   "devDependencies": {

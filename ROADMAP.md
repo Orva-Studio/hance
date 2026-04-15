@@ -36,6 +36,7 @@
 
 ### Distribution
 - [ ] Update check: on `hance` run (and after export), compare `HANCE_VERSION` against latest GitHub release; cache result ~24h in `~/.hance/state.json`; print a one-line notice if newer version exists. Respect `--no-update-check` / `HANCE_NO_UPDATE_CHECK`.
+- [ ] Sentry sourcemaps for compiled binary: emit `--sourcemap=external` from `bun build --compile`, upload the `.map` to Sentry in the release workflow keyed to `HANCE_VERSION`, and set `release: HANCE_VERSION` in `Sentry.init` so stack traces symbolicate. Don't ship the `.map` with the release artifact.
 - [ ] Local usage telemetry: increment counters in `~/.hance/state.json` (runs, exports) — purely local, no network. Foundation for milestone nudges.
 - [ ] Milestone nudge: after N exports (initial target: 10), print a one-time message (e.g. share / star / feedback link). Dismissable, never repeats.
 
