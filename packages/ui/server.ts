@@ -3,7 +3,7 @@ import type { PresetData } from "@hance/core";
 import { runGpuExport } from "@hance/cli/src/pipeline";
 import { join } from "node:path";
 import { existsSync, readdirSync, mkdirSync, writeFileSync, unlinkSync, renameSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { tmpdir, homedir } from "node:os";
 
 function listLooks(): string[] {
   const names: string[] = [];
@@ -273,7 +273,8 @@ export function createServer(port: number) {
       }
 
       // Static file serving (SPA)
-      const staticDir = join(import.meta.dir, "dist");
+      const localDist = join(import.meta.dir, "dist");
+      const staticDir = existsSync(localDist) ? localDist : join(homedir(), ".hance", "ui");
       const filePath = join(staticDir, url.pathname === "/" ? "index.html" : url.pathname);
       if (existsSync(filePath)) {
         return new Response(Bun.file(filePath));

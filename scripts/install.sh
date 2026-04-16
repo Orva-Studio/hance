@@ -90,6 +90,28 @@ cp -f "$tmp/hance-${PLATFORM}/hance"     "$INSTALL_DIR/hance"
 cp -f "$tmp/hance-${PLATFORM}/hance-gpu" "$INSTALL_DIR/hance-gpu"
 chmod 0755 "$INSTALL_DIR/hance" "$INSTALL_DIR/hance-gpu"
 
+# --- install builtin presets (skip files the user has customised) ------------
+PRESETS_SRC="$tmp/hance-${PLATFORM}/presets"
+PRESETS_DST="$HOME/.hance/presets"
+if [ -d "$PRESETS_SRC" ]; then
+  mkdir -p "$PRESETS_DST"
+  for f in "$PRESETS_SRC"/*; do
+    base=$(basename "$f")
+    if [ ! -f "$PRESETS_DST/$base" ]; then
+      cp "$f" "$PRESETS_DST/$base"
+    fi
+  done
+fi
+
+# --- install UI assets -------------------------------------------------------
+UI_SRC="$tmp/hance-${PLATFORM}/ui"
+UI_DST="$HOME/.hance/ui"
+if [ -d "$UI_SRC" ]; then
+  rm -rf "$UI_DST"
+  mkdir -p "$UI_DST"
+  cp -r "$UI_SRC/." "$UI_DST/"
+fi
+
 # --- macOS: strip quarantine --------------------------------------------------
 if [ "$uname_s" = "Darwin" ] && command -v xattr >/dev/null 2>&1; then
   xattr -dr com.apple.quarantine "$INSTALL_DIR" 2>/dev/null || true
