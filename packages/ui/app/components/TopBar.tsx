@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Renderer } from "../gpu/renderer";
+import { consumeSSE } from "../lib/sse";
 
 interface Props {
   filename: string | null;
@@ -50,40 +51,18 @@ export function TopBar({ filename, file, params, canvas, renderer, isVideo }: Pr
 
     try {
       const res = await fetch("/api/export", { method: "POST", body: formData });
-      if (!res.ok || !res.body) {
-        setState("error");
-        setError("Export request failed");
-        return;
-      }
-
       setState("rendering");
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const lines = buffer.split("\n\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          const match = line.match(/^data: (.+)$/);
-          if (!match) continue;
-          const data = JSON.parse(match[1]);
-          if (data.progress !== undefined) setProgress(data.progress);
-          if (data.done) {
-            setState("done");
-            setDownloadUrl(data.downloadUrl);
-          }
-          if (data.error) {
-            setState("error");
-            setError(data.error);
-          }
-        }
-      }
+      await consumeSSE(res, {
+        onProgress: setProgress,
+        onDone: (data) => {
+          setState("done");
+          setDownloadUrl(data.downloadUrl as string);
+        },
+        onError: (msg) => {
+          setState("error");
+          setError(msg);
+        },
+      });
     } catch (err) {
       setState("error");
       setError((err as Error).message);
