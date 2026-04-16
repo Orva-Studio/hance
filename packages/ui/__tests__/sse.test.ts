@@ -58,6 +58,23 @@ describe("consumeSSE", () => {
     expect(errorMsg).toBe("ffmpeg failed");
   });
 
+  test("routes malformed JSON to onError and continues", async () => {
+    const progress: number[] = [];
+    const errors: string[] = [];
+    await consumeSSE(
+      sseResponse([
+        `data: {not json\n\n`,
+        `data: ${JSON.stringify({ progress: 0.5 })}\n\n`,
+      ]),
+      {
+        onProgress: (r) => progress.push(r),
+        onError: (m) => errors.push(m),
+      },
+    );
+    expect(errors.length).toBe(1);
+    expect(progress).toEqual([0.5]);
+  });
+
   test("invokes onError when response is not ok", async () => {
     let errorMsg: string | null = null;
     await consumeSSE(
