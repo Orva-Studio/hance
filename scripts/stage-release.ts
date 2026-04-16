@@ -36,6 +36,26 @@ async function main() {
   chmodSync(path.join(stageDir, "hance"), 0o755);
   chmodSync(path.join(stageDir, "hance-gpu"), 0o755);
 
+  if (platform.startsWith("macos")) {
+    const entitlements = path.join(root, "entitlements.plist");
+    for (const bin of ["hance", "hance-gpu"]) {
+      const binPath = path.join(stageDir, bin);
+      console.log(`codesigning ${bin}...`);
+      const strip = Bun.spawnSync(["codesign", "--remove-signature", binPath]);
+      if (strip.exitCode !== 0) {
+        throw new Error(`codesign --remove-signature failed for ${bin}`);
+      }
+      const sign = Bun.spawnSync([
+        "rcodesign", "sign",
+        "--entitlements-xml-path", entitlements,
+        binPath,
+      ]);
+      if (sign.exitCode !== 0) {
+        throw new Error(`rcodesign sign failed for ${bin}: ${sign.stderr.toString()}`);
+      }
+    }
+  }
+
   console.log(`staged: ${stageDir}`);
 }
 

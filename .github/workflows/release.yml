@@ -59,6 +59,10 @@ jobs:
         if: startsWith(matrix.platform, 'linux')
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
+      - name: Install rcodesign (macOS)
+        if: startsWith(matrix.platform, 'macos')
+        run: cargo install apple-codesign
+
       - name: Add Rust cross target
         if: matrix.rust_target
         run: rustup target add ${{ matrix.rust_target }}
