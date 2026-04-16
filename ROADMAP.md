@@ -34,6 +34,9 @@
 - [ ] LLM-powered preset authoring and metadata enrichment
 - [ ] When UI open: update sliders + live preview; CLI-only: apply directly
 
+### Cloud API
+- [ ] Cloud video processing API — offload heavy video work to managed infra. npm package becomes a thin client for image-only local processing + API calls for video. Unlocks distribution via `npm install hance` without shipping platform-specific binaries.
+
 ### Distribution
 - [ ] Update check: on `hance` run (and after export), compare `HANCE_VERSION` against latest GitHub release; cache result ~24h in `~/.hance/state.json`; print a one-line notice if newer version exists. Respect `--no-update-check` / `HANCE_NO_UPDATE_CHECK`.
 - [ ] Sentry sourcemaps for compiled binary: emit `--sourcemap=external` from `bun build --compile`, upload the `.map` to Sentry in the release workflow keyed to `HANCE_VERSION`, and set `release: HANCE_VERSION` in `Sentry.init` so stack traces symbolicate. Don't ship the `.map` with the release artifact.
