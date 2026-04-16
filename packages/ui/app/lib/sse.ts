@@ -24,7 +24,13 @@ export async function consumeSSE(response: Response, handlers: SSEHandlers): Pro
     for (const line of lines) {
       const match = line.match(/^data: (.+)$/);
       if (!match) continue;
-      const data = JSON.parse(match[1]);
+      let data: { progress?: number; done?: boolean; error?: string; [k: string]: unknown };
+      try {
+        data = JSON.parse(match[1]);
+      } catch {
+        handlers.onError?.("Malformed event from server");
+        continue;
+      }
       if (data.progress !== undefined) handlers.onProgress?.(data.progress);
       if (data.done) handlers.onDone?.(data);
       if (data.error) handlers.onError?.(data.error);

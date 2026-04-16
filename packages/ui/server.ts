@@ -1,9 +1,15 @@
 import { EFFECT_SCHEMA, loadPreset, builtinPresetsDir, userPresetsDir, probe } from "@hance/core";
 import type { PresetData } from "@hance/core";
 import { runGpuExport } from "@hance/cli/src/pipeline";
-import { join } from "node:path";
+import { join, extname } from "node:path";
 import { existsSync, readdirSync, mkdirSync, writeFileSync, unlinkSync, renameSync, rmSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
+import { transcodeToH264Stream } from "./lib/transcode";
+
+function safeExt(name: string): string {
+  const ext = extname(name).toLowerCase();
+  return /^\.[a-z0-9]{1,8}$/.test(ext) ? ext : "";
+}
 
 function listLooks(): string[] {
   const names: string[] = [];
@@ -269,53 +275,25 @@ export function createServer(port: number) {
 
         const proxyDir = join(tmpdir(), "hance-proxy");
         if (!existsSync(proxyDir)) mkdirSync(proxyDir, { recursive: true });
-        const inputPath = join(proxyDir, file.name);
+        const id = `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+        const inputPath = join(proxyDir, `input_${id}${safeExt(file.name)}`);
         await Bun.write(inputPath, file);
 
-        const probeResult = await probe(inputPath);
-        const durationSec = probeResult.duration ?? 0;
-        const outputPath = join(proxyDir, `proxy_${Date.now()}.mp4`);
-
+        const outputPath = join(proxyDir, `proxy_${id}.mp4`);
+        const source = transcodeToH264Stream(inputPath, outputPath);
         const stream = new ReadableStream({
           async start(controller) {
-            const encoder = new TextEncoder();
+            const reader = source.getReader();
             try {
-              const proc = Bun.spawn([
-                "ffmpeg", "-y", "-i", inputPath,
-                "-c:v", "h264_videotoolbox", "-q:v", "60", "-pix_fmt", "yuv420p",
-                "-movflags", "+faststart", "-c:a", "aac", "-b:a", "128k",
-                "-progress", "pipe:1", "-nostats", "-v", "error",
-                outputPath,
-              ], { stdout: "pipe", stderr: "pipe" });
-
-              const reader = proc.stdout.getReader();
-              const decoder = new TextDecoder();
-              let buffer = "";
               while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split("\n");
-                buffer = lines.pop() || "";
-                for (const line of lines) {
-                  const m = line.match(/^out_time_us=(\d+)/);
-                  if (m && durationSec > 0) {
-                    const ratio = Math.min(1, Number(m[1]) / 1e6 / durationSec);
-                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ progress: ratio })}\n\n`));
-                  }
-                }
+                controller.enqueue(value);
               }
-
-              const exitCode = await proc.exited;
-              if (exitCode !== 0) {
-                const stderr = await new Response(proc.stderr).text();
-                throw new Error(`ffmpeg failed: ${stderr.trim()}`);
-              }
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true, proxyUrl: `/api/proxy-file?path=${encodeURIComponent(outputPath)}` })}\n\n`));
-            } catch (err) {
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: (err as Error).message })}\n\n`));
+            } finally {
+              try { unlinkSync(inputPath); } catch {}
+              try { controller.close(); } catch {}
             }
-            controller.close();
           },
         });
 
