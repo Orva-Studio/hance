@@ -28,7 +28,9 @@ interface EffectOptions {
 }
 
 export function builtinPresetsDir(): string {
-  return join(import.meta.dir, "..", "..", "..", "presets");
+  const repoDir = join(import.meta.dir, "..", "..", "..", "presets");
+  if (existsSync(repoDir)) return repoDir;
+  return join(homedir(), ".hance", "presets");
 }
 
 export function userPresetsDir(): string {

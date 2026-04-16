@@ -32,6 +32,25 @@ async function main() {
   await copyFile(path.join(root, "LICENSE"), path.join(stageDir, "LICENSE"));
   await copyFile(path.join(root, "README.md"), path.join(stageDir, "README.md"));
 
+  // Bundle presets
+  const presetsDir = path.join(root, "presets");
+  const stagePresetsDir = path.join(stageDir, "presets");
+  await mkdir(stagePresetsDir, { recursive: true });
+  const { readdirSync } = await import("node:fs");
+  for (const f of readdirSync(presetsDir)) {
+    if (f.endsWith(".hlook") || f.endsWith(".json")) {
+      await copyFile(path.join(presetsDir, f), path.join(stagePresetsDir, f));
+    }
+  }
+
+  // Bundle UI dist
+  const uiDistDir = path.join(root, "packages", "ui", "dist");
+  const stageUiDir = path.join(stageDir, "ui");
+  await mkdir(stageUiDir, { recursive: true });
+  for (const f of readdirSync(uiDistDir)) {
+    await copyFile(path.join(uiDistDir, f), path.join(stageUiDir, f));
+  }
+
   const { chmodSync } = await import("node:fs");
   chmodSync(path.join(stageDir, "hance"), 0o755);
   chmodSync(path.join(stageDir, "hance-gpu"), 0o755);
