@@ -9,9 +9,10 @@ interface Props {
   onRendererReady: (renderer: Renderer) => void;
   onCanvasReady?: (canvas: HTMLCanvasElement) => void;
   onVideoReady?: (video: HTMLVideoElement) => void;
+  onError?: (err: Error) => void;
 }
 
-export function Canvas({ src, isVideo, params, onRendererReady, onCanvasReady, onVideoReady }: Props) {
+export function Canvas({ src, isVideo, params, onRendererReady, onCanvasReady, onVideoReady, onError }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -90,7 +91,7 @@ export function Canvas({ src, isVideo, params, onRendererReady, onCanvasReady, o
       }
     }
 
-    init();
+    init().catch((err: Error) => { if (!cancelled) onError?.(err); });
 
     return () => {
       cancelled = true;

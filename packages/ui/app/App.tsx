@@ -13,9 +13,50 @@ import { ResizeDivider } from "./components/ResizeDivider";
 import { NewLookModal } from "./components/NewLookModal";
 import type { Renderer, PreviewParams } from "./gpu/renderer";
 import type { EffectGroup } from "@hance/core";
+import { consumeSSE } from "./lib/sse";
 
 export function App() {
-  const { file, objectUrl, isVideo, upload } = useUpload();
+  const { file, objectUrl, proxyUrl, isVideo, upload, setProxyUrl, error: uploadError, clearError } = useUpload();
+  const previewSrc = proxyUrl ?? objectUrl;
+  const [previewError, setPreviewError] = useState<Error | null>(null);
+  const [proxyState, setProxyState] = useState<"idle" | "uploading" | "transcoding" | "error">("idle");
+  const [proxyProgress, setProxyProgress] = useState(0);
+  const [proxyErrorMsg, setProxyErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPreviewError(null);
+    setProxyState("idle");
+    setProxyProgress(0);
+    setProxyErrorMsg(null);
+  }, [objectUrl]);
+
+  const startTranscode = useCallback(async () => {
+    if (!file) return;
+    setProxyState("uploading");
+    setProxyProgress(0);
+    setProxyErrorMsg(null);
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await fetch("/api/proxy", { method: "POST", body: formData });
+      setProxyState("transcoding");
+      await consumeSSE(res, {
+        onProgress: setProxyProgress,
+        onDone: (data) => {
+          setProxyUrl(data.proxyUrl as string);
+          setPreviewError(null);
+          setProxyState("idle");
+        },
+        onError: (msg) => {
+          setProxyState("error");
+          setProxyErrorMsg(msg);
+        },
+      });
+    } catch (err) {
+      setProxyState("error");
+      setProxyErrorMsg((err as Error).message);
+    }
+  }, [file, setProxyUrl]);
   const [params, setParams] = useState<PreviewParams>({});
   const [schema, setSchema] = useState<EffectGroup[]>([]);
   const [renderer, setRenderer] = useState<Renderer | null>(null);
@@ -188,9 +229,15 @@ export function App() {
 
   if (!objectUrl) {
     return (
-      <div className="h-screen flex flex-col bg-zinc-950">
+      <div className="h-screen flex flex-col bg-zinc-950 relative">
         <TopBar filename={null} file={null} params={params} canvas={null} renderer={null} isVideo={false} />
         <UploadZone onFile={upload} />
+        {uploadError && (
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-8 flex items-center gap-3 bg-zinc-900 border border-danger/50 px-4 py-2 rounded-md text-xs text-danger">
+            <span>{uploadError}</span>
+            <button onClick={clearError} className="text-zinc-400 hover:text-zinc-200">×</button>
+          </div>
+        )}
       </div>
     );
   }
@@ -231,14 +278,58 @@ export function App() {
 
         {/* Center — Canvas */}
         <div className="flex-1 flex items-center justify-center p-4 min-w-0">
-          <Canvas
-            src={objectUrl}
-            isVideo={isVideo}
-            params={params}
-            onRendererReady={handleRendererReady}
-            onCanvasReady={handleCanvasReady}
-            onVideoReady={handleVideoReady}
-          />
+          {previewError && isVideo ? (
+            <div className="flex flex-col items-center gap-4 max-w-md text-center p-6 bg-zinc-900 rounded-lg border border-zinc-800">
+              <div className="text-sm text-zinc-200">
+                This codec isn't supported by the browser preview.
+              </div>
+              <div className="text-xs text-zinc-500">
+                Transcode to H.264 for preview. Export will still use the original file.
+              </div>
+              {proxyState === "idle" && (
+                <button
+                  onClick={startTranscode}
+                  className="px-4 py-1.5 bg-accent text-white text-xs font-medium rounded-md hover:bg-accent-hover transition-colors"
+                >
+                  Transcode to H.264
+                </button>
+              )}
+              {(proxyState === "uploading" || proxyState === "transcoding") && (
+                <div className="flex flex-col items-center gap-2 w-full">
+                  <span className="text-xs text-zinc-400">
+                    {proxyState === "uploading" ? "Uploading..." : `${Math.round(proxyProgress * 100)}%`}
+                  </span>
+                  <div className="w-full h-1.5 bg-zinc-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-accent rounded-full transition-[width] duration-200"
+                      style={{ width: `${proxyProgress * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              {proxyState === "error" && (
+                <div className="flex flex-col items-center gap-2">
+                  <span className="text-xs text-danger">{proxyErrorMsg}</span>
+                  <button
+                    onClick={startTranscode}
+                    className="px-3 py-1 bg-zinc-700 text-zinc-200 text-xs rounded-md hover:bg-zinc-600 transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Canvas
+              src={previewSrc!}
+              isVideo={isVideo}
+              params={params}
+              onRendererReady={handleRendererReady}
+              onCanvasReady={handleCanvasReady}
+              onVideoReady={handleVideoReady}
+              onError={setPreviewError}
+            />
+          )}
         </div>
 
         <ResizeDivider direction="horizontal" onMouseDown={rightPanel.onMouseDown} />

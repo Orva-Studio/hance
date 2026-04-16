@@ -2,7 +2,7 @@ import { EFFECT_SCHEMA, loadPreset, builtinPresetsDir, userPresetsDir, probe } f
 import type { PresetData } from "@hance/core";
 import { runGpuExport } from "@hance/cli/src/pipeline";
 import { join } from "node:path";
-import { existsSync, readdirSync, mkdirSync, writeFileSync, unlinkSync, renameSync } from "node:fs";
+import { existsSync, readdirSync, mkdirSync, writeFileSync, unlinkSync, renameSync, rmSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
 
 function listLooks(): string[] {
@@ -27,6 +27,7 @@ function invalidateThumbnailCache(name: string) {
 export function createServer(port: number) {
   return Bun.serve({
     port,
+    maxRequestBodySize: 1024 * 1024 * 1024 * 16,
     async fetch(req) {
       const url = new URL(req.url);
 
@@ -261,6 +262,86 @@ export function createServer(port: number) {
         });
       }
 
+      if (url.pathname === "/api/proxy" && req.method === "POST") {
+        const formData = await req.formData();
+        const file = formData.get("file") as File | null;
+        if (!file) return new Response("file required", { status: 400 });
+
+        const proxyDir = join(tmpdir(), "hance-proxy");
+        if (!existsSync(proxyDir)) mkdirSync(proxyDir, { recursive: true });
+        const inputPath = join(proxyDir, file.name);
+        await Bun.write(inputPath, file);
+
+        const probeResult = await probe(inputPath);
+        const durationSec = probeResult.duration ?? 0;
+        const outputPath = join(proxyDir, `proxy_${Date.now()}.mp4`);
+
+        const stream = new ReadableStream({
+          async start(controller) {
+            const encoder = new TextEncoder();
+            try {
+              const proc = Bun.spawn([
+                "ffmpeg", "-y", "-i", inputPath,
+                "-c:v", "h264_videotoolbox", "-q:v", "60", "-pix_fmt", "yuv420p",
+                "-movflags", "+faststart", "-c:a", "aac", "-b:a", "128k",
+                "-progress", "pipe:1", "-nostats", "-v", "error",
+                outputPath,
+              ], { stdout: "pipe", stderr: "pipe" });
+
+              const reader = proc.stdout.getReader();
+              const decoder = new TextDecoder();
+              let buffer = "";
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split("\n");
+                buffer = lines.pop() || "";
+                for (const line of lines) {
+                  const m = line.match(/^out_time_us=(\d+)/);
+                  if (m && durationSec > 0) {
+                    const ratio = Math.min(1, Number(m[1]) / 1e6 / durationSec);
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ progress: ratio })}\n\n`));
+                  }
+                }
+              }
+
+              const exitCode = await proc.exited;
+              if (exitCode !== 0) {
+                const stderr = await new Response(proc.stderr).text();
+                throw new Error(`ffmpeg failed: ${stderr.trim()}`);
+              }
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true, proxyUrl: `/api/proxy-file?path=${encodeURIComponent(outputPath)}` })}\n\n`));
+            } catch (err) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: (err as Error).message })}\n\n`));
+            }
+            controller.close();
+          },
+        });
+
+        return new Response(stream, {
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+          },
+        });
+      }
+
+      if (url.pathname === "/api/proxy-file" && req.method === "GET") {
+        const filePath = url.searchParams.get("path");
+        const allowedDir = join(tmpdir(), "hance-proxy");
+        if (!filePath || !filePath.startsWith(allowedDir + "/") || !existsSync(filePath)) {
+          return new Response("File not found", { status: 404 });
+        }
+        return new Response(Bun.file(filePath), {
+          headers: {
+            "Content-Type": "video/mp4",
+            "Accept-Ranges": "bytes",
+          },
+        });
+      }
+
       if (url.pathname === "/api/download" && req.method === "GET") {
         const filePath = url.searchParams.get("path");
         const allowedDir = join(tmpdir(), "hance-export");
@@ -299,6 +380,12 @@ const STARTUP_ASCII_ART = [
 ].join("\n");
 
 export async function startUI(port: number, openBrowser = true): Promise<void> {
+  const proxyDir = join(tmpdir(), "hance-proxy");
+  const cleanup = () => { try { rmSync(proxyDir, { recursive: true, force: true }); } catch {} };
+  process.on("exit", cleanup);
+  process.on("SIGINT", () => { cleanup(); process.exit(0); });
+  process.on("SIGTERM", () => { cleanup(); process.exit(0); });
+
   const server = createServer(port);
   console.log(STARTUP_ASCII_ART);
   console.log(`\n  \x1b[2mRunning at\x1b[0m \x1b[1mhttp://localhost:${server.port}\x1b[0m\n`);
