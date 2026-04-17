@@ -7,17 +7,17 @@ const CLI_PATH = path.join(import.meta.dir, "../../src/cli.ts");
 const INPUT = path.join(FIXTURES_DIR, "test_with_audio.mp4");
 const OUTPUT = path.join(FIXTURES_DIR, "test_with_audio_hanced.mp4");
 
-async function probeStartTime(file: string, streamSelector: string): Promise<number> {
+async function probeStream(file: string, streamSelector: string, field: "start_time" | "duration"): Promise<number> {
   const proc = Bun.spawn(
     ["ffprobe", "-v", "error", "-select_streams", streamSelector,
-      "-show_entries", "stream=start_time", "-of", "default=nw=1:nk=1", file],
+      "-show_entries", `stream=${field}`, "-of", "default=nw=1:nk=1", file],
     { stdout: "pipe", stderr: "pipe" },
   );
   const out = (await new Response(proc.stdout).text()).trim();
   await proc.exited;
   const n = parseFloat(out);
   if (!Number.isFinite(n)) {
-    throw new Error(`ffprobe returned non-numeric start_time for ${streamSelector}: ${JSON.stringify(out)}`);
+    throw new Error(`ffprobe returned non-numeric ${field} for ${streamSelector}: ${JSON.stringify(out)}`);
   }
   return n;
 }
@@ -50,10 +50,17 @@ describe("e2e: audio/video sync", () => {
     expect(exitCode).toBe(0);
     expect(existsSync(OUTPUT)).toBe(true);
 
-    const videoStart = await probeStartTime(OUTPUT, "v:0");
-    const audioStart = await probeStartTime(OUTPUT, "a:0");
-    // With the drift bug, audio start_time lagged video by the AAC priming
-    // delay (~0.02s+). Require sub-frame alignment at 25fps (<10ms).
+    const videoStart = await probeStream(OUTPUT, "v:0", "start_time");
+    const audioStart = await probeStream(OUTPUT, "a:0", "start_time");
     expect(Math.abs(videoStart - audioStart)).toBeLessThan(0.01);
+
+    // A previous fix re-encoded audio with `aresample=async=1:first_pts=0`,
+    // which decoded the source's AAC priming samples (~2112 samples / ~48ms)
+    // into PCM and re-encoded them as audible content — making output audio
+    // longer than source. `-c:a copy` preserves the edit list so priming is
+    // skipped on playback. Assert output audio duration matches source.
+    const srcAudioDuration = await probeStream(INPUT, "a:0", "duration");
+    const outAudioDuration = await probeStream(OUTPUT, "a:0", "duration");
+    expect(Math.abs(outAudioDuration - srcAudioDuration)).toBeLessThan(0.005);
   }, 60000);
 });
