@@ -46,12 +46,7 @@ function buildEncoderArgs(settings: EncoderSettings, width: number, height: numb
     "-i", "pipe:0",
     "-i", input,
     "-map", "0:v", "-map", "1:a?",
-    // Re-encode audio (rather than -c:a copy) so it is re-timestamped from
-    // zero. Copying preserved the source's AAC priming delay / edit-list
-    // start offset, causing audio to lag the regenerated video (which starts
-    // at PTS=0). aresample=async=1:first_pts=0 aligns the first sample.
-    "-af", "aresample=async=1:first_pts=0",
-    "-c:a", "aac", "-b:a", "192k",
+    "-c:a", "copy",
   ];
 
   const vtQ = crfToVideoToolboxQ(settings.crf);
