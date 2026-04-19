@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { computeTicks } from "./timelineTicks";
 
 interface Props {
   videoRef: HTMLVideoElement | null;
@@ -10,6 +11,16 @@ export function formatTimecode(seconds: number): string {
   const s = Math.floor(seconds % 60);
   if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+export function formatTimecodeFrames(seconds: number, fps = 30): string {
+  const total = Math.max(0, seconds);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = Math.floor(total % 60);
+  const f = Math.floor((total - Math.floor(total)) * fps);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(h)}:${pad(m)}:${pad(s)}:${pad(f)}`;
 }
 
 export function Timeline({ videoRef }: Props) {
@@ -99,68 +110,90 @@ export function Timeline({ videoRef }: Props) {
   }, [videoRef]);
 
   const playheadPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const ticks = computeTicks(duration);
 
   return (
-    <div className="flex items-center gap-3 px-3 h-full bg-zinc-800 border-t border-zinc-700 select-none">
-      {/* Play/pause button */}
-      <button
-        onClick={togglePlay}
-        className="text-zinc-300 hover:text-white transition-colors flex-shrink-0"
-      >
-        {playing ? (
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <rect x="6" y="4" width="4" height="16" />
-            <rect x="14" y="4" width="4" height="16" />
-          </svg>
-        ) : (
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <polygon points="5,3 19,12 5,21" />
-          </svg>
-        )}
-      </button>
+    <div className="flex flex-col h-full bg-zinc-900 border-t border-zinc-800 select-none">
+      {/* Transport row */}
+      <div className="flex items-center px-3 py-1.5 gap-3">
+        <button
+          onClick={togglePlay}
+          className="text-zinc-300 hover:text-white transition-colors flex-shrink-0"
+          aria-label={playing ? "Pause" : "Play"}
+        >
+          {playing ? (
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <rect x="6" y="4" width="4" height="16" />
+              <rect x="14" y="4" width="4" height="16" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <polygon points="5,3 19,12 5,21" />
+            </svg>
+          )}
+        </button>
+        <div className="flex-1 flex justify-center">
+          <span
+            className="text-sm text-zinc-300 tabular-nums px-3 py-0.5"
+            style={{
+              background: "var(--slider-track)",
+              borderRadius: "var(--radius-sm)",
+            }}
+          >
+            {formatTimecodeFrames(currentTime)}
+          </span>
+        </div>
+        <span className="text-[11px] text-zinc-500 tabular-nums flex-shrink-0">
+          {formatTimecode(duration)}
+        </span>
+      </div>
 
-      {/* Current timecode */}
-      <span className="text-[11px] text-zinc-400 tabular-nums flex-shrink-0 w-12">
-        {formatTimecode(currentTime)}
-      </span>
-
-      {/* Timeline track */}
+      {/* Scrubber + ruler */}
       <div
         ref={trackRef}
-        className="flex-1 relative h-full cursor-pointer"
+        className="relative flex-1 cursor-pointer"
         onMouseDown={onMouseDown}
       >
-        {/* Track background */}
-        <div className="absolute top-1/2 -translate-y-1/2 inset-x-0 h-8 bg-zinc-700 rounded">
-          {/* Timecode ruler ticks */}
-          <div className="absolute inset-x-0 top-0 h-2 flex items-end">
-            {duration > 0 && Array.from({ length: Math.min(20, Math.ceil(duration / 5)) }, (_, i) => {
-              const tickTime = (i + 1) * (duration / Math.min(20, Math.ceil(duration / 5)));
+        <div className="absolute top-1/2 -translate-y-1/2 inset-x-0 h-6 bg-zinc-800" style={{ borderRadius: "var(--radius-sm)" }} />
+
+        {/* Ruler strip */}
+        <div className="absolute bottom-0 inset-x-0 h-4 pointer-events-none">
+          {ticks.majors.map((time, i) => {
+            const percent = (time / duration) * 100;
+            return (
+              <div key={`M${i}`} className="absolute bottom-0" style={{ left: `${percent}%` }}>
+                <div className="w-px h-2 bg-zinc-500" />
+                <div className="text-[9px] text-zinc-500 tabular-nums -translate-x-1/2 mt-0.5">
+                  {formatTimecode(time)}
+                </div>
+              </div>
+            );
+          })}
+          {ticks.majors.flatMap((time, i) => {
+            const step = ticks.majorInterval / (ticks.minorsPerMajor + 1);
+            return Array.from({ length: ticks.minorsPerMajor }, (_, j) => {
+              const tickTime = time - ticks.majorInterval + step * (j + 1);
+              if (tickTime < 0 || tickTime > duration) return null;
               const percent = (tickTime / duration) * 100;
               return (
                 <div
-                  key={i}
-                  className="absolute bottom-0 w-px h-1.5 bg-zinc-600"
+                  key={`m${i}-${j}`}
+                  className="absolute bottom-0 w-px h-1 bg-zinc-600"
                   style={{ left: `${percent}%` }}
                 />
               );
-            })}
-          </div>
+            }).filter(Boolean);
+          })}
         </div>
 
         {/* Playhead */}
         <div
-          className="absolute top-0 bottom-0 w-0.5 bg-accent z-10"
+          className="absolute top-0 bottom-0 w-0.5 bg-accent z-10 pointer-events-none"
           style={{ left: `${playheadPercent}%` }}
         >
           <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 bg-accent rounded-sm" />
         </div>
       </div>
-
-      {/* Duration */}
-      <span className="text-[11px] text-zinc-400 tabular-nums flex-shrink-0 w-12 text-right">
-        {formatTimecode(duration)}
-      </span>
     </div>
   );
 }
