@@ -38,15 +38,13 @@ export function RangeSlider({ label, value, min, max, step, onChange, onCommit, 
   const fillPercent = ((value - min) / (max - min)) * 100;
 
   return (
-    <div className={`flex items-center gap-3 text-xs ${disabled ? "opacity-40 pointer-events-none" : ""}`}>
+    <div className={`flex items-center gap-3 text-xs py-2 ${disabled ? "opacity-40 pointer-events-none" : ""}`}>
       <span className="text-zinc-400 w-28 flex-shrink-0 truncate">{label}</span>
       <div className="flex-1 relative h-4 flex items-center">
-        <div className="absolute inset-x-0 h-1 bg-zinc-700 rounded-sm">
-          <div
-            className={`h-full bg-accent rounded-sm ${animating ? "transition-all duration-300 ease-out" : ""}`}
-            style={{ width: `${fillPercent}%` }}
-          />
-        </div>
+        <div
+          className="absolute inset-x-0"
+          style={{ height: "1px", background: "var(--slider-track)" }}
+        />
         <input
           type="range"
           min={min}
@@ -62,8 +60,11 @@ export function RangeSlider({ label, value, min, max, step, onChange, onCommit, 
           className={`absolute inset-0 w-full opacity-0 cursor-pointer ${animating ? "animating" : ""}`}
         />
         <div
-          className={`absolute w-3 h-3 bg-zinc-400 rounded-full pointer-events-none hover:bg-accent ${animating ? "transition-all duration-300 ease-out" : ""}`}
-          style={{ left: `calc(${fillPercent}% - 6px)` }}
+          className={`absolute w-2.5 h-2.5 rounded-full pointer-events-none ${animating ? "transition-all duration-300 ease-out" : ""}`}
+          style={{
+            left: `calc(${fillPercent}% - 5px)`,
+            background: "var(--slider-thumb)",
+          }}
         />
       </div>
       {editing ? (
@@ -74,7 +75,7 @@ export function RangeSlider({ label, value, min, max, step, onChange, onCommit, 
           onChange={e => setEditValue(e.target.value)}
           onBlur={commitEdit}
           onKeyDown={e => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") setEditing(false); }}
-          className="w-14 text-right bg-zinc-800 border border-zinc-600 rounded px-1 py-0.5 text-zinc-200 text-xs tabular-nums"
+          className="w-14 text-right bg-zinc-800 border border-zinc-600 rounded-sm px-1 py-0.5 text-zinc-200 text-xs tabular-nums"
         />
       ) : (
         <span
