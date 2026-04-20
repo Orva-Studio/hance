@@ -70,7 +70,7 @@ export function TopBar({
         {state === "idle" && file && (
           <button
             onClick={isVideo ? onExportClick : downloadImage}
-            className="px-4 py-1 bg-accent text-white text-xs font-medium hover:bg-accent-hover transition-colors"
+            className="px-4 py-1.5 bg-accent text-white text-xs font-medium hover:bg-accent-hover transition-colors"
             style={{ borderRadius: "var(--radius-sm)" }}
           >
             {isVideo ? "Export" : "Download"}
@@ -96,7 +96,7 @@ export function TopBar({
             href={downloadUrl}
             download
             onClick={() => onExportDone?.()}
-            className="px-4 py-1 bg-success text-white text-xs font-medium"
+            className="px-4 py-1.5 bg-success text-white text-xs font-medium"
             style={{ borderRadius: "var(--radius-sm)" }}
           >
             Download

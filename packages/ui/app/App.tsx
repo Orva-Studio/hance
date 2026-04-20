@@ -27,30 +27,6 @@ export function App() {
   const [proxyProgress, setProxyProgress] = useState(0);
   const [proxyErrorMsg, setProxyErrorMsg] = useState<string | null>(null);
 
-  useEffect(() => {
-    setPreviewError(null);
-    setProxyState("idle");
-    setProxyProgress(0);
-    setProxyErrorMsg(null);
-    setReferenceImage(null);
-    setViewMode("normal");
-    setSplitPosition(0.5);
-  }, [objectUrl]);
-
-  useEffect(() => {
-    if (!canvas) { setCanvasRect(null); return; }
-    function update() {
-      const r = canvas!.getBoundingClientRect();
-      setCanvasRect({ left: r.left, top: r.top, width: r.width, height: r.height });
-    }
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(canvas);
-    window.addEventListener("scroll", update, true);
-    window.addEventListener("resize", update);
-    return () => { ro.disconnect(); window.removeEventListener("scroll", update, true); window.removeEventListener("resize", update); };
-  }, [canvas]);
-
   useInitialFile(upload);
 
   const startTranscode = useCallback(async () => {
@@ -96,6 +72,30 @@ export function App() {
   const [splitPosition, setSplitPosition] = useState(0.5);
   const [canvasRect, setCanvasRect] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
   const hoverParamsRef = useRef<PreviewParams | null>(null);
+
+  useEffect(() => {
+    setPreviewError(null);
+    setProxyState("idle");
+    setProxyProgress(0);
+    setProxyErrorMsg(null);
+    setReferenceImage(null);
+    setViewMode("normal");
+    setSplitPosition(0.5);
+  }, [objectUrl]);
+
+  useEffect(() => {
+    if (!canvas) { setCanvasRect(null); return; }
+    function update() {
+      const r = canvas!.getBoundingClientRect();
+      setCanvasRect({ left: r.left, top: r.top, width: r.width, height: r.height });
+    }
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(canvas);
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => { ro.disconnect(); window.removeEventListener("scroll", update, true); window.removeEventListener("resize", update); };
+  }, [canvas]);
 
   const {
     looks, activeLook, activeLookParams,
@@ -145,8 +145,8 @@ export function App() {
   }, []);
 
   const leftPanel = useResizable({ defaultSize: 240, minSize: 200, maxSize: 400, direction: "horizontal" });
-  const rightPanel = useResizable({ defaultSize: 300, minSize: 250, maxSize: 450, direction: "horizontal", reverse: true });
-  const bottomPanel = useResizable({ defaultSize: 60, minSize: 50, maxSize: 200, direction: "vertical", reverse: true });
+  const rightPanel = useResizable({ defaultSize: 350, minSize: 250, maxSize: 500, direction: "horizontal", reverse: true });
+  const bottomPanel = useResizable({ defaultSize: 180, minSize: 100, maxSize: 250, direction: "vertical", reverse: true });
 
   const handleRendererReady = useCallback((r: Renderer) => {
     setRenderer(r);
@@ -167,6 +167,14 @@ export function App() {
   const handleBatchChange = useCallback((data: Record<string, string | number | boolean>) => {
     setParams(prev => ({ ...prev, ...data }));
   }, []);
+
+  const handleReset = useCallback(() => {
+    if (!activeLookParams) return;
+    setAnimating(true);
+    setParams(activeLookParams);
+    setTimeout(() => setAnimating(false), 350);
+    historyRef.current.commit({ params: activeLookParams, activeLook: activeLookRef.current });
+  }, [activeLookParams]);
 
   const handleNoLook = useCallback(() => {
     clearLook();
@@ -354,12 +362,18 @@ export function App() {
         {/* Center — Canvas */}
         <div className="flex-1 flex items-center justify-center p-4 min-w-0 relative">
           {file && (
-            <ViewModeToolbar
-              mode={viewMode}
-              onChange={setViewMode}
-              splitDisabled={!file}
-              referenceDisabled={false}
-            />
+            <>
+              <ViewModeToolbar
+                mode={viewMode}
+                onChange={setViewMode}
+                splitDisabled={!file}
+                referenceDisabled={false}
+                canUndo={history.canUndo}
+                canRedo={history.canRedo}
+                onUndo={() => applySnapshot(historyRef.current.undo())}
+                onRedo={() => applySnapshot(historyRef.current.redo())}
+              />
+            </>
           )}
           {previewError && isVideo ? (
             <div className="flex flex-col items-center gap-4 max-w-md text-center p-6 bg-zinc-900 rounded-lg border border-zinc-800">
@@ -424,6 +438,8 @@ export function App() {
             values={params}
             onChange={handleParamChange}
             onCommit={commitHistory}
+            onReset={handleReset}
+            canReset={hasChanges}
             animating={animating}
           />
         </div>

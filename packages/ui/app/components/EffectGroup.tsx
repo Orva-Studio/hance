@@ -17,9 +17,10 @@ export function EffectGroup({ group, values, onChange, onCommit, animating }: Pr
   const enabled = values[group.enableKey] !== true;
 
   return (
-    <div className="border-b border-zinc-800 pb-2 mb-2">
+    <div>
       <div
-        className="flex items-center justify-between py-1.5 cursor-pointer select-none"
+        className="flex items-center justify-between py-2 cursor-pointer select-none"
+        style={{ paddingTop: "1.2rem" }}
         onClick={() => setCollapsed(!collapsed)}
       >
         <div className="flex items-center gap-1.5">
@@ -36,7 +37,7 @@ export function EffectGroup({ group, values, onChange, onCommit, animating }: Pr
         />
       </div>
       {!collapsed && (
-        <div className={`flex flex-col gap-2 pl-4 pt-1 ${!enabled ? "opacity-40 pointer-events-none" : ""}`}>
+        <div className={`flex flex-col pl-2 ${!enabled ? "opacity-40 pointer-events-none" : ""}`}>
           {group.options.map(opt => (
             <OptionControl
               key={opt.key}

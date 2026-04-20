@@ -38,9 +38,29 @@ export function RangeSlider({ label, value, min, max, step, onChange, onCommit, 
   const fillPercent = ((value - min) / (max - min)) * 100;
 
   return (
-    <div className={`flex items-center gap-3 text-xs py-2 ${disabled ? "opacity-40 pointer-events-none" : ""}`}>
-      <span className="text-zinc-400 w-28 flex-shrink-0 truncate">{label}</span>
-      <div className="flex-1 relative h-4 flex items-center">
+    <div className={`flex flex-col text-xs py-2 ${disabled ? "opacity-40 pointer-events-none" : ""}`}>
+      <div className="flex items-center justify-between">
+        <span className="text-zinc-400 truncate">{label}</span>
+        {editing ? (
+          <input
+            ref={inputRef}
+            type="text"
+            value={editValue}
+            onChange={e => setEditValue(e.target.value)}
+            onBlur={commitEdit}
+            onKeyDown={e => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") setEditing(false); }}
+            className="w-14 text-right bg-zinc-800 border border-zinc-600 rounded-sm px-1 py-0.5 text-zinc-200 text-xs tabular-nums"
+          />
+        ) : (
+          <span
+            onClick={startEdit}
+            className="text-right text-zinc-500 tabular-nums cursor-text hover:text-zinc-300"
+          >
+            {value}
+          </span>
+        )}
+      </div>
+      <div className="relative h-4 flex items-center">
         <div
           className="absolute inset-x-0"
           style={{ height: "1px", background: "var(--slider-track)" }}
@@ -67,24 +87,6 @@ export function RangeSlider({ label, value, min, max, step, onChange, onCommit, 
           }}
         />
       </div>
-      {editing ? (
-        <input
-          ref={inputRef}
-          type="text"
-          value={editValue}
-          onChange={e => setEditValue(e.target.value)}
-          onBlur={commitEdit}
-          onKeyDown={e => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") setEditing(false); }}
-          className="w-14 text-right bg-zinc-800 border border-zinc-600 rounded-sm px-1 py-0.5 text-zinc-200 text-xs tabular-nums"
-        />
-      ) : (
-        <span
-          onClick={startEdit}
-          className="w-14 text-right text-zinc-500 tabular-nums cursor-text hover:text-zinc-300"
-        >
-          {value}
-        </span>
-      )}
     </div>
   );
 }
