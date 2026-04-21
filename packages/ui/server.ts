@@ -1,7 +1,7 @@
 import { EFFECT_SCHEMA, loadPreset, builtinPresetsDir, userPresetsDir, probe } from "@hance/core";
 import type { PresetData } from "@hance/core";
 import { runGpuExport } from "@hance/cli/src/pipeline";
-import { join, extname } from "node:path";
+import { join, extname, basename } from "node:path";
 import { existsSync, readdirSync, mkdirSync, writeFileSync, unlinkSync, renameSync, rmSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
 import { transcodeToH264Stream } from "./lib/transcode";
@@ -199,8 +199,9 @@ export function createServer(port: number) {
         }
 
         const defaultExt = codec === "prores" ? "mov" : "mp4";
-        const safeName = outputName && !outputName.includes("/") && !outputName.includes("\\")
-          ? outputName
+        const candidate = outputName ? basename(outputName) : "";
+        const safeName = /^[A-Za-z0-9._-]+\.(mp4|mov)$/.test(candidate)
+          ? candidate
           : `export_${Date.now()}.${defaultExt}`;
         const outputPath = join(tempDir, safeName);
 

@@ -17,3 +17,6 @@ packages/ui/dist/
 
 # Worktrees
 .worktrees/
+
+# Superpowers ephemeral tool output
+.superpowers/
