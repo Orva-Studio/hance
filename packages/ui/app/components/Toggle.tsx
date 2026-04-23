@@ -13,6 +13,7 @@ export function Toggle({ label, checked, onChange, disabled }: Props) {
         type="checkbox"
         checked={checked}
         onChange={e => onChange(e.target.checked)}
+        className="accent-accent"
       />
     </div>
   );

@@ -216,10 +216,10 @@ export function Timeline({ videoRef }: Props) {
 
         {/* Playhead */}
         <div
-          className="absolute top-0 bottom-0 w-0.5 bg-accent z-10 pointer-events-none"
+          className="absolute top-0 bottom-0 w-0.5 bg-white z-10 pointer-events-none"
           style={{ left: `${playheadPercent}%` }}
         >
-          <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 bg-accent rounded-sm" />
+          <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2 bg-white rounded-sm" />
         </div>
       </div>
     </div>

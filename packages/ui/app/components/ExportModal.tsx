@@ -71,7 +71,7 @@ export function ExportModal({ defaultBasename, onCancel, onExport }: Props) {
             <select
               value={codec}
               onChange={e => onCodecChange(e.target.value as Codec)}
-              className="w-full bg-zinc-900 border border-zinc-700 text-zinc-200 px-2 py-1.5 rounded-sm"
+              className="w-full bg-zinc-900 border border-accent text-zinc-200 px-2 py-1.5 rounded-sm"
             >
               <option>H.264</option>
               <option>H.265</option>
@@ -85,7 +85,7 @@ export function ExportModal({ defaultBasename, onCancel, onExport }: Props) {
               value={quality}
               onChange={e => setQuality(e.target.value as Quality)}
               disabled={isProRes}
-              className="w-full bg-zinc-900 border border-zinc-700 text-zinc-200 px-2 py-1.5 rounded-sm disabled:opacity-50"
+              className="w-full bg-zinc-900 border border-accent text-zinc-200 px-2 py-1.5 rounded-sm disabled:opacity-50"
             >
               <option>Visually Lossless</option>
               <option>High</option>
