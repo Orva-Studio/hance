@@ -123,10 +123,20 @@ jobs:
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.v.outputs.tag }}
         run: |
-          gh release create "${{ steps.v.outputs.tag }}" \
-            --title "${{ steps.v.outputs.tag }}" \
-            --generate-notes \
+          # Anchor release notes to the last *published* release, not the
+          # previous git tag. If a prior tag's release workflow failed and
+          # never published, --generate-notes would otherwise only diff
+          # against that ghost tag and miss every commit in between.
+          PREV=$(gh release list --exclude-drafts --exclude-pre-releases --limit 1 --json tagName -q '.[0].tagName' || true)
+          NOTES_ARGS=(--generate-notes)
+          if [ -n "$PREV" ] && [ "$PREV" != "$TAG" ]; then
+            NOTES_ARGS+=(--notes-start-tag "$PREV")
+          fi
+          gh release create "$TAG" \
+            --title "$TAG" \
+            "${NOTES_ARGS[@]}" \
             artifacts/hance-*.tar.gz \
             artifacts/checksums.txt \
             artifacts/install.sh
