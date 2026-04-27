@@ -1,5 +1,13 @@
 import { describe, it, expect } from "bun:test";
-import { parseArgs, getDefaultOutput, isSubcommand, parseUiArgs } from "../src/cli";
+import { parseArgs, getDefaultOutput, isSubcommand, parseUiArgs, resolveSubcommand } from "../src/cli";
+
+describe("resolveSubcommand", () => {
+  it("routes 'ui' to ui", () => { expect(resolveSubcommand(["ui"])).toBe("ui"); });
+  it("routes 'preview' to preview", () => { expect(resolveSubcommand(["preview", "in.mp4"])).toBe("preview"); });
+  it("routes 'preset' to preset", () => { expect(resolveSubcommand(["preset", "list"])).toBe("preset"); });
+  it("treats anything else as render", () => { expect(resolveSubcommand(["in.mp4", "-o", "out.mp4"])).toBe("render"); });
+  it("treats empty argv as render", () => { expect(resolveSubcommand([])).toBe("render"); });
+});
 
 describe("parseArgs", () => {
   it("parses input file as first positional arg", () => {

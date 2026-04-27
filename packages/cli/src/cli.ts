@@ -1,7 +1,8 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { probe, applyPreset, resolveExportPreset } from "@hance/core";
-import type { PresetData, FilmOptions, ExportPreset, OutputCodec } from "@hance/core";
+import type { PresetData, FilmOptions } from "@hance/core";
 import { runGpuExport } from "./pipeline";
+import { parseEffectFlags } from "./effect-flags";
 import path from "node:path";
 
 declare const HANCE_VERSION: string | undefined;
@@ -82,33 +83,19 @@ hance <input> [<input> ...] [options]
   --version, -v             Print version and exit
 `.trim();
 
-const KNOWN_FLAGS = new Set([
-  "--output", "-o", "--preset", "--codec", "--encode-preset", "--crf", "--blend", "--export",
-  "--exposure", "--contrast", "--highlights", "--fade",
-  "--white-balance", "--tint", "--subtractive-sat", "--richness", "--bleach-bypass",
-  "--no-color-settings",
-  "--halation-amount", "--halation-radius", "--halation-saturation", "--halation-hue",
-  "--halation-highlights-only", "--no-halation",
-  "--aberration", "--no-aberration",
-  "--bloom-amount", "--bloom-radius", "--no-bloom",
-  "--grain-amount", "--grain-size", "--grain-softness", "--grain-saturation", "--grain-defocus",
-  "--no-grain",
-  "--vignette-amount", "--vignette-size", "--no-vignette",
-  "--split-tone-mode", "--split-tone-protect-neutrals", "--split-tone-amount",
-  "--split-tone-hue", "--split-tone-pivot", "--no-split-tone",
-  "--camera-shake-amount", "--camera-shake-rate", "--no-camera-shake",
-  "--help", "-h",
-]);
+export type Subcommand = "ui" | "preview" | "preset" | "render";
 
-const BOOLEAN_FLAGS = new Set([
-  "--help", "-h",
-  "--no-color-settings", "--no-halation", "--no-aberration", "--no-bloom",
-  "--no-grain", "--no-vignette", "--no-split-tone", "--no-camera-shake",
-  "--halation-highlights-only", "--split-tone-protect-neutrals",
-]);
+export function resolveSubcommand(args: string[]): Subcommand {
+  switch (args[0]) {
+    case "ui": return "ui";
+    case "preview": return "preview";
+    case "preset": return "preset";
+    default: return "render";
+  }
+}
 
 export function isSubcommand(args: string[]): boolean {
-  return args[0] === "ui";
+  return resolveSubcommand(args) === "ui";
 }
 
 export interface UiArgs {
@@ -137,14 +124,6 @@ export function getDefaultOutput(inputPath: string): string {
   return `${base}_hanced${ext}`;
 }
 
-function parseNum(value: string, flag: string, min: number, max: number): number {
-  const n = parseFloat(value);
-  if (isNaN(n) || n < min || n > max) {
-    throw new Error(`${flag} must be between ${min} and ${max}, got ${value}`);
-  }
-  return n;
-}
-
 interface ParsedArgs extends FilmOptions {
   help: boolean;
   params: PresetData;
@@ -154,125 +133,23 @@ interface ParsedArgs extends FilmOptions {
 }
 
 export function parseArgs(argv: string[]): ParsedArgs {
-  const inputs: string[] = [];
-  let outputArg = "";
-  let help = false;
-  let presetName = "default";
-  let exportPreset: ExportPreset | undefined;
-  let overrideCodec: OutputCodec | undefined;
-  let overrideCrf: number | undefined;
-  let overrideEncodePreset: "fast" | "medium" | "slow" | undefined;
-  const overrides: PresetData = {};
+  const r = parseEffectFlags(argv);
+  const inputs = r.positional;
 
-  let i = 0;
-  while (i < argv.length) {
-    const arg = argv[i];
-
-    if (arg === "--help" || arg === "-h") {
-      help = true;
-      i++;
-      continue;
-    }
-
-    if (arg.startsWith("-")) {
-      if (!KNOWN_FLAGS.has(arg)) {
-        throw new Error(`Unknown flag: ${arg}. Use --help for usage.`);
-      }
-
-      if (BOOLEAN_FLAGS.has(arg)) {
-        switch (arg) {
-          case "--no-color-settings": overrides["no-color-settings"] = true; break;
-          case "--no-halation": overrides["no-halation"] = true; break;
-          case "--no-aberration": overrides["no-aberration"] = true; break;
-          case "--no-bloom": overrides["no-bloom"] = true; break;
-          case "--no-grain": overrides["no-grain"] = true; break;
-          case "--no-vignette": overrides["no-vignette"] = true; break;
-          case "--no-split-tone": overrides["no-split-tone"] = true; break;
-          case "--no-camera-shake": overrides["no-camera-shake"] = true; break;
-          case "--halation-highlights-only": overrides["halation-highlights-only"] = true; break;
-          case "--split-tone-protect-neutrals": overrides["split-tone-protect-neutrals"] = true; break;
-        }
-        i++;
-        continue;
-      }
-
-      const val = argv[i + 1];
-      if (val === undefined) throw new Error(`${arg} requires a value`);
-
-      switch (arg) {
-        case "--output": case "-o": outputArg = val; break;
-        case "--preset": presetName = val; break;
-        case "--codec":
-          if (val !== "h264" && val !== "prores" && val !== "h265") {
-            throw new Error(`--codec must be h264, prores, or h265, got ${val}`);
-          }
-          overrideCodec = val; overrides["codec"] = val; break;
-        case "--encode-preset":
-          if (val !== "fast" && val !== "medium" && val !== "slow") {
-            throw new Error(`--encode-preset must be fast, medium, or slow, got ${val}`);
-          }
-          overrideEncodePreset = val; overrides["encode-preset"] = val; break;
-        case "--crf": overrideCrf = parseNum(val, "--crf", 0, 51); overrides["crf"] = overrideCrf; break;
-        case "--blend": overrides["blend"] = parseNum(val, "--blend", 0, 1); break;
-        case "--exposure": overrides["exposure"] = parseNum(val, "--exposure", -2, 2); break;
-        case "--contrast": overrides["contrast"] = parseNum(val, "--contrast", 0, 3); break;
-        case "--highlights": overrides["highlights"] = parseNum(val, "--highlights", -1, 1); break;
-        case "--fade": overrides["fade"] = parseNum(val, "--fade", 0, 1); break;
-        case "--white-balance": overrides["white-balance"] = parseNum(val, "--white-balance", 1000, 15000); break;
-        case "--tint": overrides["tint"] = parseNum(val, "--tint", -100, 100); break;
-        case "--subtractive-sat": overrides["subtractive-sat"] = parseNum(val, "--subtractive-sat", 0, 3); break;
-        case "--richness": overrides["richness"] = parseNum(val, "--richness", 0, 3); break;
-        case "--bleach-bypass": overrides["bleach-bypass"] = parseNum(val, "--bleach-bypass", 0, 1); break;
-        case "--halation-amount": overrides["halation-amount"] = parseNum(val, "--halation-amount", 0, 1); break;
-        case "--halation-radius": overrides["halation-radius"] = parseNum(val, "--halation-radius", 1, 100); break;
-        case "--halation-saturation": overrides["halation-saturation"] = parseNum(val, "--halation-saturation", 0, 3); break;
-        case "--halation-hue": overrides["halation-hue"] = parseNum(val, "--halation-hue", 0, 1); break;
-        case "--aberration": overrides["aberration"] = parseNum(val, "--aberration", 0, 1); break;
-        case "--bloom-amount": overrides["bloom-amount"] = parseNum(val, "--bloom-amount", 0, 1); break;
-        case "--bloom-radius": overrides["bloom-radius"] = parseNum(val, "--bloom-radius", 1, 100); break;
-        case "--grain-amount": overrides["grain-amount"] = parseNum(val, "--grain-amount", 0, 1); break;
-        case "--grain-size": overrides["grain-size"] = parseNum(val, "--grain-size", 0, 5); break;
-        case "--grain-softness": overrides["grain-softness"] = parseNum(val, "--grain-softness", 0, 1); break;
-        case "--grain-saturation": overrides["grain-saturation"] = parseNum(val, "--grain-saturation", 0, 1); break;
-        case "--grain-defocus": overrides["grain-defocus"] = parseNum(val, "--grain-defocus", 0, 5); break;
-        case "--vignette-amount": overrides["vignette-amount"] = parseNum(val, "--vignette-amount", 0, 1); break;
-        case "--vignette-size": overrides["vignette-size"] = parseNum(val, "--vignette-size", 0, 1); break;
-        case "--split-tone-mode":
-          if (val !== "natural" && val !== "complementary") {
-            throw new Error(`--split-tone-mode must be natural or complementary, got ${val}`);
-          }
-          overrides["split-tone-mode"] = val; break;
-        case "--split-tone-amount": overrides["split-tone-amount"] = parseNum(val, "--split-tone-amount", 0, 1); break;
-        case "--split-tone-hue": overrides["split-tone-hue"] = parseNum(val, "--split-tone-hue", 0, 360); break;
-        case "--split-tone-pivot": overrides["split-tone-pivot"] = parseNum(val, "--split-tone-pivot", 0, 1); break;
-        case "--camera-shake-amount": overrides["camera-shake-amount"] = parseNum(val, "--camera-shake-amount", 0, 1); break;
-        case "--camera-shake-rate": overrides["camera-shake-rate"] = parseNum(val, "--camera-shake-rate", 0, 2); break;
-      }
-      i += 2;
-      continue;
-    } else {
-      inputs.push(arg);
-      i++;
-      continue;
-    }
-  }
-
-  if (!help && inputs.length === 0) {
+  if (!r.help && inputs.length === 0) {
     throw new Error("No input file provided. Usage: hance <input> [<input> ...] [options]");
   }
 
   const outputs: string[] = [];
-  if (outputArg && inputs.length > 1) {
-    for (const inp of inputs) {
-      outputs.push(path.join(outputArg, getDefaultOutput(path.basename(inp))));
-    }
-  } else if (outputArg) {
-    outputs.push(outputArg);
+  if (r.outputArg && inputs.length > 1) {
+    for (const inp of inputs) outputs.push(path.join(r.outputArg, getDefaultOutput(path.basename(inp))));
+  } else if (r.outputArg) {
+    outputs.push(r.outputArg);
   } else {
     for (const inp of inputs) outputs.push(getDefaultOutput(inp));
   }
 
-  const effectOpts = applyPreset(presetName, overrides);
+  const effectOpts = applyPreset(r.presetName, r.overrides);
   const params = effectOpts.mergedParams;
 
   let resolvedCodec = effectOpts.codec;
@@ -280,41 +157,28 @@ export function parseArgs(argv: string[]): ParsedArgs {
   let resolvedEncodePreset = effectOpts.encodePreset;
   let resolvedPixelFormat = effectOpts.pixelFormat;
 
-  if (exportPreset) {
-    const exportSettings = resolveExportPreset(exportPreset, {
-      codec: overrideCodec,
-      crf: overrideCrf,
-      encodePreset: overrideEncodePreset,
+  if (r.exportPreset) {
+    const exp = resolveExportPreset(r.exportPreset, {
+      codec: r.overrideCodec, crf: r.overrideCrf, encodePreset: r.overrideEncodePreset,
     });
-    resolvedCodec = exportSettings.codec;
-    resolvedCrf = exportSettings.crf;
-    resolvedEncodePreset = exportSettings.encodePreset;
-    resolvedPixelFormat = exportSettings.pixelFormat;
-
-    if (exportPreset === "high" || exportPreset === "max") {
+    resolvedCodec = exp.codec;
+    resolvedCrf = exp.crf;
+    resolvedEncodePreset = exp.encodePreset;
+    resolvedPixelFormat = exp.pixelFormat;
+    if (r.exportPreset === "high" || r.exportPreset === "max") {
       console.error("High quality export — expect larger file sizes");
     }
   }
 
   return {
-    inputs,
-    outputs,
-    outputArg,
-    encodePreset: resolvedEncodePreset,
-    codec: resolvedCodec,
-    crf: resolvedCrf,
-    blend: effectOpts.blend,
-    pixelFormat: resolvedPixelFormat,
-    colorSettings: effectOpts.colorSettings,
-    halation: effectOpts.halation,
-    aberration: effectOpts.aberration,
-    bloom: effectOpts.bloom,
-    grain: effectOpts.grain,
-    vignette: effectOpts.vignette,
-    splitTone: effectOpts.splitTone,
-    cameraShake: effectOpts.cameraShake,
-    params,
-    help,
+    inputs, outputs, outputArg: r.outputArg,
+    encodePreset: resolvedEncodePreset, codec: resolvedCodec, crf: resolvedCrf,
+    blend: effectOpts.blend, pixelFormat: resolvedPixelFormat,
+    colorSettings: effectOpts.colorSettings, halation: effectOpts.halation,
+    aberration: effectOpts.aberration, bloom: effectOpts.bloom,
+    grain: effectOpts.grain, vignette: effectOpts.vignette,
+    splitTone: effectOpts.splitTone, cameraShake: effectOpts.cameraShake,
+    params, help: r.help,
   };
 }
 
@@ -335,7 +199,8 @@ async function main() {
     process.exit(0);
   }
 
-  if (isSubcommand(args)) {
+  const sub = resolveSubcommand(args);
+  if (sub === "ui") {
     const { startUI } = await import("@hance/ui/server");
     const { port, open, initialFile: rawFile } = parseUiArgs(args.slice(1));
     let initialFile: string | undefined;
@@ -347,6 +212,16 @@ async function main() {
       }
     }
     await startUI(port, open, initialFile);
+    return;
+  }
+  if (sub === "preview") {
+    const { runPreview } = await import("./commands/preview");
+    await runPreview(args.slice(1));
+    return;
+  }
+  if (sub === "preset") {
+    const { runPreset } = await import("./commands/preset");
+    await runPreset(args.slice(1));
     return;
   }
 
