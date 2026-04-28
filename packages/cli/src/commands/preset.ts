@@ -34,6 +34,8 @@ export function parsePresetSaveArgs(argv: string[]): PresetSaveArgs {
   const r = parseEffectFlags(filtered);
   if (r.help) return { name: "", overrides: {}, force: false, help: true };
   if (r.positional.length === 0) throw new Error("preset save: <name> required");
+  if (r.outputArg) throw new Error("preset save: --output/-o is not valid here");
+  if (r.exportPreset) throw new Error("preset save: --export is not valid here");
   return { name: r.positional[0], overrides: r.overrides, force, help: false };
 }
 

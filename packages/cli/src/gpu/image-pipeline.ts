@@ -3,6 +3,7 @@ import { createHeadlessRenderer } from "./wgpu-renderer";
 export async function decodeImageRgba(input: string, width: number, height: number): Promise<Uint8Array> {
   const proc = Bun.spawn([
     "ffmpeg", "-i", input,
+    "-frames:v", "1",
     "-f", "rawvideo", "-pix_fmt", "rgba",
     "-v", "quiet", "pipe:1",
   ], { stdout: "pipe", stderr: "pipe" });
@@ -22,7 +23,8 @@ export async function encodeRgbaToFile(rgba: Uint8Array, width: number, height: 
     "-i", "pipe:0",
     "-v", "quiet", output,
   ], { stdin: "pipe", stdout: "pipe", stderr: "pipe" });
-  proc.stdin.write(rgba); proc.stdin.end();
+  await proc.stdin.write(rgba);
+  proc.stdin.end();
   const code = await proc.exited;
   if (code !== 0) {
     const err = await new Response(proc.stderr).text();

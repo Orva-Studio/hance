@@ -23,4 +23,10 @@ describe("parsePresetSaveArgs", () => {
     const r = parsePresetSaveArgs(["x", "--force"]);
     expect(r.force).toBe(true);
   });
+  it("rejects --output", () => {
+    expect(() => parsePresetSaveArgs(["x", "-o", "/tmp/foo"])).toThrow(/--output/);
+  });
+  it("rejects --export", () => {
+    expect(() => parsePresetSaveArgs(["x", "--export", "max"])).toThrow(/--export/);
+  });
 });
