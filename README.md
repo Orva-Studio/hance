@@ -25,6 +25,31 @@
 
 ---
 
+## Quick start
+
+Install:
+
+```sh
+brew install ffmpeg
+curl -fsSL https://github.com/Orva-Studio/hancer/releases/latest/download/install.sh | sh
+```
+
+Open the UI to preview presets on your own footage and dial in a look:
+
+```sh
+hance ui video.mp4
+```
+
+Save your look as a `.hlook` preset from the UI, then batch-apply it from the CLI:
+
+```sh
+hance video.mp4 --preset my-look
+```
+
+Looks saved from the UI live in `~/.hance/presets/` and are referenced by name. Built-in presets (e.g. `--preset heavy`) work the same way.
+
+---
+
 ## Install the CLI (recommended)
 
 No Bun, Rust, or Node required — just FFmpeg.
