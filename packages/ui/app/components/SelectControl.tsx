@@ -13,7 +13,7 @@ export function SelectControl({ label, value, choices, onChange, disabled }: Pro
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="bg-zinc-800 text-zinc-200 border border-accent rounded px-2 py-0.5 text-xs cursor-pointer"
+        className="bg-zinc-800 text-zinc-200 border border-zinc-700 focus:border-accent focus:outline-none rounded px-2 py-0.5 text-xs cursor-pointer"
       >
         {choices.map(c => <option key={c} value={c}>{c}</option>)}
       </select>
