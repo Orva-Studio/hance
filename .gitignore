@@ -18,6 +18,9 @@ packages/ui/dist/
 # npm platform package binaries (populated by CI)
 npm/@orva-studio/*/bin/
 
+# Generated preset index (rebuild with: bun run scripts/build-preset-index.ts)
+/presets/index.json
+
 # Worktrees
 .worktrees/
 
