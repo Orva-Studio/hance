@@ -157,16 +157,27 @@ export function App() {
   // Fetch schema and looks on mount — external server data
   useEffect(() => {
     fetchJson<EffectGroup[]>("/api/schema")
-      .then((groups) => {
+      .then(async (groups) => {
         setSchema(groups);
-        // Start with no effects applied (No Look)
         const disableAll: Record<string, boolean> = {};
         for (const group of groups) {
           disableAll[group.enableKey] = true;
         }
+        // Honor any initial look seeded by the server (e.g. from /compare → Edit).
+        try {
+          const res = await fetch("/api/initial-look");
+          if (res.ok) {
+            const { path } = await res.json();
+            const lookName = (path as string).split("/").pop()?.replace(/\.hlook$/, "") ?? null;
+            if (lookName) {
+              const lookParams = await loadLook(lookName);
+              setParams(lookParams);
+              history.replace({ params: lookParams, activeLook: lookName });
+              return;
+            }
+          }
+        } catch {}
         setParams(disableAll);
-        // Replace (not commit) the initial present so we don't leave the
-        // pre-schema empty `{}` snapshot reachable via undo.
         history.replace({ params: disableAll, activeLook: null });
       })
       .catch((err: Error) => {
