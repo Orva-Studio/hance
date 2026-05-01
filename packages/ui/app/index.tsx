@@ -2,6 +2,7 @@ import "./styles.css";
 import { createRoot } from "react-dom/client";
 import * as Sentry from "@sentry/react";
 import { App } from "./App";
+import { ComparePage } from "./components/ComparePage";
 
 declare const HANCE_VERSION: string | undefined;
 
@@ -24,4 +25,5 @@ if (SENTRY_DSN) {
   });
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+const root = createRoot(document.getElementById("root")!);
+root.render(window.location.pathname === "/compare" ? <ComparePage /> : <App />);
