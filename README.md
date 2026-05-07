@@ -43,7 +43,7 @@ hance ui video.mp4
 Save your look as a `.hlook` preset from the UI, then batch-apply it from the CLI:
 
 ```sh
-hance video.mp4 --preset my-look
+hance *.mp4 --preset my-look
 ```
 
 Looks saved from the UI live in `~/.hance/presets/` and are referenced by name. Built-in presets (e.g. `--preset heavy`) work the same way.
