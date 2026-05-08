@@ -14,6 +14,10 @@ const GRAIN_FRAG: &str = include_str!("../../core/shaders/grain.frag.wgsl");
 const VIGNETTE_FRAG: &str = include_str!("../../core/shaders/vignette.frag.wgsl");
 const SPLIT_TONE_FRAG: &str = include_str!("../../core/shaders/split-tone.frag.wgsl");
 const SHAKE_FRAG: &str = include_str!("../../core/shaders/camera-shake.frag.wgsl");
+const DOWNSAMPLE_FRAG: &str = include_str!("../../core/shaders/downsample.frag.wgsl");
+const UPSAMPLE_FRAG: &str = include_str!("../../core/shaders/upsample.frag.wgsl");
+
+const MIP_LEVELS: usize = 6;
 
 const FORMAT: TextureFormat = TextureFormat::Rgba8Unorm;
 
@@ -52,16 +56,26 @@ pub struct GpuRenderer {
     color_ub: Buffer,
     threshold_ub: Buffer,
     blur_ub1: Buffer,
-    blur_ub2: Buffer,
     blend_ub: Buffer,
     aberration_ub: Buffer,
     grain_ub: Buffer,
     vignette_ub: Buffer,
     split_tone_ub: Buffer,
     shake_ub: Buffer,
+    aura_blend_ub: Buffer,
     bloom_blur_ub1: Buffer,
     bloom_blur_ub2: Buffer,
     bloom_blend_ub: Buffer,
+
+    // Mip chain bloom
+    mip_down: Vec<Texture>,
+    mip_up: Vec<Texture>,
+    mip_widths: Vec<u32>,
+    mip_heights: Vec<u32>,
+    downsample_pipeline: RenderPipeline,
+    upsample_pipeline: RenderPipeline,
+    downsample_ub: Buffer,
+    upsample_ub: Buffer,
 
     // Readback
     staging_buf: Buffer,
@@ -123,17 +137,34 @@ impl GpuRenderer {
         let vignette_pipeline = passes::create_pipeline(&device, VERT, VIGNETTE_FRAG, &std_layout, FORMAT);
         let split_tone_pipeline = passes::create_pipeline(&device, VERT, SPLIT_TONE_FRAG, &std_layout, FORMAT);
         let shake_pipeline = passes::create_pipeline(&device, VERT, SHAKE_FRAG, &std_layout, FORMAT);
+        let downsample_pipeline = passes::create_pipeline(&device, VERT, DOWNSAMPLE_FRAG, &std_layout, FORMAT);
+        let upsample_pipeline = passes::create_pipeline(&device, VERT, UPSAMPLE_FRAG, &blend_layout, FORMAT);
+
+        let mut mip_widths = Vec::with_capacity(MIP_LEVELS);
+        let mut mip_heights = Vec::with_capacity(MIP_LEVELS);
+        let mut mip_down = Vec::with_capacity(MIP_LEVELS);
+        let mut mip_up = Vec::with_capacity(MIP_LEVELS);
+        for i in 0..MIP_LEVELS {
+            let mw = (half_w >> i).max(1);
+            let mh = (half_h >> i).max(1);
+            mip_widths.push(mw);
+            mip_heights.push(mh);
+            mip_down.push(passes::create_texture(&device, mw, mh, FORMAT));
+            mip_up.push(passes::create_texture(&device, mw, mh, FORMAT));
+        }
 
         let color_ub = passes::create_uniform_buffer(&device, 32);
         let threshold_ub = passes::create_uniform_buffer(&device, 16);
         let blur_ub1 = passes::create_uniform_buffer(&device, 16);
-        let blur_ub2 = passes::create_uniform_buffer(&device, 16);
         let blend_ub = passes::create_uniform_buffer(&device, 16);
         let aberration_ub = passes::create_uniform_buffer(&device, 16);
         let grain_ub = passes::create_uniform_buffer(&device, 32);
         let vignette_ub = passes::create_uniform_buffer(&device, 16);
         let split_tone_ub = passes::create_uniform_buffer(&device, 32);
         let shake_ub = passes::create_uniform_buffer(&device, 16);
+        let aura_blend_ub = passes::create_uniform_buffer(&device, 16);
+        let downsample_ub = passes::create_uniform_buffer(&device, 16);
+        let upsample_ub = passes::create_uniform_buffer(&device, 16);
         let bloom_blur_ub1 = passes::create_uniform_buffer(&device, 16);
         let bloom_blur_ub2 = passes::create_uniform_buffer(&device, 16);
         let bloom_blend_ub = passes::create_uniform_buffer(&device, 16);
@@ -173,13 +204,21 @@ impl GpuRenderer {
             color_ub,
             threshold_ub,
             blur_ub1,
-            blur_ub2,
             blend_ub,
             aberration_ub,
             grain_ub,
             vignette_ub,
             split_tone_ub,
             shake_ub,
+            aura_blend_ub,
+            mip_down,
+            mip_up,
+            mip_widths,
+            mip_heights,
+            downsample_pipeline,
+            upsample_pipeline,
+            downsample_ub,
+            upsample_ub,
             bloom_blur_ub1,
             bloom_blur_ub2,
             bloom_blend_ub,
@@ -236,63 +275,126 @@ impl GpuRenderer {
         passes::run_pass(&mut encoder, &self.color_pipeline, &bg,
             &current_tex!().create_view(&TextureViewDescriptor::default()));
 
-        // --- Halation ---
+        // --- Halation (mip-chain bloom) ---
         if self.params.halation_enabled() {
             let amount = self.params.halation_amount();
             let radius = self.params.halation_radius();
-            let sigma = radius * 0.5;
+            let aura_amount = self.params.halation_aura();
+            let hue = self.params.halation_hue();
+            let sat = self.params.halation_saturation();
 
             if self.params.halation_highlights_only() {
-                self.write_uniform(&self.threshold_ub, &[0.65, 0.75, 0.0, 0.0]);
+                self.write_uniform(&self.threshold_ub, &[0.4, 0.9, 0.0, 0.0]);
                 let bg = passes::make_std_bind_group(
                     &self.device, &self.std_layout,
                     &current_tex!().create_view(&TextureViewDescriptor::default()),
                     &self.sampler, &self.threshold_ub,
                 );
                 passes::run_pass(&mut encoder, &self.threshold_pipeline, &bg,
-                    &self.half_a.create_view(&TextureViewDescriptor::default()));
+                    &self.mip_down[0].create_view(&TextureViewDescriptor::default()));
             } else {
-                self.write_uniform(&self.blur_ub1, &[0.0, 0.0, 0.001, 0.0]);
+                self.write_uniform(&self.downsample_ub, &[1.0 / self.width as f32, 1.0 / self.height as f32, 0.0, 0.0]);
                 let bg = passes::make_std_bind_group(
                     &self.device, &self.std_layout,
                     &current_tex!().create_view(&TextureViewDescriptor::default()),
-                    &self.sampler, &self.blur_ub1,
+                    &self.sampler, &self.downsample_ub,
                 );
-                passes::run_pass(&mut encoder, &self.blur_pipeline, &bg,
-                    &self.half_a.create_view(&TextureViewDescriptor::default()));
+                passes::run_pass(&mut encoder, &self.downsample_pipeline, &bg,
+                    &self.mip_down[0].create_view(&TextureViewDescriptor::default()));
             }
 
-            self.write_uniform(&self.blur_ub1, &[1.0 / half_w as f32, 0.0, sigma, 0.0]);
-            let h_bg = passes::make_std_bind_group(
-                &self.device, &self.std_layout,
-                &self.half_a.create_view(&TextureViewDescriptor::default()),
-                &self.sampler, &self.blur_ub1,
-            );
-            passes::run_pass(&mut encoder, &self.blur_pipeline, &h_bg,
-                &self.half_b.create_view(&TextureViewDescriptor::default()));
+            // Downsample chain
+            for i in 0..MIP_LEVELS - 1 {
+                self.write_uniform(&self.downsample_ub, &[
+                    1.0 / self.mip_widths[i] as f32,
+                    1.0 / self.mip_heights[i] as f32,
+                    0.0, 0.0,
+                ]);
+                let bg = passes::make_std_bind_group(
+                    &self.device, &self.std_layout,
+                    &self.mip_down[i].create_view(&TextureViewDescriptor::default()),
+                    &self.sampler, &self.downsample_ub,
+                );
+                passes::run_pass(&mut encoder, &self.downsample_pipeline, &bg,
+                    &self.mip_down[i + 1].create_view(&TextureViewDescriptor::default()));
+            }
 
-            self.write_uniform(&self.blur_ub2, &[0.0, 1.0 / half_h as f32, sigma, 0.0]);
-            let v_bg = passes::make_std_bind_group(
-                &self.device, &self.std_layout,
-                &self.half_b.create_view(&TextureViewDescriptor::default()),
-                &self.sampler, &self.blur_ub2,
-            );
-            passes::run_pass(&mut encoder, &self.blur_pipeline, &v_bg,
-                &self.half_a.create_view(&TextureViewDescriptor::default()));
+            let sigma = radius / 30.0;
 
-            let hue = self.params.halation_hue();
-            let sat = self.params.halation_saturation();
-            self.write_uniform(&self.blend_ub, &[amount, hue, sat, 0.0]);
+            // Primary halation: 4 mip levels
+            let primary_levels = MIP_LEVELS.min(4);
+            for step in 0..primary_levels - 1 {
+                let i = primary_levels - 2 - step;
+                let coarser_idx = i + 1;
+                let coarser_tex = if step == 0 { &self.mip_down[coarser_idx] } else { &self.mip_up[coarser_idx] };
+                let w = (-(step as f32) / sigma).exp();
+                self.write_uniform(&self.upsample_ub, &[
+                    w,
+                    1.0 / self.mip_widths[coarser_idx] as f32,
+                    1.0 / self.mip_heights[coarser_idx] as f32,
+                    0.0,
+                ]);
+                let bg = passes::make_blend_bind_group(
+                    &self.device, &self.blend_layout,
+                    &self.mip_down[i].create_view(&TextureViewDescriptor::default()),
+                    &self.sampler,
+                    &coarser_tex.create_view(&TextureViewDescriptor::default()),
+                    &self.upsample_ub,
+                );
+                passes::run_pass(&mut encoder, &self.upsample_pipeline, &bg,
+                    &self.mip_up[i].create_view(&TextureViewDescriptor::default()));
+            }
+
+            self.write_uniform(&self.blend_ub, &[amount, hue, sat * 0.5, 0.0]);
             let blend_bg = passes::make_blend_bind_group(
                 &self.device, &self.blend_layout,
                 &current_tex!().create_view(&TextureViewDescriptor::default()),
                 &self.sampler,
-                &self.half_a.create_view(&TextureViewDescriptor::default()),
+                &self.mip_up[0].create_view(&TextureViewDescriptor::default()),
                 &self.blend_ub,
             );
             passes::run_pass(&mut encoder, &self.blend_pipeline, &blend_bg,
                 &other_tex!().create_view(&TextureViewDescriptor::default()));
             swap!();
+
+            // Aura layer: all mip levels, heavier low-mip weighting
+            if aura_amount > 0.0 {
+                let aura_sigma = sigma * 0.5;
+                for step in 0..MIP_LEVELS - 1 {
+                    let i = MIP_LEVELS - 2 - step;
+                    let coarser_idx = i + 1;
+                    let coarser_tex = if step == 0 { &self.mip_down[coarser_idx] } else { &self.mip_up[coarser_idx] };
+                    let w = (-(step as f32) / aura_sigma).exp();
+                    self.write_uniform(&self.upsample_ub, &[
+                        w,
+                        1.0 / self.mip_widths[coarser_idx] as f32,
+                        1.0 / self.mip_heights[coarser_idx] as f32,
+                        0.0,
+                    ]);
+                    let bg = passes::make_blend_bind_group(
+                        &self.device, &self.blend_layout,
+                        &self.mip_down[i].create_view(&TextureViewDescriptor::default()),
+                        &self.sampler,
+                        &coarser_tex.create_view(&TextureViewDescriptor::default()),
+                        &self.upsample_ub,
+                    );
+                    passes::run_pass(&mut encoder, &self.upsample_pipeline, &bg,
+                        &self.mip_up[i].create_view(&TextureViewDescriptor::default()));
+                }
+
+                let aura_opacity = amount * aura_amount * 0.7;
+                self.write_uniform(&self.aura_blend_ub, &[aura_opacity, hue, sat, 0.0]);
+                let aura_blend_bg = passes::make_blend_bind_group(
+                    &self.device, &self.blend_layout,
+                    &current_tex!().create_view(&TextureViewDescriptor::default()),
+                    &self.sampler,
+                    &self.mip_up[0].create_view(&TextureViewDescriptor::default()),
+                    &self.aura_blend_ub,
+                );
+                passes::run_pass(&mut encoder, &self.blend_pipeline, &aura_blend_bg,
+                    &other_tex!().create_view(&TextureViewDescriptor::default()));
+                swap!();
+            }
         }
 
         // --- Chromatic Aberration ---

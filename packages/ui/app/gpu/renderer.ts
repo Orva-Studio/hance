@@ -1,7 +1,7 @@
 import {
   FULLSCREEN_VERT, COLOR_SETTINGS_FRAG, THRESHOLD_FRAG, BLUR_FRAG,
   SCREEN_BLEND_FRAG, ABERRATION_FRAG, GRAIN_FRAG, VIGNETTE_FRAG,
-  SPLIT_TONE_FRAG, CAMERA_SHAKE_FRAG,
+  SPLIT_TONE_FRAG, CAMERA_SHAKE_FRAG, DOWNSAMPLE_FRAG, UPSAMPLE_FRAG,
 } from "./shaders";
 import { createFullscreenPipeline, createTexture, runPass } from "./passes";
 import { getSplitToneTintValues } from "./splitToneMath";
@@ -83,6 +83,20 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const halfA = createTexture(device, halfW, halfH, format);
   const halfB = createTexture(device, halfW, halfH, format);
 
+  const MIP_LEVELS = 6;
+  const mipWidths: number[] = [];
+  const mipHeights: number[] = [];
+  const mipDown: GPUTexture[] = [];
+  const mipUp: GPUTexture[] = [];
+  for (let i = 0; i < MIP_LEVELS; i++) {
+    const w = Math.max(1, halfW >> i);
+    const h = Math.max(1, halfH >> i);
+    mipWidths.push(w);
+    mipHeights.push(h);
+    mipDown.push(createTexture(device, w, h, format));
+    mipUp.push(createTexture(device, w, h, format));
+  }
+
   const srcTex = device.createTexture({
     size: { width: sourceWidth, height: sourceHeight },
     format: "rgba8unorm",
@@ -98,6 +112,8 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const vignettePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, VIGNETTE_FRAG, stdLayout, format);
   const splitTonePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, SPLIT_TONE_FRAG, stdLayout, format);
   const shakePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, CAMERA_SHAKE_FRAG, stdLayout, format);
+  const downsamplePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, DOWNSAMPLE_FRAG, stdLayout, format);
+  const upsamplePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, UPSAMPLE_FRAG, blendLayout, format);
 
   const colorUB = createUniformBuffer(device, 32); // 8 floats
   const blitUB = createUniformBuffer(device, 32); // identity color pass for final blit
@@ -111,6 +127,9 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const vignetteUB = createUniformBuffer(device, 16);
   const splitToneUB = createUniformBuffer(device, 32);
   const shakeUB = createUniformBuffer(device, 16);
+  const auraBlendUB = createUniformBuffer(device, 16);
+  const downsampleUB = createUniformBuffer(device, 16);
+  const upsampleUB = createUniformBuffer(device, 16);
   const bloomBlurUB1 = createUniformBuffer(device, 16);
   const bloomBlurUB2 = createUniformBuffer(device, 16);
   const bloomBlendUB = createUniformBuffer(device, 16);
@@ -219,47 +238,85 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
       runPass(encoder, colorPipeline, bg, current.createView());
     }
 
-    // --- Halation ---
+    // --- Halation (mip-chain bloom) ---
     if (params["no-halation"] !== true) {
       const amount = num("halation-amount", 0.25);
       if (amount > 0) {
-        const radius = num("halation-radius", 4);
+        const radius = num("halation-radius", 30);
+        const auraAmount = num("halation-aura", 0.5);
         const highlightsOnly = bool("halation-highlights-only", true);
+        const hue = num("halation-hue", 0.04) * 360;
+        const sat = num("halation-saturation", 1);
 
-        // Save pre-halation result for blend
         const preHalation = current;
 
         if (highlightsOnly) {
-          // Threshold pass → halfA
           device.queue.writeBuffer(thresholdUB, 0, new Float32Array([0.4, 0.9, 0, 0]));
           const threshBG = makeStdBindGroup(current, thresholdUB);
-          runPass(encoder, thresholdPipeline, threshBG, halfA.createView());
+          runPass(encoder, thresholdPipeline, threshBG, mipDown[0].createView());
         } else {
-          // Downsample directly (use blur with sigma=0.001 as passthrough-ish)
-          device.queue.writeBuffer(blurUB1, 0, new Float32Array([0, 0, 0.001, 0]));
-          const bg = makeStdBindGroup(current, blurUB1);
-          runPass(encoder, blurPipeline, bg, halfA.createView());
+          device.queue.writeBuffer(downsampleUB, 0, new Float32Array([1.0 / previewWidth, 1.0 / previewHeight, 0, 0]));
+          const bg = makeStdBindGroup(current, downsampleUB);
+          runPass(encoder, downsamplePipeline, bg, mipDown[0].createView());
         }
 
-        // Horizontal blur → halfB
-        const sigma = radius * 0.5;
-        device.queue.writeBuffer(blurUB1, 0, new Float32Array([1.0 / halfW, 0, sigma, 0]));
-        const hBG = makeStdBindGroup(halfA, blurUB1);
-        runPass(encoder, blurPipeline, hBG, halfB.createView());
+        // Downsample chain
+        for (let i = 0; i < MIP_LEVELS - 1; i++) {
+          device.queue.writeBuffer(downsampleUB, 0, new Float32Array([1.0 / mipWidths[i], 1.0 / mipHeights[i], 0, 0]));
+          const bg = makeStdBindGroup(mipDown[i], downsampleUB);
+          runPass(encoder, downsamplePipeline, bg, mipDown[i + 1].createView());
+        }
 
-        // Vertical blur → halfA
-        device.queue.writeBuffer(blurUB2, 0, new Float32Array([0, 1.0 / halfH, sigma, 0]));
-        const vBG = makeStdBindGroup(halfB, blurUB2);
-        runPass(encoder, blurPipeline, vBG, halfA.createView());
+        const sigma = radius / 30.0;
 
-        // Screen blend halation with pre-halation → other
-        const hue = num("halation-hue", 0.04) * 360;
-        const sat = num("halation-saturation", 1);
-        const ambient = amount * 0.18;
-        device.queue.writeBuffer(blendUB, 0, new Float32Array([amount, hue, sat, ambient]));
-        const blendBG = makeBlendBindGroup(preHalation, halfA, blendUB);
+        function mipChainUpsample(startLevel: number, weights: number[]) {
+          for (let i = startLevel - 2; i >= 0; i--) {
+            const coarserIdx = i + 1;
+            const coarserTex = coarserIdx === startLevel - 1 ? mipDown[coarserIdx] : mipUp[coarserIdx];
+            const w = weights[startLevel - 2 - i];
+            device.queue.writeBuffer(upsampleUB, 0, new Float32Array([w, 1.0 / mipWidths[coarserIdx], 1.0 / mipHeights[coarserIdx], 0]));
+            const bg = device.createBindGroup({
+              layout: blendLayout,
+              entries: [
+                { binding: 0, resource: mipDown[i].createView() },
+                { binding: 1, resource: sampler },
+                { binding: 2, resource: coarserTex.createView() },
+                { binding: 3, resource: { buffer: upsampleUB } },
+              ],
+            });
+            runPass(encoder, upsamplePipeline, bg, mipUp[i].createView());
+          }
+        }
+
+        // Primary halation: 4 mip levels, exponential falloff weights
+        const primaryLevels = Math.min(4, MIP_LEVELS);
+        const primaryWeights: number[] = [];
+        for (let i = 0; i < primaryLevels; i++) {
+          primaryWeights.push(Math.exp(-i / sigma));
+        }
+        mipChainUpsample(primaryLevels, primaryWeights);
+
+        device.queue.writeBuffer(blendUB, 0, new Float32Array([amount, hue, sat * 0.5, 0]));
+        const blendBG = makeBlendBindGroup(preHalation, mipUp[0], blendUB);
         runPass(encoder, blendPipeline, blendBG, other.createView());
         swap();
+
+        // Aura layer: all mip levels, heavier low-mip weighting
+        if (auraAmount > 0) {
+          const preAura = current;
+          const auraWeights: number[] = [];
+          const auraSigma = sigma * 0.5;
+          for (let i = 0; i < MIP_LEVELS; i++) {
+            auraWeights.push(Math.exp(-i / auraSigma));
+          }
+          mipChainUpsample(MIP_LEVELS, auraWeights);
+
+          const auraOpacity = amount * auraAmount * 0.7;
+          device.queue.writeBuffer(auraBlendUB, 0, new Float32Array([auraOpacity, hue, sat, 0]));
+          const auraBlendBG = makeBlendBindGroup(preAura, mipUp[0], auraBlendUB);
+          runPass(encoder, blendPipeline, auraBlendBG, other.createView());
+          swap();
+        }
       }
     }
 

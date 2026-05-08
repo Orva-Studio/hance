@@ -1,9 +1,20 @@
 {
   "hance_version": "0.3.1",
   "name": "Velvia 50",
-  "description": "Fuji Velvia 50 — punchy, saturated slide film for vivid landscapes",
-  "keywords": ["velvia", "fuji", "landscape", "saturated", "slide"],
-  "characteristics": ["high saturation", "punchy contrast", "vivid greens and blues", "minimal grain"],
+  "description": "Fuji Velvia 50 \u2014 punchy, saturated slide film for vivid landscapes",
+  "keywords": [
+    "velvia",
+    "fuji",
+    "landscape",
+    "saturated",
+    "slide"
+  ],
+  "characteristics": [
+    "high saturation",
+    "punchy contrast",
+    "vivid greens and blues",
+    "minimal grain"
+  ],
   "params": {
     "exposure": -0.05,
     "contrast": 1.25,
@@ -15,7 +26,7 @@
     "richness": 1.35,
     "bleach-bypass": 0,
     "halation-amount": 0.1,
-    "halation-radius": 3,
+    "halation-radius": 22,
     "halation-saturation": 1,
     "halation-hue": 0.05,
     "halation-highlights-only": true,
@@ -33,6 +44,7 @@
     "split-tone-hue": 210,
     "split-tone-pivot": 0.3,
     "camera-shake-amount": 0,
-    "camera-shake-rate": 0.5
+    "camera-shake-rate": 0.5,
+    "halation-aura": 0.5
   }
 }

@@ -85,9 +85,10 @@ export function applyPreset(
   const halation: HalationOptions = {
     enabled: merged["no-halation"] ? false : true,
     amount: Number(merged["halation-amount"] ?? 0.25),
-    radius: Number(merged["halation-radius"] ?? 4),
+    radius: Number(merged["halation-radius"] ?? 30),
     saturation: Number(merged["halation-saturation"] ?? 1),
     hue: Number(merged["halation-hue"] ?? 0.04),
+    aura: Number(merged["halation-aura"] ?? 0.5),
     highlightsOnly: Boolean(merged["halation-highlights-only"] ?? true),
   };
 

@@ -67,7 +67,7 @@ impl Params {
     }
 
     pub fn halation_radius(&self) -> f32 {
-        self.num("halation-radius", 4.0)
+        self.num("halation-radius", 30.0)
     }
 
     pub fn halation_highlights_only(&self) -> bool {
@@ -75,11 +75,15 @@ impl Params {
     }
 
     pub fn halation_hue(&self) -> f32 {
-        self.num("halation-hue", 0.5) * 360.0
+        self.num("halation-hue", 0.04) * 360.0
     }
 
     pub fn halation_saturation(&self) -> f32 {
         self.num("halation-saturation", 1.0)
+    }
+
+    pub fn halation_aura(&self) -> f32 {
+        self.num("halation-aura", 0.5)
     }
 
     pub fn aberration_enabled(&self) -> bool {

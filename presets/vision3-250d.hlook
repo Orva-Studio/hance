@@ -1,9 +1,20 @@
 {
   "hance_version": "0.3.1",
   "name": "Vision3 250D",
-  "description": "Kodak Vision3 250D — modern motion-picture daylight stock with clean cinematic neutrality",
-  "keywords": ["vision3", "kodak", "cinema", "motion picture", "daylight"],
-  "characteristics": ["clean neutral", "wide latitude", "cinematic", "subtle grain"],
+  "description": "Kodak Vision3 250D \u2014 modern motion-picture daylight stock with clean cinematic neutrality",
+  "keywords": [
+    "vision3",
+    "kodak",
+    "cinema",
+    "motion picture",
+    "daylight"
+  ],
+  "characteristics": [
+    "clean neutral",
+    "wide latitude",
+    "cinematic",
+    "subtle grain"
+  ],
   "params": {
     "exposure": 0,
     "contrast": 1.08,
@@ -15,7 +26,7 @@
     "richness": 1.05,
     "bleach-bypass": 0.05,
     "halation-amount": 0.28,
-    "halation-radius": 7,
+    "halation-radius": 52,
     "halation-saturation": 1.2,
     "halation-hue": 0.04,
     "halation-highlights-only": true,
@@ -33,6 +44,7 @@
     "split-tone-hue": 200,
     "split-tone-pivot": 0.32,
     "camera-shake-amount": 0.12,
-    "camera-shake-rate": 0.45
+    "camera-shake-rate": 0.45,
+    "halation-aura": 0.5
   }
 }

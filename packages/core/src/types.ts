@@ -17,6 +17,7 @@ export interface HalationOptions {
   radius: number;
   saturation: number;
   hue: number;
+  aura: number;
   highlightsOnly: boolean;
 }
 
