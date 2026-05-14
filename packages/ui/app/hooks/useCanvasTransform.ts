@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, type MouseEvent } from "react";
 
 export const ZOOM_LEVELS = [25, 50, 75, 100, 150, 200] as const;
 export type ZoomLevel = (typeof ZOOM_LEVELS)[number] | "fit";
+export const PAN_ZERO = { x: 0, y: 0 } as const;
 
 interface CanvasTransform {
   zoom: ZoomLevel;
@@ -31,11 +32,11 @@ export function useCanvasTransform(): CanvasTransform {
   const resetPan = useCallback(() => setPan({ x: 0, y: 0 }), []);
 
   const onMouseDown = useCallback((e: MouseEvent) => {
-    if (!panMode) return;
+    if (!panMode || zoom === "fit") return;
     e.preventDefault();
     setIsPanning(true);
     dragStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
-  }, [panMode, pan]);
+  }, [panMode, pan, zoom]);
 
   const onMouseMove = useCallback((e: MouseEvent) => {
     if (!dragStart.current) return;

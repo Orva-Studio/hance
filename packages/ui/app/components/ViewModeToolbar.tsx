@@ -143,9 +143,9 @@ export function ViewModeToolbar({ mode, onChange, referenceDisabled, splitDisabl
       ><IconRedo /></button>
       <div className="self-stretch w-px bg-zinc-800 mx-1" />
       <button
-        onClick={() => mode === "normal" && onPanModeChange(!panMode)}
-        disabled={mode !== "normal"}
-        className={`${base} ${mode !== "normal" ? disabled : panMode ? active : idle}`}
+        onClick={() => mode === "normal" && zoom !== "fit" && onPanModeChange(!panMode)}
+        disabled={mode !== "normal" || zoom === "fit"}
+        className={`${base} ${mode !== "normal" || zoom === "fit" ? disabled : panMode ? active : idle}`}
         aria-label="Pan tool"
         title="Pan (H)"
       ><IconHand /></button>

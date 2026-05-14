@@ -316,12 +316,12 @@ export function App() {
     }
     function onKeyDown(e: KeyboardEvent) {
       if (isTextField(e)) return;
-      if (e.key === " " && !e.repeat) {
+      if (e.key === " " && !e.repeat && canvasTransform.zoom !== "fit") {
         e.preventDefault();
         spacebarPanRef.current = true;
         canvasTransform.setPanMode(true);
       }
-      if (e.key.toLowerCase() === "h") {
+      if (e.key.toLowerCase() === "h" && canvasTransform.zoom !== "fit") {
         canvasTransform.setPanMode(!canvasTransform.panMode);
       }
     }
@@ -334,7 +334,7 @@ export function App() {
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
     return () => { window.removeEventListener("keydown", onKeyDown); window.removeEventListener("keyup", onKeyUp); };
-  }, [viewMode, canvasTransform.panMode, canvasTransform.setPanMode]);
+  }, [viewMode, canvasTransform.zoom, canvasTransform.panMode, canvasTransform.setPanMode]);
 
   useEffect(() => {
     if (viewMode !== "normal") return;
