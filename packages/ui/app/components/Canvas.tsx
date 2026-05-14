@@ -1,7 +1,7 @@
 import { useRef, useEffect, type MouseEvent } from "react";
 import { createRenderer, type Renderer, type PreviewParams } from "../gpu/renderer";
 import { fitPreviewSize } from "../mediaSizing";
-import type { ZoomLevel } from "../hooks/useCanvasTransform";
+import { PAN_ZERO, type ZoomLevel } from "../hooks/useCanvasTransform";
 
 interface Props {
   src: string;
@@ -20,7 +20,7 @@ interface Props {
   onPanMouseUp?: () => void;
 }
 
-export function Canvas({ src, isVideo, params, onRendererReady, onCanvasReady, onVideoReady, onError, zoom = "fit", pan = { x: 0, y: 0 }, isPanning = false, panMode = false, onPanMouseDown, onPanMouseMove, onPanMouseUp }: Props) {
+export function Canvas({ src, isVideo, params, onRendererReady, onCanvasReady, onVideoReady, onError, zoom = "fit", pan = PAN_ZERO, isPanning = false, panMode = false, onPanMouseDown, onPanMouseMove, onPanMouseUp }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
