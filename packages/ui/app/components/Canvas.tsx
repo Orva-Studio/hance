@@ -20,7 +20,12 @@ interface Props {
   onPanMouseUp?: () => void;
 }
 
-export function Canvas({ src, isVideo, params, onRendererReady, onCanvasReady, onVideoReady, onError, zoom = "fit", pan = PAN_ZERO, isPanning = false, panMode = false, onPanMouseDown, onPanMouseMove, onPanMouseUp }: Props) {
+export function Canvas(props: Props) {
+  const { src, isVideo, params, onRendererReady, onCanvasReady, onVideoReady, onError } = props;
+  const zoom = props.zoom ?? "fit";
+  const pan = props.pan ?? PAN_ZERO;
+  const isPanning = props.isPanning ?? false;
+  const panMode = props.panMode ?? false;
   const videoRef = useRef<HTMLVideoElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -152,10 +157,10 @@ export function Canvas({ src, isVideo, params, onRendererReady, onCanvasReady, o
     <div
       className="relative flex-1 flex items-center justify-center flex-col"
       style={panMode ? { cursor: isPanning ? "grabbing" : "grab" } : undefined}
-      onMouseDown={onPanMouseDown}
-      onMouseMove={onPanMouseMove}
-      onMouseUp={onPanMouseUp}
-      onMouseLeave={onPanMouseUp}
+      onMouseDown={props.onPanMouseDown}
+      onMouseMove={props.onPanMouseMove}
+      onMouseUp={props.onPanMouseUp}
+      onMouseLeave={props.onPanMouseUp}
     >
       {isVideo && (
         <video
