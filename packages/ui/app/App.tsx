@@ -308,10 +308,12 @@ export function App() {
   }, [restoreActiveLook]);
 
   const spacebarPanRef = useRef(false);
+  const didPanRef = useRef(false);
   const zoomRef = useRef(canvasTransform.zoom);
   const panModeRef = useRef(canvasTransform.panMode);
   zoomRef.current = canvasTransform.zoom;
   panModeRef.current = canvasTransform.panMode;
+  if (canvasTransform.isPanning) didPanRef.current = true;
 
   useEffect(() => {
     if (viewMode !== "normal") return;
@@ -321,25 +323,36 @@ export function App() {
     }
     function onKeyDown(e: KeyboardEvent) {
       if (isTextField(e)) return;
-      if (e.key === " " && !e.repeat && zoomRef.current !== "fit") {
+      if (e.key === " ") {
         e.preventDefault();
-        spacebarPanRef.current = true;
-        canvasTransform.setPanMode(true);
+        if (!e.repeat && zoomRef.current !== "fit") {
+          spacebarPanRef.current = true;
+          canvasTransform.setPanMode(true);
+        }
       }
       if (e.key.toLowerCase() === "h" && zoomRef.current !== "fit") {
         canvasTransform.setPanMode(!panModeRef.current);
       }
     }
     function onKeyUp(e: KeyboardEvent) {
-      if (e.key === " " && spacebarPanRef.current) {
+      if (e.key !== " ") return;
+      if (isTextField(e)) return;
+      const didPan = didPanRef.current;
+      if (spacebarPanRef.current) {
         spacebarPanRef.current = false;
+        didPanRef.current = false;
         canvasTransform.setPanMode(false);
+      }
+      if (!didPan && videoElement) {
+        e.preventDefault();
+        if (videoElement.paused) videoElement.play();
+        else videoElement.pause();
       }
     }
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
     return () => { window.removeEventListener("keydown", onKeyDown); window.removeEventListener("keyup", onKeyUp); };
-  }, [viewMode, canvasTransform.setPanMode]);
+  }, [viewMode, canvasTransform.setPanMode, videoElement]);
 
   useEffect(() => {
     if (viewMode !== "normal") return;

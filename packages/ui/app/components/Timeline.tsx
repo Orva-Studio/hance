@@ -79,20 +79,7 @@ export function Timeline({ videoRef }: Props) {
     };
   }, [videoRef]);
 
-  // Spacebar play/pause — must be useEffect since it's a global keyboard listener
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.code === "Space" && e.target === document.body) {
-        e.preventDefault();
-        if (videoRef) {
-          if (videoRef.paused) videoRef.play();
-          else videoRef.pause();
-        }
-      }
-    }
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [videoRef]);
+
 
   const seekToPosition = useCallback((clientX: number) => {
     if (!trackRef.current || !videoRef || !durationRef.current) return;
