@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, type MouseEvent } from "react";
 
-export const ZOOM_LEVELS = [25, 50, 75, 100, 150, 200] as const;
+export const ZOOM_LEVELS = [25, 50, 75, 100, 200, 300, 400] as const;
+export const ZOOM_LEVELS_DESC = [...ZOOM_LEVELS].reverse();
 export type ZoomLevel = (typeof ZOOM_LEVELS)[number] | "fit";
 export const PAN_ZERO = { x: 0, y: 0 } as const;
 
@@ -23,6 +24,8 @@ export function useCanvasTransform(): CanvasTransform {
   const [panMode, setPanMode] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
   const dragStart = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
+  const panRef = useRef(pan);
+  panRef.current = pan;
 
   const setZoom = useCallback((z: ZoomLevel) => {
     setZoomState(z);
@@ -35,8 +38,8 @@ export function useCanvasTransform(): CanvasTransform {
     if (!panMode || zoom === "fit") return;
     e.preventDefault();
     setIsPanning(true);
-    dragStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
-  }, [panMode, pan, zoom]);
+    dragStart.current = { x: e.clientX, y: e.clientY, panX: panRef.current.x, panY: panRef.current.y };
+  }, [panMode, zoom]);
 
   const onMouseMove = useCallback((e: MouseEvent) => {
     if (!dragStart.current) return;
@@ -47,6 +50,7 @@ export function useCanvasTransform(): CanvasTransform {
   }, []);
 
   const onMouseUp = useCallback(() => {
+    if (!dragStart.current) return;
     dragStart.current = null;
     setIsPanning(false);
   }, []);

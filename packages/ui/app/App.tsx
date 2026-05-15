@@ -4,7 +4,7 @@ import { useInitialFile } from "./hooks/useInitialFile";
 import { useLooks } from "./hooks/useLooks";
 import { useResizable } from "./hooks/useResizable";
 import { useHistory } from "./hooks/useHistory";
-import { useCanvasTransform, ZOOM_LEVELS } from "./hooks/useCanvasTransform";
+import { useCanvasTransform, ZOOM_LEVELS, ZOOM_LEVELS_DESC } from "./hooks/useCanvasTransform";
 import { TopBar } from "./components/TopBar";
 import { LooksPanel } from "./components/LooksPanel";
 import { AdjustmentsPanel } from "./components/AdjustmentsPanel";
@@ -308,6 +308,11 @@ export function App() {
   }, [restoreActiveLook]);
 
   const spacebarPanRef = useRef(false);
+  const zoomRef = useRef(canvasTransform.zoom);
+  const panModeRef = useRef(canvasTransform.panMode);
+  zoomRef.current = canvasTransform.zoom;
+  panModeRef.current = canvasTransform.panMode;
+
   useEffect(() => {
     if (viewMode !== "normal") return;
     function isTextField(e: KeyboardEvent) {
@@ -316,13 +321,13 @@ export function App() {
     }
     function onKeyDown(e: KeyboardEvent) {
       if (isTextField(e)) return;
-      if (e.key === " " && !e.repeat && canvasTransform.zoom !== "fit") {
+      if (e.key === " " && !e.repeat && zoomRef.current !== "fit") {
         e.preventDefault();
         spacebarPanRef.current = true;
         canvasTransform.setPanMode(true);
       }
-      if (e.key.toLowerCase() === "h" && canvasTransform.zoom !== "fit") {
-        canvasTransform.setPanMode(!canvasTransform.panMode);
+      if (e.key.toLowerCase() === "h" && zoomRef.current !== "fit") {
+        canvasTransform.setPanMode(!panModeRef.current);
       }
     }
     function onKeyUp(e: KeyboardEvent) {
@@ -334,28 +339,28 @@ export function App() {
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
     return () => { window.removeEventListener("keydown", onKeyDown); window.removeEventListener("keyup", onKeyUp); };
-  }, [viewMode, canvasTransform.zoom, canvasTransform.panMode, canvasTransform.setPanMode]);
+  }, [viewMode, canvasTransform.setPanMode]);
 
   useEffect(() => {
     if (viewMode !== "normal") return;
     function onWheel(e: WheelEvent) {
       if (!e.ctrlKey && !e.metaKey) return;
       e.preventDefault();
-      const current = canvasTransform.zoom;
+      const current = zoomRef.current;
       const currentNum = current === "fit" ? 100 : current;
       const idx = ZOOM_LEVELS.indexOf(currentNum as (typeof ZOOM_LEVELS)[number]);
       if (e.deltaY < 0) {
         const next = idx === -1 ? ZOOM_LEVELS.find(z => z > currentNum) : ZOOM_LEVELS[idx + 1];
         if (next) canvasTransform.setZoom(next);
       } else {
-        const prev = idx === -1 ? [...ZOOM_LEVELS].reverse().find(z => z < currentNum) : ZOOM_LEVELS[idx - 1];
+        const prev = idx === -1 ? ZOOM_LEVELS_DESC.find(z => z < currentNum) : ZOOM_LEVELS[idx - 1];
         if (prev) canvasTransform.setZoom(prev);
         else canvasTransform.setZoom("fit");
       }
     }
     window.addEventListener("wheel", onWheel, { passive: false });
     return () => window.removeEventListener("wheel", onWheel);
-  }, [viewMode, canvasTransform.zoom, canvasTransform.setZoom]);
+  }, [viewMode, canvasTransform.setZoom]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -452,22 +457,20 @@ export function App() {
         {/* Center — Canvas */}
         <div className="flex-1 flex items-center justify-center p-4 min-w-0 relative overflow-hidden">
           {file && (
-            <>
-              <ViewModeToolbar
-                mode={viewMode}
-                onChange={handleViewModeChange}
-                splitDisabled={!file}
-                referenceDisabled={false}
-                canUndo={history.canUndo}
-                canRedo={history.canRedo}
-                onUndo={() => applySnapshot(historyRef.current.undo())}
-                onRedo={() => applySnapshot(historyRef.current.redo())}
-                zoom={canvasTransform.zoom}
-                onZoomChange={canvasTransform.setZoom}
-                panMode={canvasTransform.panMode}
-                onPanModeChange={canvasTransform.setPanMode}
-              />
-            </>
+            <ViewModeToolbar
+              mode={viewMode}
+              onChange={handleViewModeChange}
+              splitDisabled={!file}
+              referenceDisabled={false}
+              canUndo={history.canUndo}
+              canRedo={history.canRedo}
+              onUndo={() => applySnapshot(historyRef.current.undo())}
+              onRedo={() => applySnapshot(historyRef.current.redo())}
+              zoom={canvasTransform.zoom}
+              onZoomChange={canvasTransform.setZoom}
+              panMode={canvasTransform.panMode}
+              onPanModeChange={canvasTransform.setPanMode}
+            />
           )}
           {previewError && !isVideo ? (
             <div className="flex flex-col items-center gap-3 max-w-md text-center p-6 bg-zinc-900 rounded-lg border border-danger/40">

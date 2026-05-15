@@ -86,7 +86,7 @@ function ZoomDropdown({ zoom, onZoomChange, disabled: isDisabled }: { zoom: Zoom
               onClick={() => { onZoomChange(z); setOpen(false); }}
               className={`block w-full text-left px-3 py-1 text-xs transition-colors ${z === zoom ? "text-zinc-100 bg-zinc-700" : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700"}`}
             >
-              {z === "fit" ? "Fit to screen" : `${z}%`}
+              {z === "fit" ? "Fit" : `${z}%`}
             </button>
           ))}
         </div>
