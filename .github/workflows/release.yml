@@ -55,9 +55,6 @@ jobs:
             packages/wgpu/target
           key: ${{ matrix.platform }}-cargo-${{ hashFiles('packages/wgpu/Cargo.lock') }}
 
-      - name: Install ffmpeg (Linux, for tests only)
-        if: startsWith(matrix.platform, 'linux')
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: Cache rcodesign (macOS)
         if: startsWith(matrix.platform, 'macos')
