@@ -148,3 +148,56 @@ jobs:
             artifacts/hance-*.tar.gz \
             artifacts/checksums.txt \
             artifacts/install.sh
+
+  publish-npm:
+    needs: [build, release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: v
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Extract artifacts
+        run: |
+          mkdir -p staging
+          for tarball in artifacts/hance-*.tar.gz; do
+            tar -xzf "$tarball" -C staging
+          done
+
+      - name: Prepare npm packages
+        run: bun run scripts/prepare-npm.ts staging ${{ steps.v.outputs.version }}
+
+      - name: Set executable bits
+        run: |
+          chmod +x npm/@orva-studio/cli-*/bin/hance
+          chmod +x npm/@orva-studio/cli-*/bin/hance-gpu
+          chmod +x npm/hance/bin/hance
+
+      - name: Publish platform packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+          for pkg in npm/@orva-studio/cli-*/; do
+            if [ -d "$pkg/bin" ]; then
+              npm publish "$pkg" --access public
+            fi
+          done
+
+      - name: Publish wrapper package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish npm/hance --access public
