@@ -1,0 +1,37 @@
+#!/usr/bin/env node
+
+const { execFileSync } = require("child_process");
+const path = require("path");
+
+const PLATFORMS = {
+  "darwin-arm64": "@orva-studio/cli-darwin-arm64",
+  "darwin-x64": "@orva-studio/cli-darwin-x64",
+  "linux-x64": "@orva-studio/cli-linux-x64",
+  "linux-arm64": "@orva-studio/cli-linux-arm64",
+};
+
+const key = `${process.platform}-${process.arch}`;
+const pkg = PLATFORMS[key];
+
+if (!pkg) {
+  console.error(`hance: unsupported platform ${key}`);
+  process.exit(1);
+}
+
+let binPath;
+try {
+  binPath = path.join(require.resolve(`${pkg}/package.json`), "..", "bin", "hance");
+} catch {
+  console.error(
+    `hance: platform package ${pkg} is not installed.\n` +
+    `Try reinstalling with: npm install -g @orva-studio/hance`
+  );
+  process.exit(1);
+}
+
+try {
+  execFileSync(binPath, process.argv.slice(2), { stdio: "inherit" });
+} catch (e) {
+  if (e.status != null) process.exit(e.status);
+  throw e;
+}
