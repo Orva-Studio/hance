@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 export const MAX_UPLOAD_BYTES = 16 * 1024 * 1024 * 1024;
 
@@ -29,17 +29,19 @@ export function useUpload() {
     file: null, objectUrl: null, proxyUrl: null, isVideo: false, error: null,
   });
 
+  const prevUrlRef = useRef<string | null>(null);
   const upload = useCallback((file: File) => {
     const sizeError = validateUploadSize(file.size);
     if (sizeError) {
       setState(s => ({ ...s, error: sizeError }));
       return;
     }
-    if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
+    if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
     const url = URL.createObjectURL(file);
+    prevUrlRef.current = url;
     const isVideo = file.type.startsWith("video/");
     setState({ file, objectUrl: url, proxyUrl: null, isVideo, error: null });
-  }, [state.objectUrl]);
+  }, []);
 
   const setProxyUrl = useCallback((proxyUrl: string) => {
     setState(s => ({ ...s, proxyUrl }));

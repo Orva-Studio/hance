@@ -11,7 +11,7 @@ export interface PreviewParams {
 }
 
 export interface Renderer {
-  setSource(source: HTMLVideoElement | HTMLImageElement): void;
+  setSource(source: HTMLVideoElement | HTMLImageElement): Promise<void>;
   setSourceFromBuffer(data: Uint8Array, width: number, height: number): void;
   setParams(params: PreviewParams): void;
   renderFrame(): void;
@@ -116,6 +116,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const bloomBlendUB = createUniformBuffer(device, 16);
 
   let source: HTMLVideoElement | HTMLImageElement | null = null;
+  let imageBitmap: ImageBitmap | null = null;
   let bufferSource: { data: Uint8Array; width: number; height: number } | null = null;
   let params: PreviewParams = {};
   let frameCount = 0;
@@ -166,9 +167,9 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
           { width: sourceWidth, height: sourceHeight },
         );
         frame.close();
-      } else {
+      } else if (imageBitmap) {
         device.queue.copyExternalImageToTexture(
-          { source },
+          { source: imageBitmap },
           { texture: srcTex },
           { width: sourceWidth, height: sourceHeight },
         );
@@ -440,9 +441,13 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   }
 
   return {
-    setSource(s: HTMLVideoElement | HTMLImageElement) {
+    async setSource(s: HTMLVideoElement | HTMLImageElement) {
       source = s;
       bufferSource = null;
+      if (imageBitmap) { imageBitmap.close(); imageBitmap = null; }
+      if (s instanceof HTMLImageElement) {
+        imageBitmap = await createImageBitmap(s);
+      }
     },
     setSourceFromBuffer,
     setParams(p: PreviewParams) {
@@ -451,6 +456,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
     renderFrame,
     readPixels,
     destroy() {
+      if (imageBitmap) { imageBitmap.close(); imageBitmap = null; }
       texA.destroy();
       texB.destroy();
       halfA.destroy();

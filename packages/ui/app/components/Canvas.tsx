@@ -82,7 +82,7 @@ export function Canvas(props: Props) {
           previewWidth: previewSize.width,
           previewHeight: previewSize.height,
         });
-        renderer.setSource(video);
+        await renderer.setSource(video);
         renderer.setParams(paramsRef.current);
         rendererRef.current = renderer;
         onRendererReady(renderer);
@@ -109,6 +109,7 @@ export function Canvas(props: Props) {
           };
           if (img.complete && img.naturalWidth > 0) { clearTimeout(timeout); resolve(); }
         });
+        await img.decode();
         const sourceWidth = img.naturalWidth;
         const sourceHeight = img.naturalHeight;
         const previewSize = fitPreviewSize(sourceWidth, sourceHeight);
@@ -120,7 +121,7 @@ export function Canvas(props: Props) {
           previewWidth: previewSize.width,
           previewHeight: previewSize.height,
         });
-        renderer.setSource(img);
+        await renderer.setSource(img);
         renderer.setParams(paramsRef.current);
         renderer.renderFrame();
         rendererRef.current = renderer;
