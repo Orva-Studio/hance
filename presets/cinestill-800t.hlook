@@ -17,7 +17,7 @@
     "halation-amount": 0.7,
     "halation-radius": 14,
     "halation-saturation": 1.8,
-    "halation-hue": 0.01,
+    "halation-hue": 0.03,
     "halation-highlights-only": true,
     "aberration": 0.45,
     "bloom-amount": 0.45,
