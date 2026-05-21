@@ -23,8 +23,8 @@ Pick the subcommand from the user's request. When in doubt, ask.
 
 Pick one runner per invocation, in order:
 
-1. If `command -v bun` succeeds → use `bunx hance@latest` (preferred — fast cold-start, cached after first fetch).
-2. Else → use `npx hance@latest`.
+1. If `command -v bun` succeeds → use `bunx @orva-studio/hance` (preferred — fast cold-start, cached after first fetch).
+2. Else → use `npx @orva-studio/hance`.
 
 There is no compiled-binary install path. Every subcommand must work on a fresh machine; `setup` only verifies Bun + ffmpeg and shows examples.
 
