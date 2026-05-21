@@ -1,6 +1,6 @@
 # /hance setup
 
-Get the user ready to run Hance. There is no compiled-binary install path — every Hance invocation goes through `bunx hance@latest` (or `npx hance@latest` if Bun is unavailable). This subcommand just verifies prerequisites and shows the user some example commands.
+Get the user ready to run Hance. There is no compiled-binary install path — every Hance invocation goes through `bunx @orva-studio/hance` (or `npx @orva-studio/hance` if Bun is unavailable). This subcommand just verifies prerequisites and shows the user some example commands.
 
 ## When to use
 
@@ -15,7 +15,7 @@ The user explicitly asks to "install hance" or "set up hance", or is running Han
    ```sh
    curl -fsSL https://bun.sh/install | bash
    ```
-   Bun is the preferred runner — it's faster than `npx` and handles the cold-start better. If the user refuses Bun, `npx hance@latest` is the fallback (no extra setup needed beyond a working Node.js).
+   Bun is the preferred runner — it's faster than `npx` and handles the cold-start better. If the user refuses Bun, `npx @orva-studio/hance` is the fallback (no extra setup needed beyond a working Node.js).
 
 3. **ffmpeg check.** Run `command -v ffmpeg`. If missing, offer to install it (always confirm before running `sudo`):
    - macOS: `brew install ffmpeg` (only if `command -v brew` succeeds; otherwise tell them to install Homebrew first).
@@ -27,19 +27,21 @@ The user explicitly asks to "install hance" or "set up hance", or is running Han
      - `apk` → `sudo apk add ffmpeg`
    - If no package manager is recognized, just print the requirement and stop.
 
-4. **Show the user what they can do.** Print a short list of example invocations so they have something concrete to try next. Pick whichever runner is available — `bunx` if Bun is installed, otherwise `npx`:
+4. **Hance check.** Run `bunx @orva-studio/hance -v` (or `npx @orva-studio/hance -v` if no Bun). If it prints a version, Hance is working. If it errors, troubleshoot before continuing.
+
+5. **Show the user what they can do.** Print a short list of example invocations so they have something concrete to try next. Pick whichever runner is available — `bunx` if Bun is installed, otherwise `npx`:
 
    ```sh
    # Show help / list presets
-   bunx hance@latest --help
-   bunx hance@latest preset list
+   bunx @orva-studio/hance --help
+   bunx @orva-studio/hance preset list
 
    # Apply a preset to one file
-   bunx hance@latest input.jpg -o out.jpg --preset portra-400
-   bunx hance@latest input.mp4 -o out.mp4 --preset cinestill-800t
+   bunx @orva-studio/hance input.jpg -o out.jpg --preset portra-400
+   bunx @orva-studio/hance input.mp4 -o out.mp4 --preset cinestill-800t
 
    # Open the editor (UI)
-   bunx hance@latest ui
+   bunx @orva-studio/hance ui
 
    # Explore looks for a reference (uses /hance try)
    #   "make this look like portra"
@@ -51,5 +53,5 @@ The user explicitly asks to "install hance" or "set up hance", or is running Han
 ## Hard rules
 
 - Do **not** suggest a binary install or a curl-from-GitHub installer. There is no longer one.
-- Do **not** offer to "upgrade" Hance — `bunx hance@latest` always pulls the latest version on its own.
+- Do **not** offer to "upgrade" Hance — `bunx @orva-studio/hance` always pulls the latest version on its own.
 - Do **not** install Bun or ffmpeg without confirming with the user first.
