@@ -28,7 +28,7 @@ async function createGenerator(): Promise<Generator> {
     previewWidth: THUMB_SIZE,
     previewHeight: THUMB_SIZE,
   });
-  renderer.setSource(reference);
+  await renderer.setSource(reference);
 
   const out2d = document.createElement("canvas");
   out2d.width = THUMB_SIZE;
