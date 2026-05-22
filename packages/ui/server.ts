@@ -1,7 +1,7 @@
 import { EFFECT_SCHEMA, loadPreset, builtinPresetsDir, userPresetsDir, listPresetNames, probe, rebuildPresetIndex } from "@hance/core";
 import type { PresetData } from "@hance/core";
 import { runGpuExport } from "@hance/cli/src/pipeline";
-import { join, extname, basename } from "node:path";
+import { join, extname, basename, resolve } from "node:path";
 import { existsSync, readdirSync, mkdirSync, writeFileSync, unlinkSync, renameSync, rmSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
 import { transcodeToH264Stream } from "./lib/transcode";
@@ -26,7 +26,7 @@ let initialFilePath: string | null = null;
 const allowedFilePaths = new Set<string>();
 
 export function allowFilePath(path: string): void {
-  allowedFilePaths.add(path);
+  allowedFilePaths.add(resolve(path));
 }
 
 export function setInitialFile(path: string | null): void {
@@ -63,7 +63,8 @@ export function createServer(port: number) {
       }
 
       if (url.pathname === "/api/local-file" && req.method === "GET") {
-        const filePath = url.searchParams.get("path");
+        const rawPath = url.searchParams.get("path");
+        const filePath = rawPath ? resolve(rawPath) : null;
         if (!filePath || !allowedFilePaths.has(filePath) || !existsSync(filePath)) {
           return new Response("File not found", { status: 404 });
         }
