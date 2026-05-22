@@ -1,6 +1,6 @@
 # `/compare` page
 
-A route in `packages/ui` that displays a 2×2 grid: the original plus three variant renders, each with an **Edit** button that opens the editor seeded with that look.
+A route in `packages/ui` that displays a 2×2 grid: the original plus three option renders, each with an **Edit** button that opens the editor seeded with that look.
 
 ## URL contract
 
@@ -8,7 +8,7 @@ A route in `packages/ui` that displays a 2×2 grid: the original plus three vari
 http://localhost:<port>/compare
   ?kind=image|video
   &original=<absolute-path>
-  &v1=<abs-path-to-rendered-variant>
+  &v1=<abs-path-to-rendered-option>
   &v2=<abs>
   &v3=<abs>
   &v1Look=<abs-path-to-.hlook>
@@ -21,7 +21,7 @@ http://localhost:<port>/compare
 
 ## Edit hand-off
 
-Clicking **Edit** on a variant cell navigates to:
+Clicking **Edit** on a option cell navigates to:
 
 ```
 /?look=<abs-path-to-vNLook>

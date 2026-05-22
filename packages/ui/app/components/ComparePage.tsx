@@ -16,9 +16,9 @@ export function ComparePage() {
   const kind = params.get("kind") === "video" ? "video" : "image";
   const original = params.get("original");
   const variants: Variant[] = [
-    { label: "Variant 1", src: params.get("v1"), lookPath: params.get("v1Look") },
-    { label: "Variant 2", src: params.get("v2"), lookPath: params.get("v2Look") },
-    { label: "Variant 3", src: params.get("v3"), lookPath: params.get("v3Look") },
+    { label: "A", src: params.get("v1"), lookPath: params.get("v1Look") },
+    { label: "B", src: params.get("v2"), lookPath: params.get("v2Look") },
+    { label: "C", src: params.get("v3"), lookPath: params.get("v3Look") },
   ];
 
   function editVariant(i: number) {
@@ -51,7 +51,9 @@ export function ComparePage() {
 
   return (
     <div className="h-screen bg-zinc-950 text-zinc-100 flex flex-col p-4 gap-3">
-      <div className="text-sm text-zinc-400">Compare — pick a variant to edit</div>
+      <div className="rounded-lg bg-indigo-600 px-4 py-3 text-center text-sm font-medium text-white">
+        Tell your agent which option you'd like to use — A, B, or C.
+      </div>
       <div className="flex-1 grid grid-cols-2 grid-rows-2 gap-3 min-h-0">
         <Cell title="Original" src={fileUrl(original)} />
         {variants.map((v, i) => (

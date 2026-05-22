@@ -17,7 +17,7 @@ The exploratory entry point. Generate 3 candidate looks for one image or video, 
 1. **Pick 3 looks.**
    - Read `presets/index.json` (see `references/preset-index.md` for schema). For prompt or reference inputs, score entries against `keywords` + `characteristics` + `description` and pick the top matches.
    - If fewer than 3 strong matches exist, generate new `.hlook` files to fill the slate. Save them with `<runner> preset save <name> <flags>`. Saving rebuilds the preset index automatically.
-2. **Render the variants.**
+2. **Render the options.**
    - Make a temp dir: `WORK=$(mktemp -d -t hance-try)`.
    - For each of the 3 looks, render the file to `$WORK/v{1,2,3}.png` (image) or extract a still at t=1s for video. Use `<runner> preview <file> --preset <name> -o $WORK/v<N>.png`.
    - Also copy/symlink the original to `$WORK/original.<ext>` so the compare page can read it.
@@ -29,11 +29,11 @@ The exploratory entry point. Generate 3 candidate looks for one image or video, 
      &v1Look=<abs-to-.hlook>&v2Look=<abs>&v3Look=<abs>
    ```
    See `references/compare-page.md` for the exact contract.
-4. The user picks a variant in-browser. Clicking **Edit** seeds the editor with that look — you do not need to do anything else after opening the page.
+4. The compare page labels the options **A**, **B**, and **C**. A banner tells the user to come back to the agent and say which one they want. Wait for the user to tell you their pick, then proceed accordingly.
 
 ## Hard rules
 
 - Use `hance preview` (still) for rendering candidates. Never run a full video render here.
-- Render at most 3 variants. More is overwhelming and slow.
+- Render at most 3 options. More is overwhelming and slow.
 - Do not block the terminal waiting on the user's pick — open the browser and stop.
 - Any new `.hlook` you create must include `name`, `description`, `keywords`, and `characteristics` so the index entry is useful.
