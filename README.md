@@ -2,14 +2,15 @@
 
 > ⚠️ **Alpha software.** Hance is early-stage and has mainly been tested on macOS by a single developer. Expect rough edges on Linux/Windows, and pin versions if you use it in anything important.
 
-**A cinematic film-look engine for video and stills.** Dial in a look in the browser UI, then apply it headlessly across a whole folder from the CLI — GPU-accelerated colour, halation, bloom, grain, vignette, split-tone, aberration, and camera shake in a single pass. One binary, no plugins, no subscriptions.
+**Preview a cinematic film look in the browser, then batch-apply it from the CLI.** GPU-accelerated colour, halation, bloom, grain, vignette, split-tone, aberration, and camera shake — one binary, no plugins, no subscriptions.
 
 ### Why hance?
 
-- **One-pass processing** — all effects compose into a single GPU render graph. No intermediate files, no re-encoding chains.
+- **Preview + pipeline** — dial in a look visually with `hance ui`, save it as a preset, then batch-apply across footage from the command line. No other tool gives you both.
 - **GPU-accelerated** — native wgpu sidecar renders effects on the GPU. Fast enough for batch workflows.
-- **Pipeline-first** — a single binary with CLI flags, presets, and batch input. Script it, cron it, plug it into your ingest pipeline.
-- **Optional browser UI** — `hance ui` launches a local preview app when you want to dial in a look interactively.
+- **One-pass processing** — all effects compose into a single GPU render graph. No intermediate files, no re-encoding chains.
+- **Scriptable** — a single binary with CLI flags, presets, and batch input. Script it, cron it, plug it into your ingest pipeline.
+- **Agent-friendly** — ships with a Claude Code skill. Describe the look you want in plain English — no CLI knowledge needed.
 - **No vendor lock-in** — runs on your machine, processes your files locally. Your footage never leaves your disk.
 
 ### Effects
@@ -155,6 +156,22 @@ hance ui                      # opens http://localhost:4800 in your browser
 hance ui path/to/video.mp4    # open the UI with a file preloaded
 hance ui --port 5000          # custom port
 hance ui --no-open            # don't auto-open browser
+```
+
+### AI agent friendly
+
+Hance ships with a Claude Code skill. No CLI knowledge needed — just describe the look you want in natural language.
+
+```
+> /hance run Kodak Portra 400 on my-video.mp4
+> /hance try a warm 70s portra look on sunset.mp4
+> /hance batch apply a vintage look to everything in ./footage
+```
+
+Install the skill outside this repo:
+
+```bash
+ln -s path/to/hancer/skills/hance ~/.claude/skills/hance
 ```
 
 ---
