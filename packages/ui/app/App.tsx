@@ -184,6 +184,7 @@ export function App() {
     refreshLooks();
   }, []);
 
+  const isCompareEdit = new URLSearchParams(window.location.search).has("look");
   const leftPanel = useResizable({ defaultSize: 240, minSize: 200, maxSize: 400, direction: "horizontal" });
   const rightPanel = useResizable({ defaultSize: 350, minSize: 250, maxSize: 500, direction: "horizontal", reverse: true });
   const bottomPanel = useResizable({ defaultSize: 180, minSize: 100, maxSize: 250, direction: "vertical", reverse: true });
@@ -440,6 +441,11 @@ export function App() {
 
   return (
     <div className="h-screen flex flex-col bg-zinc-950">
+      {isCompareEdit && (
+        <div className="bg-indigo-600 px-4 py-3 text-center text-sm font-medium text-white">
+          When you're happy with your edits, tell your agent to apply this look.
+        </div>
+      )}
       <TopBar
         filename={file?.name || null}
         file={file}

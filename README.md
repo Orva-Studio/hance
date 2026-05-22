@@ -6,7 +6,8 @@
 
 ### Who is this for?
 
-- **Solo creators** who want a cinematic film look without learning DaVinci Resolve or buying plugins. Edit in whatever you like, export, run `hance`, done.
+- **Creators whose editors don't support LUTs** — CapCut, ScreenFlow, iMovie, browser-based editors, and mobile NLEs have no LUT pipeline. Hance gives you cinematic film looks that weren't possible before. Process your clips before you import them — done.
+- **Creators who want more than a LUT** — halation, grain, bloom, aberration, and camera shake are spatial effects that LUTs literally cannot do. Hance bundles colour grading and film texture into one step, no plugins required.
 - **Automation pipelines** — agencies, studios, or platforms that need to batch-apply a consistent look across hundreds of clips with no GUI in the loop.
 - **Developers** building apps that need film effects programmatically — social video platforms, AI video pipelines, content tools.
 
