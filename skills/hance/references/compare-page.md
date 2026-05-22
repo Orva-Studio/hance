@@ -21,7 +21,7 @@ http://localhost:<port>/compare
 
 ## Edit hand-off
 
-Clicking **Edit** on a option cell navigates to:
+Clicking **Edit** on an option cell navigates to:
 
 ```
 /?look=<abs-path-to-vNLook>

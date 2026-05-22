@@ -173,7 +173,9 @@ export function App() {
             history.replace({ params: lookParams, activeLook: lookName });
             return;
           }
-        } catch {}
+        } catch {
+          // Look failed to load — fall through to default (all effects off).
+        }
         setParams(disableAll);
         history.replace({ params: disableAll, activeLook: null });
       })
