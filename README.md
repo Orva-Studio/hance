@@ -4,6 +4,14 @@
 
 **Preview a cinematic film look in the browser, then batch-apply it from the CLI.** GPU-accelerated colour, halation, bloom, grain, vignette, split-tone, aberration, and camera shake — one binary, no plugins, no subscriptions.
 
+### Who is this for?
+
+- **Solo creators** who want a cinematic film look without learning DaVinci Resolve or buying plugins. Edit in whatever you like, export, run `hance`, done.
+- **Automation pipelines** — agencies, studios, or platforms that need to batch-apply a consistent look across hundreds of clips with no GUI in the loop.
+- **Developers** building apps that need film effects programmatically — social video platforms, AI video pipelines, content tools.
+
+Hance is not a replacement for professional colour grading. It's the tool you reach for when you don't want to open a colour grading app at all.
+
 ### Why hance?
 
 - **Preview + pipeline** — dial in a look visually with `hance ui`, save it as a preset, then batch-apply across footage from the command line. No other tool gives you both.
