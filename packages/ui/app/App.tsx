@@ -156,33 +156,34 @@ export function App() {
 
   // Fetch schema and looks on mount — external server data
   useEffect(() => {
-    fetchJson<EffectGroup[]>("/api/schema")
-      .then(async (groups) => {
+    async function init() {
+      try {
+        const groups = await fetchJson<EffectGroup[]>("/api/schema");
         setSchema(groups);
         const disableAll: Record<string, boolean> = {};
         for (const group of groups) {
           disableAll[group.enableKey] = true;
         }
-        // Honor any initial look passed via ?look= (e.g. from /compare → Edit).
-        try {
-          const lookPath = new URLSearchParams(window.location.search).get("look");
-          const lookName = lookPath?.split("/").pop()?.replace(/\.hlook$/, "") ?? null;
-          if (lookName) {
+        const lookPath = new URLSearchParams(window.location.search).get("look");
+        const lookName = lookPath?.split("/").pop()?.replace(/\.hlook$/, "") ?? null;
+        if (lookName) {
+          try {
             const lookParams = await loadLook(lookName);
             setParams(lookParams);
             history.replace({ params: lookParams, activeLook: lookName });
             return;
+          } catch {
+            // Look failed to load — fall through to default (all effects off).
           }
-        } catch {
-          // Look failed to load — fall through to default (all effects off).
         }
         setParams(disableAll);
         history.replace({ params: disableAll, activeLook: null });
-      })
-      .catch((err: Error) => {
+      } catch (err) {
         console.error("Failed to load effect schema:", err);
-        setSchemaError(`Could not load effect controls: ${err.message}`);
-      });
+        setSchemaError(`Could not load effect controls: ${(err as Error).message}`);
+      }
+    }
+    init();
     refreshLooks();
   }, []);
 
