@@ -1,6 +1,6 @@
 ---
 name: hance
-description: Drive the Hance CLI end-to-end — install, apply known looks, explore looks on a sample, batch-process media, and open the editor. Use when the user asks to grade, color, "make it look like", or apply film looks to images or video, or wants to open the Hance editor. Routes to subcommands setup, run, try, batch, ui.
+description: Apply cinematic film looks to images/video via the Hance CLI. Use when asked to grade, color, or "make it look like" film.
 ---
 
 # /hance
