@@ -5,17 +5,27 @@
 ```
 hance/
 ├── packages/
-│   ├── core/          # Shared effect definitions, types, filter graph builder
-│   ├── cli/           # CLI binary — video processing, FFmpeg orchestration
+│   ├── core/          # Shared effect definitions, types, presets, tiering
+│   ├── gpu/           # GPU export pipeline — wraps the wgpu sidecar binary
+│   ├── cli/           # CLI binary — arg parsing, FFmpeg orchestration
 │   ├── ui/            # Web UI — Bun fullstack server + React browser client
-│   └── wgpu/          # Rust wgpu renderer for headless export
+│   └── wgpu/          # Rust wgpu renderer (sidecar binary)
 ├── apps/
 │   └── desktop/       # Electron macOS app — orchestrates CLI and UI
 ├── presets/           # Built-in .hlook files
 ```
 
+### Dependency Graph
+
+```
+UI  → @hance/core + @hance/gpu
+CLI → @hance/core + @hance/gpu + @hance/ui
+gpu → @hance/core
+```
+
 - `cli` and `ui` are separate Bun-compiled binaries
-- Both depend on `core` via Bun workspaces; `cli` also depends on `ui` for the `ui` subcommand
+- Both depend on `core` and `gpu` via Bun workspaces; `cli` also depends on `ui` for the `ui` subcommand
+- `gpu` is a pure TypeScript package that wraps communication with the Rust `wgpu` sidecar binary
 - The desktop app launches both as needed
 
 ## Web UI
@@ -104,7 +114,7 @@ Bun HTTP server serving both API endpoints and static SPA files from `dist/`.
 - Frame extraction, look matching, and export are all CLI operations
 - The web UI previews via WebGPU but exports via the server's FFmpeg pipeline
 
-### Video Render Pipeline (`packages/cli/src/pipeline.ts`)
+### Video Render Pipeline (`packages/gpu/src/export.ts`)
 
 `runGpuExport` builds a single shell pipeline:
 
@@ -121,7 +131,7 @@ ffmpeg -i <input> -f rawvideo -pix_fmt rgba pipe:1
 
 Progress is reported via FFmpeg's `-progress` file, polled every 100 ms by `parseProgress`.
 
-For still images, `packages/cli/src/gpu/image-pipeline.ts` skips ffmpeg entirely and drives the wgpu sidecar directly.
+For still images, `packages/gpu/src/image-pipeline.ts` skips ffmpeg entirely and drives the wgpu sidecar directly.
 
 ### Encoder Selection
 
@@ -158,6 +168,31 @@ AI-powered feature that analyzes a reference image and matches its look to the u
 2. **Full read** — model loads full `.hlook` files only for shortlisted candidates.
 
 The index file is plain JSON (machine-generated), rebuilt automatically on any look change (save, edit, delete, import). No LLM or scheduler needed — just a `core` function called at the point of change.
+
+## Tiering
+
+Free and pro tiers are gated via `LicenseContext` (`{ tier: "free" | "pro" }`).
+
+### Free
+- CLI + browser UI
+- All built-in presets + custom presets
+- Single file processing
+- H.264 and H.265 output
+- .hlook import and export (create & share looks)
+- AI agent skill (describe a look, get a preset)
+
+### Pro ($49 one-time)
+- Batch processing (multi-file, folder input)
+- ProRes and WebM (VP9) codec output
+- Premium preset packs (expanded film stock library)
+- Early access to native Mac app
+- Priority support
+
+### Where gates live
+- **Core** gates codecs (`resolveExportPreset` — ProRes and WebM) and premium presets (`loadPreset`). Look import/export is free.
+- **CLI** gates batch processing (multiple inputs or folder input)
+
+Core and gpu are license-check-unaware — they accept a tier context but don't validate licenses. Actual license validation (key check, receipt verification) lives in the CLI/UI app layer and passes the resolved tier down. Omitting the `LicenseContext` argument bypasses all gates (no restrictions). Currently the CLI resolves tier via `HANCE_LICENSE` env var.
 
 ## Look Format
 

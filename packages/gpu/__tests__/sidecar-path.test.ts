@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { resolveSidecarPath } from "@hance/gpu";
+import { resolveSidecarPath } from "../src/sidecar-path";
 import { join } from "node:path";
 
 describe("resolveSidecarPath", () => {

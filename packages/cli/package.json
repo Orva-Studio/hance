@@ -1,10 +1,11 @@
 {
   "name": "@hance/cli",
-  "version": "0.5.0",
+  "version": "0.5.5",
   "type": "module",
   "main": "src/cli.ts",
   "dependencies": {
     "@hance/core": "workspace:*",
+    "@hance/gpu": "workspace:*",
     "@hance/ui": "workspace:*"
   }
 }

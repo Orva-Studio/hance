@@ -1,4 +1,4 @@
-import { sidecarPath } from "../sidecar-path";
+import { sidecarPath } from "./sidecar-path";
 
 export interface HeadlessRenderer {
   init(width: number, height: number, params?: Record<string, unknown>): Promise<void>;
@@ -51,10 +51,6 @@ export async function createHeadlessRenderer(): Promise<HeadlessRenderer> {
     params: Record<string, unknown>,
   ): Promise<Uint8Array> {
     if (!proc) throw new Error("Renderer not initialized");
-
-    // Note: params are sent in init message. For per-frame params we'd need
-    // a protocol extension. For now, params are fixed at init time.
-    // TODO: If per-frame param updates are needed, extend the protocol.
 
     await proc.stdin.write(rgba);
 

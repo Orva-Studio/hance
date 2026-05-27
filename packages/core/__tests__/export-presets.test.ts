@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { EXPORT_PRESETS, resolveExportPreset } from "../src/export-presets";
+import { EXPORT_PRESETS, resolveExportPreset, requireCodecLicense } from "../src/export-presets";
 
 describe("EXPORT_PRESETS", () => {
   it("defines all four tiers", () => {
@@ -61,5 +61,54 @@ describe("resolveExportPreset", () => {
     expect(result.crf).toBe(20);
     expect(result.encodePreset).toBe("slow");
     expect(result.pixelFormat).toBe("yuv420p10le");
+  });
+
+  it("allows h264 on free tier", () => {
+    const result = resolveExportPreset("low", {}, { tier: "free" });
+    expect(result.codec).toBe("h264");
+  });
+
+  it("allows h265 on free tier", () => {
+    const result = resolveExportPreset("high", {}, { tier: "free" });
+    expect(result.codec).toBe("h265");
+  });
+
+  it("blocks prores on free tier", () => {
+    expect(() => resolveExportPreset("max", {}, { tier: "free" }))
+      .toThrow('Codec "prores" requires a pro license');
+  });
+
+  it("blocks webm on free tier via requireCodecLicense", () => {
+    expect(() => requireCodecLicense("webm", { tier: "free" }))
+      .toThrow('Codec "webm" requires a pro license');
+  });
+
+  it("requireCodecLicense allows free codecs", () => {
+    expect(() => requireCodecLicense("h264", { tier: "free" })).not.toThrow();
+    expect(() => requireCodecLicense("h265", { tier: "free" })).not.toThrow();
+  });
+
+  it("requireCodecLicense allows everything without license context", () => {
+    expect(() => requireCodecLicense("prores")).not.toThrow();
+  });
+
+  it("blocks webm on free tier", () => {
+    expect(() => resolveExportPreset("low", { codec: "webm" }, { tier: "free" }))
+      .toThrow('Codec "webm" requires a pro license');
+  });
+
+  it("allows prores on pro tier", () => {
+    const result = resolveExportPreset("max", {}, { tier: "pro" });
+    expect(result.codec).toBe("prores");
+  });
+
+  it("allows webm on pro tier", () => {
+    const result = resolveExportPreset("low", { codec: "webm" }, { tier: "pro" });
+    expect(result.codec).toBe("webm");
+  });
+
+  it("allows any codec when no license context", () => {
+    const result = resolveExportPreset("max", {});
+    expect(result.codec).toBe("prores");
   });
 });

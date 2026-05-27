@@ -3,8 +3,7 @@ import path from "node:path";
 import { probe, applyPreset } from "@hance/core";
 import type { PresetData } from "@hance/core";
 import { parseEffectFlags, EFFECT_HELP_TEXT } from "../effect-flags";
-import { createHeadlessRenderer } from "../gpu/wgpu-renderer";
-import { encodeRgbaToFile, renderImage, decodeRgbaFrame } from "../gpu/image-pipeline";
+import { createHeadlessRenderer, encodeRgbaToFile, renderImage, decodeRgbaFrame } from "@hance/gpu";
 
 const PREVIEW_HELP = `\
 hance preview <input> -o <out.png> [effect flags...]

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { loadPreset, applyPreset } from "../src/presets";
+import { loadPreset, applyPreset, exportLook, importLook } from "../src/presets";
 
 describe("loadPreset", () => {
   it("loads the built-in default preset (.hlook format)", () => {
@@ -57,5 +57,31 @@ describe("applyPreset", () => {
   it("handles boolean disable overrides", () => {
     const opts = applyPreset("default", { "no-halation": true });
     expect(opts.halation.enabled).toBe(false);
+  });
+});
+
+describe("exportLook", () => {
+  it("serializes preset data to JSON", () => {
+    const json = exportLook("test", { "exposure": 0.5 });
+    const parsed = JSON.parse(json);
+    expect(parsed.name).toBe("test");
+    expect(parsed.exposure).toBe(0.5);
+  });
+
+  it("is available on free tier", () => {
+    const json = exportLook("test", {});
+    expect(JSON.parse(json).name).toBe("test");
+  });
+});
+
+describe("importLook", () => {
+  it("parses JSON into preset data", () => {
+    const data = importLook('{"name":"test","exposure":0.5}');
+    expect(data.name).toBe("test");
+  });
+
+  it("is available on free tier", () => {
+    const data = importLook('{"name":"test"}');
+    expect(data.name).toBe("test");
   });
 });
