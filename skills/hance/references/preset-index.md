@@ -27,7 +27,7 @@
 - **Repo (builtin-only):** `bun run scripts/build-preset-index.ts` writes `presets/index.json` from the `.hlook` files in `presets/`. Run this once after a fresh clone, or any time the builtin `.hlook`s change.
 - **Runtime (merged builtin + user):** `rebuildPresetIndex()` in `core/preset-index.ts` writes `~/.hance/presets/index.json`. It's invoked automatically whenever a `.hlook` is created, edited, renamed, deleted, or imported. Hooks live in `packages/cli/src/commands/preset.ts` (CLI) and `packages/ui/server.ts` (UI server POST/PUT/DELETE/import handlers).
 
-If `try` cannot find any index, build the repo one with the command above before continuing.
+If `try` cannot find any index, build the repo one with the command above before continuing. If no existing preset matches the user's request well enough, `try` should create a new `.hlook` preset from scratch rather than forcing a poor match.
 
 ## How `try` uses the index
 

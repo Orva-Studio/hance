@@ -7,4 +7,4 @@ import { rebuildPresetIndex } from "../packages/core/src/preset-index";
 const repoRoot = resolve(import.meta.dir, "..");
 const outPath = join(repoRoot, "presets", "index.json");
 const written = rebuildPresetIndex(outPath, { includeUser: false, includeBuiltin: true });
-console.log(`wrote ${written}`);
+console.log(`wrote preset index: ${written}`);

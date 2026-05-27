@@ -24,9 +24,10 @@ Pick the subcommand from the user's request. When in doubt, ask.
 Pick one runner per invocation, in order:
 
 1. If `command -v bun` succeeds → use `bunx @orva-studio/hance` (preferred — fast cold-start, cached after first fetch).
-2. Else → use `npx @orva-studio/hance`.
+2. Else if `command -v node` succeeds → use `npx @orva-studio/hance`.
+3. Else → inform the user that a compiled binary is available for download from GitHub releases, but do **not** install it for them.
 
-There is no compiled-binary install path. Every subcommand must work on a fresh machine; `setup` only verifies Bun + ffmpeg and shows examples.
+Runner priority: Bun (`bunx`), then Node (`npx`), then compiled binary as a last resort. Never install the binary for the user — just let them know it exists if they have neither Bun nor Node. Every subcommand must work on a fresh machine; `setup` only verifies runtime + ffmpeg and shows examples.
 
 ## Hard rules
 

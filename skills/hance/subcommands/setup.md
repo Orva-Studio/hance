@@ -52,6 +52,6 @@ The user explicitly asks to "install hance" or "set up hance", or is running Han
 
 ## Hard rules
 
-- Do **not** suggest a binary install or a curl-from-GitHub installer. There is no longer one.
+- If the user has neither Bun nor Node, mention that a compiled binary is available from GitHub releases — but do **not** install it for them. The binary is a last-resort option.
 - Do **not** offer to "upgrade" Hance — `bunx @orva-studio/hance` always pulls the latest version on its own.
 - Do **not** install Bun or ffmpeg without confirming with the user first.
