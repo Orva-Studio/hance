@@ -11,6 +11,7 @@ async function runHance(args: string[]): Promise<{ exitCode: number; stdout: str
     stdout: "pipe",
     stderr: "pipe",
     cwd: FIXTURES_DIR,
+    env: { ...process.env, HANCE_LICENSE: "pro" },
   });
   const stdout = await new Response(proc.stdout).text();
   const stderr = await new Response(proc.stderr).text();

@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync } from "node:fs";
-import { probe, applyPreset, resolveExportPreset } from "@hance/core";
-import type { PresetData, FilmOptions } from "@hance/core";
-import { runGpuExport } from "./pipeline";
+import { probe, applyPreset, resolveExportPreset, requireCodecLicense } from "@hance/core";
+import type { PresetData, FilmOptions, LicenseContext } from "@hance/core";
+import { runGpuExport } from "@hance/gpu";
 import { parseEffectFlags, EFFECT_HELP_TEXT } from "./effect-flags";
 import { loadConfig, configToArgv } from "./config";
 import path from "node:path";
@@ -83,7 +83,7 @@ interface ParsedArgs extends FilmOptions {
   outputArg: string;
 }
 
-export async function parseArgs(argv: string[]): Promise<ParsedArgs> {
+export async function parseArgs(argv: string[], license?: LicenseContext): Promise<ParsedArgs> {
   const noConfig = argv.includes("--no-config");
   const filteredArgv = noConfig ? argv.filter(a => a !== "--no-config") : argv;
 
@@ -123,7 +123,7 @@ export async function parseArgs(argv: string[]): Promise<ParsedArgs> {
   if (r.exportPreset) {
     const exp = resolveExportPreset(r.exportPreset, {
       codec: r.overrideCodec, crf: r.overrideCrf, encodePreset: r.overrideEncodePreset,
-    });
+    }, license);
     resolvedCodec = exp.codec;
     resolvedCrf = exp.crf;
     resolvedEncodePreset = exp.encodePreset;
@@ -132,6 +132,8 @@ export async function parseArgs(argv: string[]): Promise<ParsedArgs> {
       console.error("High quality export — expect larger file sizes");
     }
   }
+
+  requireCodecLicense(resolvedCodec, license);
 
   return {
     inputs, outputs, outputArg: r.outputArg,
@@ -154,8 +156,14 @@ async function checkDependency(name: string): Promise<void> {
   }
 }
 
+function resolveLicense(): LicenseContext {
+  const tier = process.env.HANCE_LICENSE === "pro" ? "pro" : "free";
+  return { tier };
+}
+
 async function main() {
   const args = process.argv.slice(2);
+  const license = resolveLicense();
 
   if (args.includes("--version") || args.includes("-v")) {
     console.log(`hance ${VERSION}`);
@@ -190,7 +198,7 @@ async function main() {
 
   let parsed: ParsedArgs;
   try {
-    parsed = await parseArgs(args);
+    parsed = await parseArgs(args, license);
   } catch (err) {
     console.error(`Error: ${(err as Error).message}`);
     process.exit(1);
@@ -204,6 +212,11 @@ async function main() {
   await Promise.all([checkDependency("ffmpeg"), checkDependency("ffprobe")]);
 
   const isBatch = parsed.inputs.length > 1;
+
+  if (isBatch && license.tier !== "pro") {
+    console.error("Batch processing requires a pro license. Process one file at a time, or upgrade at https://hance.app/pro");
+    process.exit(1);
+  }
 
   if (!isBatch) {
     if (!existsSync(parsed.inputs[0])) {
@@ -245,7 +258,7 @@ async function main() {
 
       if (probeResult.isImage) {
         process.stdout.write(`${prefix}Processing...\n`);
-        const { renderImage } = await import("./gpu/image-pipeline");
+        const { renderImage } = await import("@hance/gpu");
         await renderImage(input, output, probeResult.width!, probeResult.height!, parsed.params);
         console.log(`${prefix}Done.`);
       } else {

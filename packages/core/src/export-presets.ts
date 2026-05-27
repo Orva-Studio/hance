@@ -1,4 +1,12 @@
-import type { ExportPreset, OutputCodec, PixelFormat } from "./types";
+import type { ExportPreset, OutputCodec, PixelFormat, LicenseContext } from "./types";
+
+export const PRO_CODECS: ReadonlySet<OutputCodec> = new Set(["prores", "webm"]);
+
+export function requireCodecLicense(codec: OutputCodec, license?: LicenseContext): void {
+  if (license && license.tier !== "pro" && PRO_CODECS.has(codec)) {
+    throw new Error(`Codec "${codec}" requires a pro license — upgrade at https://hance.app/pro`);
+  }
+}
 
 export interface ExportPresetSettings {
   codec: OutputCodec;
@@ -23,10 +31,13 @@ interface ExportOverrides {
 export function resolveExportPreset(
   preset: ExportPreset,
   overrides: ExportOverrides,
+  license?: LicenseContext,
 ): ExportPresetSettings {
   const base = EXPORT_PRESETS[preset];
+  const codec = overrides.codec ?? base.codec;
+  requireCodecLicense(codec, license);
   return {
-    codec: overrides.codec ?? base.codec,
+    codec,
     crf: overrides.crf ?? base.crf,
     encodePreset: overrides.encodePreset ?? base.encodePreset,
     pixelFormat: base.pixelFormat,

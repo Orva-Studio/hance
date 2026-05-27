@@ -4,7 +4,7 @@ import { homedir } from "os";
 import type {
   ColorSettingsOptions, HalationOptions, AberrationOptions,
   BloomOptions, GrainOptions, VignetteOptions, SplitToneOptions, CameraShakeOptions,
-  FilmOptions, OutputCodec,
+  FilmOptions, OutputCodec, LicenseContext,
 } from "./types";
 
 export interface PresetData {
@@ -37,17 +37,37 @@ export function listPresetNames(): string[] {
   return [...names].sort();
 }
 
-export function loadPreset(name: string): PresetData {
+function findPresetFile(name: string): { path: string; premium: boolean } | null {
   for (const dir of [userPresetsDir(), builtinPresetsDir()]) {
     for (const ext of [".hlook", ".json"]) {
       const filePath = join(dir, `${name}${ext}`);
-      if (existsSync(filePath)) {
-        return JSON.parse(readFileSync(filePath, "utf-8"));
-      }
+      if (existsSync(filePath)) return { path: filePath, premium: false };
+      const premiumPath = join(dir, "premium", `${name}${ext}`);
+      if (existsSync(premiumPath)) return { path: premiumPath, premium: true };
     }
   }
+  return null;
+}
 
-  throw new Error(`Look "${name}" not found. Looked in:\n  ${userPresetsDir()}\n  ${builtinPresetsDir()}`);
+export function loadPreset(name: string, license?: LicenseContext): PresetData {
+  const found = findPresetFile(name);
+  if (!found) {
+    throw new Error(`Look "${name}" not found. Looked in:\n  ${userPresetsDir()}\n  ${builtinPresetsDir()}`);
+  }
+  const data: PresetData = JSON.parse(readFileSync(found.path, "utf-8"));
+  const isPremium = found.premium || data.premium === true;
+  if (isPremium && license && license.tier !== "pro") {
+    throw new Error(`Preset "${name}" requires a pro license`);
+  }
+  return data;
+}
+
+export function exportLook(name: string, data: PresetData): string {
+  return JSON.stringify({ name, ...data }, null, 2);
+}
+
+export function importLook(json: string): PresetData {
+  return JSON.parse(json);
 }
 
 interface ApplyPresetResult extends EffectOptions {

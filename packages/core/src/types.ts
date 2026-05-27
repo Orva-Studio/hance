@@ -79,7 +79,11 @@ export interface FilmOptions {
   cameraShake: CameraShakeOptions;
 }
 
-export type OutputCodec = "h264" | "prores" | "h265";
+export type OutputCodec = "h264" | "h265" | "prores" | "webm";
+
+export interface LicenseContext {
+  tier: "free" | "pro";
+}
 export type ExportPreset = "low" | "medium" | "high" | "max";
 export type PixelFormat = "yuv420p" | "yuv420p10le" | "yuv422p10le";
 

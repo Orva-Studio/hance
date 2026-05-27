@@ -1,6 +1,6 @@
 import { EFFECT_SCHEMA, loadPreset, builtinPresetsDir, userPresetsDir, listPresetNames, probe, rebuildPresetIndex } from "@hance/core";
 import type { PresetData } from "@hance/core";
-import { runGpuExport } from "@hance/cli/src/pipeline";
+import { runGpuExport } from "@hance/gpu";
 import { join, extname, basename, resolve } from "node:path";
 import { existsSync, readdirSync, mkdirSync, writeFileSync, unlinkSync, renameSync, rmSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
