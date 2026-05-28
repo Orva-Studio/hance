@@ -1,10 +1,18 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import starlightLlmsTxt from "starlight-llms-txt";
+import markdownPages from "./src/integrations/markdown-pages";
 
 export default defineConfig({
+  site: "https://hance.dev",
   integrations: [
+    markdownPages(),
     starlight({
+      plugins: [starlightLlmsTxt()],
       title: "hance",
+      components: {
+        ThemeSelect: "./src/components/ThemeSelect.astro",
+      },
       editLink: {
         baseUrl: "https://github.com/Orva-Studio/hance/edit/main/packages/docs/",
       },
@@ -26,7 +34,13 @@ export default defineConfig({
             { label: "Browser UI", slug: "getting-started/ui" },
             { label: "Free vs Pro", slug: "getting-started/free-vs-pro" },
             { label: "Hance vs Alternatives", slug: "getting-started/comparison" },
-            { label: "AI Agent Usage", slug: "getting-started/agent" },
+          ],
+        },
+        {
+          label: "AI Agent",
+          items: [
+            { label: "Overview", slug: "agent/overview" },
+            { label: "Skill Commands", slug: "agent/commands" },
           ],
         },
         {
