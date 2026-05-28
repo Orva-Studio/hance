@@ -30,7 +30,7 @@ export function listPresetNames(): string[] {
     for (const f of readdirSync(dir)) {
       if (!f.endsWith(".hlook") && !f.endsWith(".json")) continue;
       const name = f.replace(/\.(hlook|json)$/, "");
-      if (name === "default") continue;
+      if (name === "default" || name === "index") continue;
       names.add(name);
     }
   }
