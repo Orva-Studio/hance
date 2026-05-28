@@ -2,9 +2,10 @@ import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import starlightLlmsTxt from "starlight-llms-txt";
 import markdownPages from "./src/integrations/markdown-pages";
+import { SITE_URL, REPO_URL } from "./site.config";
 
 export default defineConfig({
-  site: "https://hance.dev",
+  site: SITE_URL,
   integrations: [
     starlight({
       plugins: [starlightLlmsTxt()],
@@ -13,14 +14,14 @@ export default defineConfig({
         ThemeSelect: "./src/components/ThemeSelect.astro",
       },
       editLink: {
-        baseUrl: "https://github.com/Orva-Studio/hance/edit/main/packages/docs/",
+        baseUrl: `${REPO_URL}/edit/main/packages/docs/`,
       },
       customCss: ["./src/styles/custom.css"],
       social: [
         {
           icon: "github",
           label: "GitHub",
-          href: "https://github.com/Orva-Studio/hance",
+          href: REPO_URL,
         },
       ],
       sidebar: [
