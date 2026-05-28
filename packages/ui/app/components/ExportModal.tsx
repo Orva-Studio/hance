@@ -22,13 +22,16 @@ export function extForCodec(codec: Codec): "mp4" | "mov" {
   return codec === "ProRes 422" ? "mov" : "mp4";
 }
 
+const PRO_CODECS: ReadonlySet<Codec> = new Set(["ProRes 422"]);
+
 interface Props {
   defaultBasename: string;
+  isPro: boolean;
   onCancel: () => void;
   onExport: (opts: ExportOptions) => void;
 }
 
-export function ExportModal({ defaultBasename, onCancel, onExport }: Props) {
+export function ExportModal({ defaultBasename, isPro, onCancel, onExport }: Props) {
   const [codec, setCodec] = useState<Codec>("H.264");
   const [quality, setQuality] = useState<Quality>("Medium");
   const [outputPath, setOutputPath] = useState<string>(
@@ -48,6 +51,7 @@ export function ExportModal({ defaultBasename, onCancel, onExport }: Props) {
   }
 
   const isProRes = codec === "ProRes 422";
+  const requiresPro = !isPro && PRO_CODECS.has(codec);
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onCancel}>
@@ -69,6 +73,9 @@ export function ExportModal({ defaultBasename, onCancel, onExport }: Props) {
               <option value="H.265">H.265</option>
               <option value="ProRes 422">ProRes 422 (Pro)</option>
             </select>
+            {requiresPro && (
+              <div className="text-amber-400 text-[11px] mt-1">This codec requires a Pro license.</div>
+            )}
           </div>
 
           <div>
@@ -111,7 +118,8 @@ export function ExportModal({ defaultBasename, onCancel, onExport }: Props) {
           </button>
           <button
             onClick={submit}
-            className="text-xs text-white bg-accent hover:bg-accent-hover transition-colors rounded-sm p-btn-primary"
+            disabled={requiresPro}
+            className="text-xs text-white bg-accent hover:bg-accent-hover transition-colors rounded-sm p-btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Export
           </button>
