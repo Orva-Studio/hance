@@ -203,3 +203,36 @@ describe("e2e: hance", () => {
     expect(existsSync(path.join(FIXTURES_DIR, "test_hanced.png"))).toBe(true);
   });
 });
+
+async function runHanceFree(args: string[]): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+  const proc = Bun.spawn(["bun", "run", CLI_PATH, ...args], {
+    stdout: "pipe",
+    stderr: "pipe",
+    cwd: FIXTURES_DIR,
+    env: { ...process.env, HANCE_LICENSE: undefined },
+  });
+  const stdout = await new Response(proc.stdout).text();
+  const stderr = await new Response(proc.stderr).text();
+  const exitCode = await proc.exited;
+  return { exitCode, stdout, stderr };
+}
+
+describe("e2e: free tier gating", () => {
+  it("rejects batch processing on free tier", async () => {
+    const { exitCode, stderr } = await runHanceFree([
+      path.join(FIXTURES_DIR, "test.mp4"),
+      path.join(FIXTURES_DIR, "test.png"),
+      "-o", path.join(FIXTURES_DIR, "batch_free_out"),
+    ]);
+    expect(exitCode).not.toBe(0);
+    expect(stderr).toContain("pro license");
+  });
+
+  it("allows single file processing on free tier", async () => {
+    cleanup(["test_hanced.png"]);
+    const { exitCode } = await runHanceFree([
+      path.join(FIXTURES_DIR, "test.png"),
+    ]);
+    expect(exitCode).toBe(0);
+  });
+});

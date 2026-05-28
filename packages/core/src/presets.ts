@@ -67,7 +67,11 @@ export function exportLook(name: string, data: PresetData): string {
 }
 
 export function importLook(json: string): PresetData {
-  return JSON.parse(json);
+  const parsed = JSON.parse(json);
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    throw new Error("Invalid look file: expected a JSON object");
+  }
+  return parsed as PresetData;
 }
 
 interface ApplyPresetResult extends EffectOptions {

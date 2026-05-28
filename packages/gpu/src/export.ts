@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { unlink } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import type { ProbeResult, OutputCodec, PixelFormat } from "@hance/core";
-import { parseProgress } from "./progress";
+import { parseProgress } from "@hance/core";
 import { sidecarPath } from "./sidecar-path";
 
 export interface EncoderSettings {
@@ -79,6 +79,7 @@ function buildEncoderArgs(settings: EncoderSettings, width: number, height: numb
       base.push(
         "-vf", bt709Filter,
         "-c:v", "libvpx-vp9", "-crf", String(settings.crf), "-b:v", "0",
+        "-c:a", "libopus",
         ...bt709Tags,
       );
       break;
