@@ -1,16 +1,9 @@
 ---
 title: Browser UI
-description: The hance browser-based editor for previewing and fine-tuning film looks.
+description: Full tour of the hance browser-based editor — panels, view modes, and export.
 ---
 
-Hance includes a browser-based editor for previewing looks in real-time on your footage. Launch it with:
-
-```bash
-hance ui
-hance ui video.mp4
-```
-
-The editor opens at `http://localhost:4800` and renders effects on the GPU using WebGPU.
+The hance browser-based editor previews looks in real-time on your footage, rendering effects on the GPU via WebGPU. Launch it with `hance ui` (optionally with a file path); it opens at `http://localhost:4800`. This page documents every panel and feature.
 
 ## Upload & preview
 

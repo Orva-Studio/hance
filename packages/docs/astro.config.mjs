@@ -29,11 +29,9 @@ export default defineConfig({
           label: "Getting Started",
           items: [
             { label: "Introduction", slug: "getting-started/introduction" },
+            { label: "Hance vs Alternatives", slug: "getting-started/comparison" },
             { label: "Installation", slug: "getting-started/installation" },
             { label: "Quick Start", slug: "getting-started/quick-start" },
-            { label: "Browser UI", slug: "getting-started/ui" },
-            { label: "Free vs Pro", slug: "getting-started/free-vs-pro" },
-            { label: "Hance vs Alternatives", slug: "getting-started/comparison" },
           ],
         },
         {
@@ -43,6 +41,8 @@ export default defineConfig({
             { label: "Skill Commands", slug: "agent/commands" },
           ],
         },
+        { label: "Browser UI", slug: "browser-ui" },
+        { label: "Free vs Pro", slug: "free-vs-pro" },
         {
           label: "CLI Reference",
           items: [
