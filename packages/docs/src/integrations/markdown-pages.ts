@@ -1,4 +1,4 @@
-import { readdir, readFile, mkdir, writeFile } from "node:fs/promises";
+import { readdir, readFile, mkdir, writeFile, appendFile } from "node:fs/promises";
 import { join, relative, dirname } from "node:path";
 import type { AstroIntegration } from "astro";
 
@@ -22,14 +22,19 @@ async function collectMarkdown(dir: string): Promise<string[]> {
 }
 
 export default function markdownPages(): AstroIntegration {
+  let siteUrl = "";
   return {
     name: "markdown-pages",
     hooks: {
+      "astro:config:setup": ({ config }) => {
+        siteUrl = config.site?.replace(/\/$/, "") ?? "";
+      },
       "astro:build:done": async ({ dir }) => {
         const docsRoot = new URL("../content/docs/", import.meta.url)
           .pathname;
         const outDir = new URL(".", dir).pathname;
         const files = await collectMarkdown(docsRoot);
+        const mdPaths: string[] = [];
 
         for (const file of files) {
           const rel = relative(docsRoot, file).replace(/\.mdx?$/, ".md");
@@ -37,7 +42,15 @@ export default function markdownPages(): AstroIntegration {
           const content = await readFile(file, "utf-8");
           await mkdir(dirname(dest), { recursive: true });
           await writeFile(dest, stripFrontmatter(content));
+          mdPaths.push(rel);
         }
+
+        mdPaths.sort();
+        const llmsTxt = join(outDir, "llms.txt");
+        const links = mdPaths
+          .map((p) => `- [${p}](${siteUrl}/${p})`)
+          .join("\n");
+        await appendFile(llmsTxt, `\n## Individual Pages (Markdown)\n\n${links}\n`);
       },
     },
   };
