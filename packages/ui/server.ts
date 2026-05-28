@@ -48,6 +48,11 @@ export function createServer(port: number) {
         return Response.json(EFFECT_SCHEMA);
       }
 
+      if (url.pathname === "/api/license") {
+        const tier = process.env.HANCE_LICENSE === "pro" ? "pro" : "free";
+        return Response.json({ tier });
+      }
+
       if (url.pathname === "/api/initial-file" && req.method === "GET") {
         if (!initialFilePath || !existsSync(initialFilePath)) {
           return new Response("no initial file", { status: 404 });

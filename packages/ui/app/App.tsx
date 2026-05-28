@@ -28,6 +28,7 @@ export function App() {
   const [proxyState, setProxyState] = useState<"idle" | "uploading" | "transcoding" | "error">("idle");
   const [proxyProgress, setProxyProgress] = useState(0);
   const [proxyErrorMsg, setProxyErrorMsg] = useState<string | null>(null);
+  const [licenseTier, setLicenseTier] = useState<"free" | "pro">("free");
 
   useInitialFile(upload);
 
@@ -158,7 +159,11 @@ export function App() {
   useEffect(() => {
     async function init() {
       try {
-        const groups = await fetchJson<EffectGroup[]>("/api/schema");
+        const [groups, licenseData] = await Promise.all([
+          fetchJson<EffectGroup[]>("/api/schema"),
+          fetchJson<{ tier: "free" | "pro" }>("/api/license"),
+        ]);
+        setLicenseTier(licenseData.tier);
         setSchema(groups);
         const disableAll: Record<string, boolean> = {};
         for (const group of groups) {
@@ -607,6 +612,7 @@ export function App() {
       {showExportModal && file && (
         <ExportModal
           defaultBasename={file.name.replace(/\.[^.]+$/, "")}
+          isPro={licenseTier === "pro"}
           onCancel={() => setShowExportModal(false)}
           onExport={handleExport}
         />
