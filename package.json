@@ -6,7 +6,8 @@
     "packages/core",
     "packages/gpu",
     "packages/cli",
-    "packages/ui"
+    "packages/ui",
+    "packages/docs"
   ],
   "scripts": {
     "start": "bun run packages/cli/src/cli.ts",
