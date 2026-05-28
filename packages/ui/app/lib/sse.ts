@@ -6,7 +6,8 @@ export interface SSEHandlers {
 
 export async function consumeSSE(response: Response, handlers: SSEHandlers): Promise<void> {
   if (!response.ok || !response.body) {
-    handlers.onError?.("Request failed");
+    const text = await response.text().catch(() => "");
+    handlers.onError?.(text || "Request failed");
     return;
   }
   const reader = response.body.getReader();
