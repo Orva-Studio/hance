@@ -1,0 +1,13 @@
+Third-Party Software Notices
+=============================
+
+FFmpeg
+------
+Hance requires FFmpeg (https://ffmpeg.org) for video/image decoding and encoding.
+FFmpeg is not bundled with Hance; it must be installed separately by the user.
+
+FFmpeg is licensed under the GNU Lesser General Public License (LGPL) version 2.1
+or later. A copy of the license is available at:
+https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+
+FFmpeg source code is available at: https://git.ffmpeg.org/ffmpeg.git
