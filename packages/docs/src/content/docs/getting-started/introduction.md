@@ -18,6 +18,10 @@ Hance is a single-binary CLI that applies cinematic film effects to video and im
 
 Hance is not a replacement for professional colour grading. It's the tool you reach for when you don't want to open a colour grading app at all.
 
+:::tip[Using an AI agent?]
+These docs are machine-readable: point your agent at [`/llms.txt`](/llms.txt), or append `.md` to any page URL for raw Markdown. See [AI Agent Usage](/agent/overview/#machine-readable-docs).
+:::
+
 ## How it works
 
 Run `hance` on any video or image file and it applies a chain of film effects in a single pass:
