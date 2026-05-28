@@ -65,9 +65,3 @@ Save your current settings as a new `.hlook` file directly from the UI. Saved lo
 Export your graded video or image from the editor. Choose codec, quality, and export preset — the same options available on the CLI.
 
 *<!-- Screenshot: export modal -->*
-
-## Compare page
-
-The `/compare` route lets you view multiple look candidates side by side on the same frame. Used by the AI agent's `/hance try` command to present options, but also available for manual comparison.
-
-*<!-- Screenshot: compare page -->*

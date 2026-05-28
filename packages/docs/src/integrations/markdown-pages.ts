@@ -1,0 +1,44 @@
+import { readdir, readFile, mkdir, writeFile } from "node:fs/promises";
+import { join, relative, dirname } from "node:path";
+import type { AstroIntegration } from "astro";
+
+function stripFrontmatter(content: string): string {
+  const match = content.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/);
+  return match ? content.slice(match[0].length).trimStart() : content;
+}
+
+async function collectMarkdown(dir: string): Promise<string[]> {
+  const files: string[] = [];
+  const entries = await readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await collectMarkdown(full)));
+    } else if (entry.name.endsWith(".md") || entry.name.endsWith(".mdx")) {
+      files.push(full);
+    }
+  }
+  return files;
+}
+
+export default function markdownPages(): AstroIntegration {
+  return {
+    name: "markdown-pages",
+    hooks: {
+      "astro:build:done": async ({ dir }) => {
+        const docsRoot = new URL("../content/docs/", import.meta.url)
+          .pathname;
+        const outDir = new URL(".", dir).pathname;
+        const files = await collectMarkdown(docsRoot);
+
+        for (const file of files) {
+          const rel = relative(docsRoot, file).replace(/\.mdx?$/, ".md");
+          const dest = join(outDir, rel);
+          const content = await readFile(file, "utf-8");
+          await mkdir(dirname(dest), { recursive: true });
+          await writeFile(dest, stripFrontmatter(content));
+        }
+      },
+    },
+  };
+}
