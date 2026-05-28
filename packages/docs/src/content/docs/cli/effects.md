@@ -1,0 +1,109 @@
+---
+title: Effects
+description: All effect parameters and their defaults.
+---
+
+Every effect is enabled by default and can be disabled with `--no-<effect>`. Parameters can be overridden individually.
+
+## Color settings
+
+Control the base color grade applied before any optical effects.
+
+| Flag | Range | Default | Description |
+|------|-------|---------|-------------|
+| `--exposure` | -2 to 2 | `0` | Exposure adjustment |
+| `--contrast` | 0–3 | `1` | Contrast multiplier |
+| `--highlights` | -1 to 1 | `0` | Highlight compression |
+| `--fade` | 0–1 | `0` | Fade / lift blacks |
+| `--white-balance` | 1000–15000 | `6500` | Color temperature in Kelvin |
+| `--tint` | -100 to 100 | `0` | Green-magenta tint |
+| `--subtractive-sat` | 0–3 | `1` | Subtractive saturation |
+| `--richness` | 0–3 | `1` | Color richness |
+| `--bleach-bypass` | 0–1 | `0` | Bleach bypass amount |
+
+Disable with `--no-color-settings`.
+
+## Halation
+
+Simulates the glow that occurs when bright light passes through film emulsion and reflects off the base.
+
+| Flag | Range | Default | Description |
+|------|-------|---------|-------------|
+| `--halation-amount` | 0–1 | `0.25` | Halation strength |
+| `--halation-radius` | 1–100 | `4` | Blur radius |
+| `--halation-saturation` | 0–1 | `1` | Tint strength |
+| `--halation-hue` | 0–1 | `0.04` | Tint hue (0.04 ≈ red-orange) |
+| `--halation-highlights-only` | boolean | `true` | Restrict to highlights |
+
+Disable with `--no-halation`.
+
+## Chromatic aberration
+
+Simulates lens color fringing at frame edges.
+
+| Flag | Range | Default | Description |
+|------|-------|---------|-------------|
+| `--aberration` | 0–1 | `0.3` | Aberration amount |
+
+Disable with `--no-aberration`.
+
+## Bloom
+
+Soft light diffusion that wraps around bright areas.
+
+| Flag | Range | Default | Description |
+|------|-------|---------|-------------|
+| `--bloom-amount` | 0–1 | `0.25` | Bloom strength |
+| `--bloom-radius` | 1–100 | `10` | Blur radius |
+
+Disable with `--no-bloom`.
+
+## Grain
+
+Adds organic film grain.
+
+| Flag | Range | Default | Description |
+|------|-------|---------|-------------|
+| `--grain-amount` | 0–1 | `0.125` | Grain intensity |
+| `--grain-size` | 0–5 | `0` | Particle size |
+| `--grain-softness` | 0–1 | `0.1` | Grain softness |
+| `--grain-saturation` | 0–1 | `0.3` | Color saturation of grain |
+| `--grain-defocus` | 0–5 | `1` | Image defocus amount |
+
+Disable with `--no-grain`.
+
+## Vignette
+
+Darkens the edges of the frame.
+
+| Flag | Range | Default | Description |
+|------|-------|---------|-------------|
+| `--vignette-amount` | 0–1 | `0.25` | Vignette strength |
+| `--vignette-size` | 0–1 | `0.25` | Vignette size |
+
+Disable with `--no-vignette`.
+
+## Split tone
+
+Applies color toning to shadows and highlights.
+
+| Flag | Range | Default | Description |
+|------|-------|---------|-------------|
+| `--split-tone-mode` | `natural`, `complementary` | `natural` | Toning mode |
+| `--split-tone-amount` | 0–1 | `0` | Toning amount |
+| `--split-tone-hue` | 0–360 | `20` | Hue angle in degrees |
+| `--split-tone-pivot` | 0–1 | `0.3` | Shadow/highlight pivot |
+| `--split-tone-protect-neutrals` | boolean | `false` | Protect neutral colors |
+
+Disable with `--no-split-tone`. Note: split tone amount defaults to `0`, so it's effectively off unless you set it.
+
+## Camera shake
+
+Adds subtle motion for a handheld feel.
+
+| Flag | Range | Default | Description |
+|------|-------|---------|-------------|
+| `--camera-shake-amount` | 0–1 | `0.25` | Shake intensity |
+| `--camera-shake-rate` | 0–2 | `0.5` | Shake speed |
+
+Disable with `--no-camera-shake`.
