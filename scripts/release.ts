@@ -35,7 +35,7 @@ const rootPkg = JSON.parse(readFileSync(rootPkgPath, "utf8"));
 rootPkg.version = version;
 writeFileSync(rootPkgPath, JSON.stringify(rootPkg, null, 2) + "\n");
 
-const workspaces = ["packages/core", "packages/cli", "packages/ui"];
+const workspaces: string[] = rootPkg.workspaces ?? [];
 for (const ws of workspaces) {
   const wsPkgPath = `${ws}/package.json`;
   const wsPkg = JSON.parse(readFileSync(wsPkgPath, "utf8"));
