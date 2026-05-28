@@ -1,275 +1,52 @@
 # Hance
 
-> ⚠️ **Alpha software.** Hance is early-stage and has mainly been tested on macOS by a single developer. Expect rough edges on Linux/Windows, and pin versions if you use it in anything important.
+> ⚠️ **Alpha software.** Mainly tested on macOS by a single developer. Expect rough edges on Linux/Windows, and pin versions if you rely on it.
 
 **Preview a cinematic film look in the browser, then batch-apply it from the CLI.** GPU-accelerated colour, halation, bloom, grain, vignette, split-tone, aberration, and camera shake — one binary, no plugins, no subscriptions.
 
-### Who is this for?
-
-- **Creators whose editors don't support LUTs** — CapCut, ScreenFlow, iMovie, browser-based editors, and mobile NLEs have no LUT pipeline. Hance gives you cinematic film looks that weren't possible before. Process your clips before you import them — done.
-- **Creators who want more than a LUT** — halation, grain, bloom, aberration, and camera shake are spatial effects that LUTs literally cannot do. Hance bundles colour grading and film texture into one step, no plugins required.
-- **Automation pipelines** — agencies, studios, or platforms that need to batch-apply a consistent look across hundreds of clips with no GUI in the loop.
-- **Developers** building apps that need film effects programmatically — social video platforms, AI video pipelines, content tools.
-
-Hance is not a replacement for professional colour grading. It's the tool you reach for when you don't want to open a colour grading app at all.
-
-### Why hance?
-
-- **Preview + pipeline** — dial in a look visually with `hance ui`, save it as a preset, then batch-apply across footage from the command line. No other tool gives you both.
-- **GPU-accelerated** — native wgpu sidecar renders effects on the GPU. Fast enough for batch workflows.
-- **One-pass processing** — all effects compose into a single GPU render graph. No intermediate files, no re-encoding chains.
-- **Scriptable** — a single binary with CLI flags, presets, and batch input. Script it, cron it, plug it into your ingest pipeline.
-- **Agent-friendly** — ships with a Claude Code skill. Describe the look you want in plain English — no CLI knowledge needed.
-- **No vendor lock-in** — runs on your machine, processes your files locally. Your footage never leaves your disk.
-
-### Effects
-
-- **Color** — exposure, contrast, highlight compression, fade, white balance, tint, subtractive saturation, richness, bleach bypass
-- **Halation** — highlight glow with hue/saturation controls (simulates light scattering in film)
-- **Bloom** — soft highlight bloom independent of halation
-- **Grain** — film grain with size, softness, saturation, and defocus
-- **Vignette** — soft corner falloff
-- **Split Tone** — shadow/highlight tinting with a neutral-protect mode
-- **Chromatic Aberration** — red/blue channel offset for lens fringing
-- **Camera Shake** — procedural handheld motion
+📖 **[Full documentation →](packages/docs/src/content/docs/getting-started/introduction.md)**
 
 ---
 
 ## Quick start
 
-Install:
-
 ```sh
+# Install (needs ffmpeg on your PATH)
 brew install ffmpeg
 curl -fsSL https://github.com/Orva-Studio/hancer/releases/latest/download/install.sh | sh
-```
 
-Open the UI to preview presets on your own footage and dial in a look:
-
-```sh
+# Preview presets on your footage and dial in a look
 hance ui video.mp4
-```
 
-Save your look as a `.hlook` preset from the UI, then batch-apply it from the CLI:
-
-```sh
+# Batch-apply a look from the CLI
 hance video.mp4 --preset my-look
 ```
 
-Looks saved from the UI live in `~/.hance/presets/` and are referenced by name. Built-in presets (e.g. `--preset heavy`) work the same way.
+Looks saved from the UI live in `~/.hance/presets/` and are referenced by name. See the [Installation](packages/docs/src/content/docs/getting-started/installation.md) and [Quick Start](packages/docs/src/content/docs/getting-started/quick-start.md) guides for details.
 
----
+## Documentation
 
-## Install the CLI (recommended)
-
-No Bun, Rust, or Node required — just FFmpeg.
-
-```sh
-curl -fsSL https://github.com/Orva-Studio/hancer/releases/latest/download/install.sh | sh
-```
-
-This installs `hance` and its GPU sidecar to `~/.hance/bin`. The installer detects macOS (arm64/x64) or Linux (x64/arm64).
-
-You'll also need `ffmpeg` on your PATH:
-
-```sh
-brew install ffmpeg   # macOS
-apt install ffmpeg    # Debian/Ubuntu
-```
-
-Pin a specific version:
-
-```sh
-curl -fsSL https://github.com/Orva-Studio/hancer/releases/latest/download/install.sh | sh -s -- --version v0.1.2
-```
-
----
-
-## Usage
-
-```bash
-hance <input> [<input> ...] [options]
-```
-
-### Examples
-
-```bash
-# Process a video with defaults
-hance video.mp4
-
-# Process an image
-hance photo.png
-
-# Custom output path
-hance video.mp4 -o output.mp4
-
-# Batch process — outputs go next to each input (or into -o if it's a directory)
-hance clip1.mp4 clip2.mp4 clip3.mov -o ./graded/
-
-# Load a built-in preset
-hance video.mp4 --preset heavy
-
-# Override preset values
-hance video.mp4 --preset subtle --grain-amount 0.2 --aberration 0.5
-
-# ProRes output for editing workflows
-hance video.mov --codec prores -o output.mov
-
-# Launch the local browser UI for interactive preview
-hance ui
-```
-
-### Presets
-
-Hance ships with a handful of built-in presets (see `presets/*.hlook`). Pass `--preset <name>` to start from one; any additional flags override its values.
-
-`.hlook` files are JSON. The `hance_version` field records the version of Hance that wrote the file; it's informational, used for debugging and forward compatibility. Unknown effect parameters are ignored on load, so presets authored on newer versions still load on older binaries (the unknown effects simply don't apply).
-
-### Common options
-
-| Flag | Range / values | Default | Description |
-|------|----------------|---------|-------------|
-| `--output, -o` | path | `<input>_hanced.<ext>` | Output file (single input) or directory (multi-input) |
-| `--preset` | name | `default` | Load a preset before applying flags |
-| `--codec` | h264 / h265 / prores | h264 | Output video codec |
-| `--encode-preset` | fast / medium / slow | medium | FFmpeg encoding speed |
-| `--crf` | 0–51 | 18 | Quality — lower is better (ignored for prores) |
-| `--export` | low / medium / high / max | — | Export quality preset |
-| `--blend` | 0–1 | 1 | Blend final result with original |
-
-Run `hance --help` for the full list of effect flags (color, halation, bloom, grain, vignette, split-tone, camera-shake, aberration, etc.). Every effect group also has a `--no-<effect>` switch to disable it.
-
-### Config file
-
-Create a `.hancerc.json` in your project directory to set default flags so you don't have to repeat them:
-
-```json
-{
-  "codec": "prores",
-  "crf": 12,
-  "preset": "cinematic",
-  "grain-amount": 0.2
-}
-```
-
-Keys are the same as CLI flags without the `--` prefix. CLI flags always override config values.
-
-Hance searches for `.hancerc.json` starting from the current directory and walking up to the filesystem root. If no local config is found, it falls back to `~/.config/hance/config.json` as a global default.
-
-Use `--no-config` to ignore config files for a single run.
-
-### Interactive UI
-
-```bash
-hance ui                      # opens http://localhost:4800 in your browser
-hance ui path/to/video.mp4    # open the UI with a file preloaded
-hance ui --port 5000          # custom port
-hance ui --no-open            # don't auto-open browser
-```
-
-### AI agent friendly
-
-Hance ships with a Claude Code skill. No CLI knowledge needed — just describe the look you want in natural language.
-
-```
-> /hance run Kodak Portra 400 on my-video.mp4
-> /hance try a warm 70s portra look on sunset.mp4
-> /hance batch apply a vintage look to everything in ./footage
-```
-
-Install the skill outside this repo:
-
-```bash
-ln -s path/to/hancer/skills/hance ~/.claude/skills/hance
-```
-
----
-
-## Output quality
-
-By default, hance encodes output as H.264 with CRF 18. If your source is a high-quality format like ProRes (common with `.mov` files from cameras or editing software), the default H.264 output will be lower quality than the original due to lossy compression and 4:2:0 chroma subsampling.
-
-```bash
-# ProRes output (near-lossless, 4:2:2 10-bit, larger files)
-hance video.mov -o output.mov --codec prores
-
-# Lower CRF for higher-quality H.264 (0 = lossless)
-hance video.mov -o output.mp4 --crf 8
-
-# H.265 for better quality at similar file sizes
-hance video.mov -o output.mp4 --codec h265 --crf 12
-```
-
-| Codec | Quality | File Size | Compatibility |
-|-------|---------|-----------|---------------|
-| `h264` (default) | Good (CRF-dependent) | Smallest | Universal |
-| `h265` | Better at same CRF | ~30% smaller than h264 | Most modern players |
-| `prores` | Near-lossless (4:2:2 10-bit) | Largest | macOS, editing software |
-
----
+- [Introduction](packages/docs/src/content/docs/getting-started/introduction.md) — what hance is and who it's for
+- [Commands & options](packages/docs/src/content/docs/cli/commands.md) — full CLI reference
+- [Effects](packages/docs/src/content/docs/cli/effects.md) — the effect pipeline and per-effect flags
+- [Output quality](packages/docs/src/content/docs/cli/output-quality.md) — codecs, CRF, ProRes
+- [Config file](packages/docs/src/content/docs/cli/config-file.md) — `.hancerc.json` defaults
+- [Looks](packages/docs/src/content/docs/looks/built-in.md) — built-in and custom `.hlook` presets
+- [AI agent usage](packages/docs/src/content/docs/agent/overview.md) — drive hance from Claude Code in plain English
 
 ## Build from source
 
-Only needed if you want to hack on hance itself. The released CLI binary does **not** require any of this.
+Only needed to hack on hance itself — the released CLI binary requires none of this.
 
-### Requirements
-
-- [Bun](https://bun.sh) — runtime and build tool
-- [Rust](https://rustup.rs) — for the wgpu GPU sidecar
-- [FFmpeg](https://ffmpeg.org) — runtime dependency
-
-### Build
-
-```bash
-git clone https://github.com/RichardBray/hance.git
-cd hance
+```sh
+git clone https://github.com/Orva-Studio/hancer.git
+cd hancer
 bun install
-bun run build    # builds wgpu sidecar + UI bundle + CLI binary → ./hance
-
-# Optional: add to PATH
-ln -s "$(pwd)/hance" /usr/local/bin/hance
+bun run build    # wgpu sidecar + UI bundle + CLI binary → ./hance
+bun test         # unit tests
 ```
 
-### Individual build steps
-
-```bash
-bun run build:wgpu   # Rust wgpu sidecar (packages/wgpu/target/release/hance-gpu)
-bun run build:ui     # Browser UI bundle
-```
-
-### Dev loop
-
-```bash
-# Run the CLI directly from source (needs sidecar built first)
-bun run build:wgpu
-bun run packages/cli/src/cli.ts <input> [options]
-
-# Unit tests
-bun test
-
-# E2E tests (actual FFmpeg + GPU execution)
-bun test packages/cli/__tests__/e2e/
-
-# Rust tests
-cd packages/wgpu && cargo test
-```
-
----
-
-## Architecture
-
-Hance is a Bun workspaces monorepo:
-
-- `packages/core` — pure TypeScript effect/preset/arg logic
-- `packages/cli` — the compiled `hance` binary entry point
-- `packages/ui` — the browser-based interactive preview
-- `packages/wgpu` — the Rust wgpu sidecar binary
-
-Effects are rendered on the GPU via the native Rust [wgpu](https://wgpu.rs) sidecar. WGSL shaders are shared between the browser preview and the Rust sidecar. The sidecar communicates with the Bun CLI over stdin/stdout using a length-prefixed JSON init message followed by raw RGBA frames.
-
-See [ARCHITECTURE.md](ARCHITECTURE.md) for more detail.
-
----
+Requires [Bun](https://bun.sh), [Rust](https://rustup.rs), and [FFmpeg](https://ffmpeg.org). See [ARCHITECTURE.md](ARCHITECTURE.md) for the monorepo layout and rendering pipeline.
 
 ## License
 

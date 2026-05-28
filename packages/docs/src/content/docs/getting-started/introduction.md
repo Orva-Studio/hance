@@ -7,6 +7,10 @@ description: What hance is and how it works.
 Hance is alpha software. It has mainly been tested on macOS by a single developer. Expect rough edges on Linux/Windows, and pin versions if you use it in anything important.
 :::
 
+:::tip[Using an AI agent?]
+These docs are machine-readable: point your agent at [`/llms.txt`](/llms.txt), or append `.md` to any page URL for raw Markdown. See [AI Agent Usage](/agent/overview/#machine-readable-docs).
+:::
+
 Hance is a single-binary CLI that applies cinematic film effects to video and images. Preview a look in the browser with `hance ui`, then batch-apply it from the CLI. GPU-accelerated colour, halation, bloom, grain, vignette, split-tone, aberration, and camera shake — one binary, no plugins, no subscriptions.
 
 ## Who is this for?
@@ -17,10 +21,6 @@ Hance is a single-binary CLI that applies cinematic film effects to video and im
 - **Developers** building apps that need film effects programmatically — social video platforms, AI video pipelines, content tools.
 
 Hance is not a replacement for professional colour grading. It's the tool you reach for when you don't want to open a colour grading app at all.
-
-:::tip[Using an AI agent?]
-These docs are machine-readable: point your agent at [`/llms.txt`](/llms.txt), or append `.md` to any page URL for raw Markdown. See [AI Agent Usage](/agent/overview/#machine-readable-docs).
-:::
 
 ## How it works
 
