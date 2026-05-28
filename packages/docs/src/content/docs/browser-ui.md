@@ -3,7 +3,18 @@ title: Browser UI
 description: Full tour of the hance browser-based editor — panels, view modes, and export.
 ---
 
-The hance browser-based editor previews looks in real-time on your footage, rendering effects on the GPU via WebGPU. Launch it with `hance ui` (optionally with a file path); it opens at `http://localhost:4800`. This page documents every panel and feature.
+The hance browser-based editor previews looks in real-time on your footage, rendering effects on the GPU via WebGPU. This page documents every panel and feature.
+
+## Launching
+
+```bash
+hance ui                      # open http://localhost:4800 in your browser
+hance ui path/to/video.mp4    # launch with a file preloaded
+hance ui --port 5000          # use a custom port
+hance ui --no-open            # start the server without opening a browser
+```
+
+Using an AI agent? The [`/hance ui`](/agent/overview/) skill command opens the editor too — `/hance ui my-video.mp4`.
 
 ## Upload & preview
 

@@ -46,6 +46,10 @@ Apply one preset to multiple files at once.
 > /hance batch cinestill-800t clip*.mp4
 ```
 
+:::note
+Batch processing requires a pro license. On the free tier, process one file at a time. See [Free vs Pro](/free-vs-pro/).
+:::
+
 ## `/hance ui`
 
 Open the browser-based editor for interactive preview and tweaking.
