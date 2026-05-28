@@ -30,3 +30,12 @@ The `/hance` skill routes to one of five subcommands based on what you ask for. 
 | `/hance try` | Explore and compare looks in a browser UI |
 | `/hance batch` | Apply one preset to multiple files |
 | `/hance ui` | Open the browser-based editor |
+
+## Machine-readable docs
+
+These docs are published in formats built for LLMs and agents:
+
+- **[`/llms.txt`](/llms.txt)** — an index of the documentation, following the [llms.txt convention](https://llmstxt.org/), with links to every page.
+- **Plain Markdown** — append `.md` to any page URL to fetch its raw Markdown (frontmatter stripped). For example, this page is available at `/agent/overview.md`.
+
+Point your agent at `/llms.txt` to let it discover and pull in the relevant pages on demand.
