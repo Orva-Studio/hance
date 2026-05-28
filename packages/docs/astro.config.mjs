@@ -6,7 +6,6 @@ import markdownPages from "./src/integrations/markdown-pages";
 export default defineConfig({
   site: "https://hance.dev",
   integrations: [
-    markdownPages(),
     starlight({
       plugins: [starlightLlmsTxt()],
       title: "hance",
@@ -64,5 +63,6 @@ export default defineConfig({
         { label: "Architecture", slug: "architecture" },
       ],
     }),
+    markdownPages(),
   ],
 });
