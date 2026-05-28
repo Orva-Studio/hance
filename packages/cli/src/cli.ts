@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync } from "node:fs";
-import { probe, applyPreset, resolveExportPreset, requireCodecLicense } from "@hance/core";
+import { probe, applyPreset, resolveExportPreset, requireCodecLicense, HANCE_PRO_URL } from "@hance/core";
 import type { PresetData, FilmOptions, LicenseContext } from "@hance/core";
 import { runGpuExport } from "@hance/gpu";
 import { parseEffectFlags, EFFECT_HELP_TEXT } from "./effect-flags";
@@ -214,7 +214,7 @@ async function main() {
   const isBatch = parsed.inputs.length > 1;
 
   if (isBatch && license.tier !== "pro") {
-    console.error("Batch processing requires a pro license. Process one file at a time, or upgrade at https://hance.app/pro");
+    console.error(`Batch processing requires a pro license. Process one file at a time, or upgrade at ${HANCE_PRO_URL}`);
     process.exit(1);
   }
 

@@ -1,10 +1,11 @@
 import type { ExportPreset, OutputCodec, PixelFormat, LicenseContext } from "./types";
+import { HANCE_PRO_URL } from "./constants";
 
 export const PRO_CODECS: ReadonlySet<OutputCodec> = new Set(["prores", "webm"]);
 
 export function requireCodecLicense(codec: OutputCodec, license?: LicenseContext): void {
   if (license && license.tier !== "pro" && PRO_CODECS.has(codec)) {
-    throw new Error(`Codec "${codec}" requires a pro license — upgrade at https://hance.app/pro`);
+    throw new Error(`Codec "${codec}" requires a pro license — upgrade at ${HANCE_PRO_URL}`);
   }
 }
 

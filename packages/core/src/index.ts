@@ -18,3 +18,5 @@ export type { PresetIndexEntry } from "./preset-index";
 export { buildPresetIndex, rebuildPresetIndex } from "./preset-index";
 
 export { probe, parseProbeOutput } from "./probe";
+
+export { HANCE_BASE_URL, HANCE_PRO_URL } from "./constants";
