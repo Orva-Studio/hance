@@ -65,9 +65,9 @@ export function ExportModal({ defaultBasename, onCancel, onExport }: Props) {
               onChange={e => onCodecChange(e.target.value as Codec)}
               className="w-full bg-zinc-900 border border-accent text-zinc-200 px-2 py-1.5 rounded-sm"
             >
-              <option>H.264</option>
-              <option>H.265</option>
-              <option>ProRes 422</option>
+              <option value="H.264">H.264</option>
+              <option value="H.265">H.265</option>
+              <option value="ProRes 422">ProRes 422 (Pro)</option>
             </select>
           </div>
 
