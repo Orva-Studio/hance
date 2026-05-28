@@ -1,5 +1,5 @@
-import { EFFECT_SCHEMA, loadPreset, builtinPresetsDir, userPresetsDir, listPresetNames, probe, rebuildPresetIndex } from "@hance/core";
-import type { PresetData } from "@hance/core";
+import { EFFECT_SCHEMA, loadPreset, builtinPresetsDir, userPresetsDir, listPresetNames, probe, rebuildPresetIndex, requireCodecLicense } from "@hance/core";
+import type { PresetData, LicenseContext } from "@hance/core";
 import { runGpuExport } from "@hance/gpu";
 import { join, extname, basename, resolve } from "node:path";
 import { existsSync, readdirSync, mkdirSync, writeFileSync, unlinkSync, renameSync, rmSync } from "node:fs";
@@ -209,6 +209,14 @@ export function createServer(port: number) {
         const codec: "h264" | "h265" | "prores" =
           codecLabel === "ProRes 422" ? "prores" :
           codecLabel === "H.265" ? "h265" : "h264";
+
+        const license: LicenseContext = { tier: process.env.HANCE_LICENSE === "pro" ? "pro" : "free" };
+        try {
+          requireCodecLicense(codec, license);
+        } catch (err) {
+          return new Response((err as Error).message, { status: 403 });
+        }
+
         const pixelFormat = codec === "prores" ? "yuv422p10le" : "yuv420p";
         const tempDir = join(tmpdir(), "hance-export");
         if (!existsSync(tempDir)) mkdirSync(tempDir, { recursive: true });
