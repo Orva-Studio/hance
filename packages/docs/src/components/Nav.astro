@@ -1,0 +1,64 @@
+---
+const REPO = 'https://github.com/Orva-Studio/hance';
+---
+<header class="px-6 sm:px-10 lg:px-16 pt-7 sm:pt-9">
+  <nav class="flex items-center justify-between" aria-label="Primary">
+    <a href="/" class="font-sans text-xl tracking-tightest-2 lowercase font-medium text-ink hover:text-accent transition-colors duration-300 ease-out-quart">
+      hance
+    </a>
+    <ul class="flex items-center gap-7 font-mono text-[14px] text-ink">
+      <li class="hidden sm:block"><a href="/docs/" class="link-hover text-ink-muted hover:text-ink">Docs</a></li>
+      <li><a href={REPO} class="link-hover text-ink-muted hover:text-ink">GitHub</a></li>
+      <li><a href="/docs/getting-started/installation/" class="download-pill">Download</a></li>
+    </ul>
+  </nav>
+</header>
+
+<style>
+  .link-hover {
+    position: relative;
+  }
+  .link-hover::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -3px;
+    height: 1px;
+    background: oklch(0.74 0.18 55);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .link-hover:hover {
+    color: oklch(0.94 0.015 80);
+  }
+  .link-hover:hover::after {
+    transform: scaleX(1);
+  }
+
+  .download-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 9999px;
+    padding: 10px 22px;
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: oklch(0.94 0.015 80);
+    background: oklch(0.74 0.18 55 / 0.12);
+    border: 1px solid oklch(0.74 0.18 55);
+    transition: background-color 320ms cubic-bezier(0.16, 1, 0.3, 1),
+                transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .download-pill::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: oklch(0.74 0.18 55);
+  }
+  .download-pill:hover {
+    background: oklch(0.74 0.18 55 / 0.22);
+    transform: translateY(-1px);
+  }
+</style>

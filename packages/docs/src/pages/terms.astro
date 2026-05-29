@@ -1,0 +1,128 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+const CONTACT = 'hello@orva.studio';
+const UPDATED = 'May 29, 2026';
+---
+<Base title="Hance — Terms of Service" description="The terms that govern your use of Hance.">
+  <!-- NAV -->
+  <Nav />
+
+  <!-- BODY -->
+  <main class="px-6 sm:px-10 lg:px-16 pt-16 sm:pt-24 pb-24">
+    <div class="max-w-[68ch] mx-auto">
+      <p class="font-mono text-[12px] text-ink-dim uppercase tracking-[0.18em]">Last updated · {UPDATED}</p>
+      <h1 class="mt-4 font-sans font-medium tracking-tightest-2 leading-[0.95] text-ink text-[clamp(2.5rem,8vw,5rem)]">
+        Terms of Service
+      </h1>
+
+      <div class="legal mt-12 space-y-8 text-ink-muted text-base leading-relaxed">
+        <p>
+          These terms govern your use of Hance, a tool operated by Orva Studio ("we",
+          "us"). By downloading, installing, or using Hance, you agree to them.
+        </p>
+
+        <section>
+          <h2>License</h2>
+          <p>
+            The Hance source is released under the Functional Source License
+            (FSL-1.1-Apache-2.0): you may use, modify, and redistribute it, but not to
+            build a competing product or service. It converts to Apache 2.0 on April 1,
+            2028. Your use of the source is governed by that license.
+          </p>
+        </section>
+
+        <section>
+          <h2>Free and Pro</h2>
+          <p>
+            Hance is free to use for its core functionality. Some features require a Pro
+            license, available as a <strong>one-time payment of $49 USD</strong>. A Pro
+            license is granted to you for use across your own machines and does not
+            expire. See the <a href="/docs/free-vs-pro/">Free vs Pro</a> page for what
+            each tier includes.
+          </p>
+        </section>
+
+        <section>
+          <h2>Payment and refunds</h2>
+          <p>
+            Pro payments are processed by our payment provider. Hance Pro comes with a
+            <strong>30-day money-back guarantee</strong>: if you are not satisfied for any
+            reason, email us at <a href={`mailto:${CONTACT}`}>{CONTACT}</a> within 30 days
+            of purchase and we will issue a full refund. This is in addition to any refund
+            rights you have under applicable law.
+          </p>
+        </section>
+
+        <section>
+          <h2>Acceptable use</h2>
+          <p>
+            You are responsible for the footage and images you process with Hance and for
+            having the rights to do so. Do not use Hance for any unlawful purpose or to
+            infringe the rights of others.
+          </p>
+        </section>
+
+        <section>
+          <h2>No warranty</h2>
+          <p>
+            Hance is provided "as is", without warranties of any kind, express or implied,
+            including merchantability, fitness for a particular purpose, and
+            non-infringement. You use it at your own risk.
+          </p>
+        </section>
+
+        <section>
+          <h2>Limitation of liability</h2>
+          <p>
+            To the maximum extent permitted by law, Orva Studio is not liable for any
+            indirect, incidental, or consequential damages, or for any loss of data or
+            footage, arising from your use of Hance. Our total liability for any claim is
+            limited to the amount you paid us for Hance in the prior 12 months.
+          </p>
+        </section>
+
+        <section>
+          <h2>Changes</h2>
+          <p>
+            We may update these terms as Hance evolves. Continued use after changes take
+            effect constitutes acceptance. Material changes are reflected by the "last
+            updated" date above.
+          </p>
+        </section>
+
+        <section>
+          <h2>Contact</h2>
+          <p>
+            Questions about these terms? Email
+            <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
+          </p>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <Footer />
+</Base>
+
+<style>
+  .legal h2 {
+    font-family: "Inter Tight", Inter, system-ui, sans-serif;
+    color: var(--color-ink, #fff);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .legal a {
+    color: var(--color-accent, #e08a4a);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .legal a:hover {
+    opacity: 0.85;
+  }
+</style>
