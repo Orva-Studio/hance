@@ -1,0 +1,10 @@
+# Old root-level doc URLs (pre /docs subpath move) → new /docs/* paths.
+# Cloudflare Pages: path-based 301 redirects. Marketing now owns `/`.
+/getting-started/*  /docs/getting-started/:splat  301
+/agent/*            /docs/agent/:splat            301
+/cli/*              /docs/cli/:splat              301
+/looks/*            /docs/looks/:splat            301
+/browser-ui         /docs/browser-ui/            301
+/browser-ui/*       /docs/browser-ui/:splat      301
+/free-vs-pro        /docs/free-vs-pro/           301
+/architecture       /docs/architecture/          301
