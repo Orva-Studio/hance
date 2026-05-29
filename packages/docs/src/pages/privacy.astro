@@ -1,0 +1,116 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+const CONTACT = 'hello@orva.studio';
+const UPDATED = 'May 29, 2026';
+---
+<Base title="Hance — Privacy Policy" description="How Hance and Orva Studio handle your data.">
+  <!-- NAV -->
+  <Nav />
+
+  <!-- BODY -->
+  <main class="px-6 sm:px-10 lg:px-16 pt-16 sm:pt-24 pb-24">
+    <div class="max-w-[68ch] mx-auto">
+      <p class="font-mono text-[12px] text-ink-dim uppercase tracking-[0.18em]">Last updated · {UPDATED}</p>
+      <h1 class="mt-4 font-sans font-medium tracking-tightest-2 leading-[0.95] text-ink text-[clamp(2.5rem,8vw,5rem)]">
+        Privacy Policy
+      </h1>
+
+      <div class="legal mt-12 space-y-8 text-ink-muted text-base leading-relaxed">
+        <p>
+          This policy explains what data Hance (operated by Orva Studio, "we", "us")
+          collects and how we use it. Hance is a command-line tool and optional local
+          browser UI that processes video and images entirely on your own machine.
+        </p>
+
+        <section>
+          <h2>Your footage never leaves your machine</h2>
+          <p>
+            All rendering happens locally on your device. Hance does not upload, store,
+            or transmit your video files, images, presets, or render output to us or to
+            any third party. We never see your media.
+          </p>
+        </section>
+
+        <section>
+          <h2>Crash and error reporting</h2>
+          <p>
+            Hance uses Sentry to collect anonymous crash and error reports so we can fix
+            bugs. These reports may include technical details such as your operating
+            system, app version, error stack traces, and a coarse IP address used for
+            geolocation. They do not include your media. You can disable crash reporting
+            at any time.
+          </p>
+        </section>
+
+        <section>
+          <h2>Purchases</h2>
+          <p>
+            Hance offers a one-time Pro license. Payments are processed by our payment
+            provider (e.g. Stripe), who handles your card details under their own privacy
+            policy — we never receive or store full card numbers. To deliver and validate
+            a license we retain your email address, license key, and purchase record.
+          </p>
+        </section>
+
+        <section>
+          <h2>Website analytics</h2>
+          <p>
+            This website may use privacy-respecting, aggregate analytics to understand
+            traffic. We do not sell personal data or use it for advertising.
+          </p>
+        </section>
+
+        <section>
+          <h2>Your rights</h2>
+          <p>
+            Depending on where you live (e.g. the EU/UK under GDPR, or California under
+            CCPA), you may have the right to access, correct, or delete the personal data
+            we hold about you, and to request that we stop processing it. To exercise any
+            of these rights, contact us at <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
+          </p>
+        </section>
+
+        <section>
+          <h2>Changes</h2>
+          <p>
+            We may update this policy as Hance evolves. Material changes will be reflected
+            by the "last updated" date above.
+          </p>
+        </section>
+
+        <section>
+          <h2>Contact</h2>
+          <p>
+            Questions about this policy? Email
+            <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
+          </p>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <Footer />
+</Base>
+
+<style>
+  .legal h2 {
+    font-family: "Inter Tight", Inter, system-ui, sans-serif;
+    color: var(--color-ink, #fff);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .legal a {
+    color: var(--color-accent, #e08a4a);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .legal a:hover {
+    opacity: 0.85;
+  }
+</style>
