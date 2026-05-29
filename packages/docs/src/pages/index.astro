@@ -11,7 +11,7 @@ const steps = [
   {
     n: '01',
     title: 'Run',
-    body: 'No install step — npx fetches and runs the latest hance on macOS, Linux, or Windows. You just need FFmpeg on your PATH. For frequent use, install a persistent binary to ~/.hance/bin.',
+    body: 'No install step — npx fetches and runs the latest hance on macOS or Linux. You just need FFmpeg on your PATH. For frequent use, install a persistent binary to ~/.hance/bin.',
     code: ['$ npx @orva-studio/hance video.mp4', '$ brew install ffmpeg   # FFmpeg required'],
   },
   {
@@ -47,7 +47,7 @@ const faqs = [
   },
   {
     q: 'Linux and Windows?',
-    a: 'All three. The quickest path — npx @orva-studio/hance — runs on macOS, Linux, and Windows wherever FFmpeg is on your PATH. Native persistent installers are provided for macOS and Linux; on Windows, run via npx.',
+    a: 'macOS is the primary target during alpha. Linux works and is lightly tested — hance ships native binaries for both (arm64/x64). Windows is not supported.',
   },
   {
     q: 'License?',

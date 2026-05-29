@@ -7,7 +7,7 @@ The only system requirement is FFmpeg (see [below](#requirements)).
 
 ## Run with npx (no install)
 
-The quickest way to try hance — no install step, works on macOS, Linux, and Windows:
+The quickest way to try hance — no install step, on macOS or Linux:
 
 ```bash
 npx @orva-studio/hance video.mp4
@@ -55,9 +55,9 @@ brew install ffmpeg
 sudo apt install ffmpeg
 ```
 
-### Windows
-
-Download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to your PATH.
+:::note
+Windows is not currently supported — hance ships binaries for macOS (arm64/x64) and Linux (x64/arm64) only.
+:::
 
 ## Verify
 

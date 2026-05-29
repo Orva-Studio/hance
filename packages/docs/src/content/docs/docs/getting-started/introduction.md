@@ -4,7 +4,7 @@ description: What hance is and how it works.
 ---
 
 :::caution
-Hance is alpha software. It has mainly been tested on macOS by a single developer. Expect rough edges on Linux/Windows, and pin versions if you use it in anything important.
+Hance is alpha software. It has mainly been tested on macOS by a single developer. Expect rough edges on Linux, and pin versions if you use it in anything important. Windows is not supported.
 :::
 
 :::tip[Using an AI agent?]
