@@ -3,7 +3,7 @@ import path from "node:path";
 import { homedir } from "node:os";
 
 const LOCAL_CONFIG_NAME = ".hancerc.json";
-const GLOBAL_CONFIG_PATH = path.join(homedir(), ".config", "hance", "config.json");
+export const GLOBAL_CONFIG_PATH = path.join(homedir(), ".config", "hance", "config.json");
 
 export function findLocalConfig(startDir: string): string | null {
   let dir = startDir;
