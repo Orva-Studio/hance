@@ -65,10 +65,15 @@ describe("findLocalConfig", () => {
 
 describe("loadConfig", () => {
   let tempDir: string;
+  // Point the global fallback at a path that doesn't exist, so a real
+  // ~/.config/hance/config.json on the dev's machine can't leak into these
+  // assertions about the local-config behavior.
+  let noGlobal: string;
 
   beforeEach(() => {
     tempDir = path.join(tmpdir(), `hance-test-${Date.now()}`);
     mkdirSync(tempDir, { recursive: true });
+    noGlobal = path.join(tempDir, "no-such-global-config.json");
   });
 
   afterEach(() => {
@@ -77,28 +82,28 @@ describe("loadConfig", () => {
 
   test("loads config from directory", async () => {
     writeFileSync(path.join(tempDir, ".hancerc.json"), '{"codec": "prores", "crf": 12}');
-    const { config, source } = await loadConfig(tempDir);
+    const { config, source } = await loadConfig(tempDir, noGlobal);
     expect(config.codec).toBe("prores");
     expect(config.crf).toBe(12);
     expect(source).toBe(path.join(tempDir, ".hancerc.json"));
   });
 
   test("returns empty config when no file exists", async () => {
-    const { config, source } = await loadConfig(tempDir);
+    const { config, source } = await loadConfig(tempDir, noGlobal);
     expect(config).toEqual({});
     expect(source).toBeNull();
   });
 
   test("warns and skips invalid JSON", async () => {
     writeFileSync(path.join(tempDir, ".hancerc.json"), "not json");
-    const { config, source } = await loadConfig(tempDir);
+    const { config, source } = await loadConfig(tempDir, noGlobal);
     expect(config).toEqual({});
     expect(source).toBeNull();
   });
 
   test("warns and skips non-object JSON (array)", async () => {
     writeFileSync(path.join(tempDir, ".hancerc.json"), "[1, 2, 3]");
-    const { config, source } = await loadConfig(tempDir);
+    const { config, source } = await loadConfig(tempDir, noGlobal);
     expect(config).toEqual({});
     expect(source).toBeNull();
   });

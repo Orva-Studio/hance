@@ -59,8 +59,10 @@ describe("e2e: hance preset", () => {
   it("preset render matches direct flag render", async () => {
     if (existsSync(OUT_DIRECT)) unlinkSync(OUT_DIRECT);
     if (existsSync(OUT_VIA_PRESET)) unlinkSync(OUT_VIA_PRESET);
-    const a = await run([IMG, "-o", OUT_DIRECT, "--exposure", "0.6"]);
-    const b = await run([IMG, "-o", OUT_VIA_PRESET, "--preset", NAME]);
+    // --no-config so an ambient ~/.config/hance/config.json can't perturb
+    // one render's effect stack and break the equivalence check.
+    const a = await run([IMG, "-o", OUT_DIRECT, "--no-config", "--exposure", "0.6"]);
+    const b = await run([IMG, "-o", OUT_VIA_PRESET, "--no-config", "--preset", NAME]);
     expect(a.code).toBe(0); expect(b.code).toBe(0);
     const ha = Bun.hash(readFileSync(OUT_DIRECT));
     const hb = Bun.hash(readFileSync(OUT_VIA_PRESET));

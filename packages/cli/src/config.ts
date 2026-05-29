@@ -20,10 +20,10 @@ export interface HanceConfig {
   [key: string]: string | number | boolean;
 }
 
-export async function loadConfig(startDir = process.cwd()): Promise<{ config: HanceConfig; source: string | null }> {
+export async function loadConfig(startDir = process.cwd(), globalPath = GLOBAL_CONFIG_PATH): Promise<{ config: HanceConfig; source: string | null }> {
   const localPath = findLocalConfig(startDir);
 
-  for (const configPath of [localPath, GLOBAL_CONFIG_PATH]) {
+  for (const configPath of [localPath, globalPath]) {
     if (configPath && existsSync(configPath)) {
       try {
         const raw = await Bun.file(configPath).json();
