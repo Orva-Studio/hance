@@ -3,16 +3,16 @@ import Base from '../layouts/Base.astro';
 
 const REPO = 'https://github.com/Orva-Studio/hance';
 const RELEASE = 'https://github.com/Orva-Studio/hance/releases/latest';
-const INSTALL = '$ curl -fsSL get.hance.sh | sh';
+const INSTALL = '$ npx @orva-studio/hance video.mp4';
 
 const effects = ['Color', 'Halation', 'Bloom', 'Grain', 'Vignette', 'Split Tone', 'Aberration', 'Shake'];
 
 const steps = [
   {
     n: '01',
-    title: 'Install',
-    body: 'One curl command. The GPU sidecar and binary land in ~/.hance/bin. You also need FFmpeg on PATH.',
-    code: ['$ curl -fsSL get.hance.sh | sh', '$ brew install ffmpeg   # macOS'],
+    title: 'Run',
+    body: 'No install step — npx fetches and runs the latest hance on macOS, Linux, or Windows. You just need FFmpeg on your PATH. For frequent use, install a persistent binary to ~/.hance/bin.',
+    code: ['$ npx @orva-studio/hance video.mp4', '$ brew install ffmpeg   # FFmpeg required'],
   },
   {
     n: '02',
@@ -23,8 +23,8 @@ const steps = [
   {
     n: '03',
     title: 'Batch',
-    body: 'Apply the preset headlessly across a folder. One pass, one render graph, no intermediate files.',
-    code: ['$ hance *.mov --preset heavy -o ./graded/'],
+    body: 'Apply a look headlessly across a folder, in sequence. One render graph per clip, no intermediate files. (Batch requires a Pro license.)',
+    code: ['$ hance *.mov --preset portra-400 -o ./graded/'],
   },
 ];
 
@@ -35,7 +35,7 @@ const faqs = [
   },
   {
     q: 'Does my footage leave my machine?',
-    a: 'No. Everything happens locally on your GPU. There is no telemetry and no upload. Your files stay on your disk.',
+    a: 'No. Everything happens locally on your GPU — there is no upload, and your files never leave your disk. The only thing sent anywhere is optional anonymous crash reporting, which you can disable.',
   },
   {
     q: 'Why CLI-first?',
@@ -47,7 +47,7 @@ const faqs = [
   },
   {
     q: 'Linux and Windows?',
-    a: 'macOS is the primary target during alpha. Linux works and is lightly tested. Windows is not yet supported.',
+    a: 'All three. The quickest path — npx @orva-studio/hance — runs on macOS, Linux, and Windows wherever FFmpeg is on your PATH. Native persistent installers are provided for macOS and Linux; on Windows, run via npx.',
   },
   {
     q: 'License?',
@@ -80,7 +80,7 @@ const faqs = [
       </h1>
 
       <p class="mt-10 sm:mt-12 max-w-[44ch] text-ink-muted text-base sm:text-xl leading-snug text-balance">
-        Color, halation, bloom, grain, vignette. GPU&#8209;accelerated. One binary. Runs on your machine.
+        Color, halation, bloom, grain, vignette. GPU&#8209;accelerated. One command. Runs on your machine.
       </p>
 
       <div class="mt-10 sm:mt-12 flex flex-wrap items-center gap-4">
@@ -89,10 +89,10 @@ const faqs = [
           type="button"
           class="group inline-flex max-w-full items-center gap-2 sm:gap-3 rounded-full border border-accent/70 hover:border-accent pl-4 sm:pl-5 pr-2.5 sm:pr-3 py-2 sm:py-2.5 font-mono text-[12px] sm:text-sm text-ink transition-colors duration-300 ease-out-quart"
           data-copy={INSTALL.replace(/^\$\s*/, '')}
-          aria-label="Copy install command"
+          aria-label="Copy run command"
         >
           <span class="text-accent select-none">$</span>
-          <span class="select-all truncate">curl -fsSL get.hance.sh | sh</span>
+          <span class="select-all truncate">npx @orva-studio/hance video.mp4</span>
           <span class="ml-1 sm:ml-2 inline-flex items-center gap-1.5 rounded-full bg-accent/10 text-accent/90 px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-[11px] tracking-wide uppercase shrink-0" data-label>
             copy
           </span>
