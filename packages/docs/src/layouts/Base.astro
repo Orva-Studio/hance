@@ -1,0 +1,28 @@
+---
+import '../styles/global.css';
+const { title = 'Hance — a film look in one pass', description = 'Cinematic film-look engine. Color, halation, bloom, grain, vignette. GPU-accelerated. One binary. Runs on your machine.' } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#0a1416" />
+    <title>{title}</title>
+  </head>
+  <body class="bg-surface text-ink">
+    <div class="grain" aria-hidden="true"></div>
+    <div class="relative z-10">
+      <slot />
+    </div>
+</body>
+</html>
