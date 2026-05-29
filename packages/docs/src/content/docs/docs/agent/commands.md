@@ -47,7 +47,7 @@ Apply one preset to multiple files at once.
 ```
 
 :::note
-Batch processing requires a pro license. On the free tier, process one file at a time. See [Free vs Pro](/free-vs-pro/).
+Batch processing requires a pro license. On the free tier, process one file at a time. See [Free vs Pro](/docs/free-vs-pro/).
 :::
 
 ## `/hance ui`

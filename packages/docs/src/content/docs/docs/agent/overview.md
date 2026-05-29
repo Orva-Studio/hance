@@ -21,7 +21,7 @@ The skill uses `bunx @orva-studio/hance` (or `npx` as fallback) under the hood â
 
 ## Subcommands
 
-The `/hance` skill routes to one of five subcommands based on what you ask for. See the [Skill Commands](/agent/commands/) page for full details.
+The `/hance` skill routes to one of five subcommands based on what you ask for. See the [Skill Commands](/docs/agent/commands/) page for full details.
 
 | Command | Description |
 |---------|-------------|

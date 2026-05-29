@@ -27,7 +27,7 @@ If you drive hance from an AI agent, run the skill's setup command — it verifi
 > /hance setup
 ```
 
-See [AI Agent Usage](/agent/overview/) for installing the skill.
+See [AI Agent Usage](/docs/agent/overview/) for installing the skill.
 
 ## Install a persistent binary
 
