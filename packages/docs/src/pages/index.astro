@@ -1,0 +1,398 @@
+---
+import Base from '../layouts/Base.astro';
+
+const REPO = 'https://github.com/Orva-Studio/hance';
+const RELEASE = 'https://github.com/Orva-Studio/hance/releases/latest';
+const INSTALL = '$ curl -fsSL get.hance.sh | sh';
+
+const effects = ['Color', 'Halation', 'Bloom', 'Grain', 'Vignette', 'Split Tone', 'Aberration', 'Shake'];
+
+const steps = [
+  {
+    n: '01',
+    title: 'Install',
+    body: 'One curl command. The GPU sidecar and binary land in ~/.hance/bin. You also need FFmpeg on PATH.',
+    code: ['$ curl -fsSL get.hance.sh | sh', '$ brew install ffmpeg   # macOS'],
+  },
+  {
+    n: '02',
+    title: 'Preview',
+    body: 'Open the local browser UI to dial in a look on your own footage. Save the result as a .hlook preset.',
+    code: ['$ hance ui video.mp4', '→ http://localhost:4800'],
+  },
+  {
+    n: '03',
+    title: 'Batch',
+    body: 'Apply the preset headlessly across a folder. One pass, one render graph, no intermediate files.',
+    code: ['$ hance *.mov --preset heavy -o ./graded/'],
+  },
+];
+
+const faqs = [
+  {
+    q: 'Is this a plugin for DaVinci or Premiere?',
+    a: 'No. Hance is a standalone CLI plus an optional local browser UI. It runs anywhere FFmpeg runs and slots into your existing pipeline rather than living inside an NLE.',
+  },
+  {
+    q: 'Does my footage leave my machine?',
+    a: 'No. Everything happens locally on your GPU. There is no telemetry and no upload. Your files stay on your disk.',
+  },
+  {
+    q: 'Why CLI-first?',
+    a: 'Because batch grading, ingest pipelines, and scripted workflows should not require dragging clips into a GUI. The optional UI is for dialing in a look; the CLI is for applying it at scale.',
+  },
+  {
+    q: 'What does the optional UI do?',
+    a: 'Live preview while you tune effects on real footage. When you like the result, save it as a .hlook preset and apply it from the command line, by name, forever.',
+  },
+  {
+    q: 'Linux and Windows?',
+    a: 'macOS is the primary target during alpha. Linux works and is lightly tested. Windows is not yet supported.',
+  },
+  {
+    q: 'License?',
+    a: 'FSL-1.1-Apache-2.0. Free to use, modify, and redistribute. Cannot be used to build a competing product or service. Converts to Apache 2.0 on April 1, 2028.',
+  },
+];
+---
+<Base>
+  <!-- NAV -->
+  <header class="px-6 sm:px-10 lg:px-16 pt-7 sm:pt-9">
+    <nav class="flex items-center justify-between" aria-label="Primary">
+      <a href="/" class="font-sans text-xl tracking-tightest-2 lowercase font-medium text-ink hover:text-accent transition-colors duration-300 ease-out-quart">
+        hance
+      </a>
+      <ul class="flex items-center gap-7 font-mono text-[14px] text-ink">
+        <li class="hidden sm:block"><a href="/docs/" class="link-hover text-ink-muted hover:text-ink">Docs</a></li>
+        <li><a href={REPO} class="link-hover text-ink-muted hover:text-ink">GitHub</a></li>
+        <li><a href={RELEASE} class="download-pill">Download</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="px-6 sm:px-10 lg:px-16 pt-16 sm:pt-24 lg:pt-28 pb-20 sm:pb-28">
+    <div class="max-w-[1280px] mx-auto">
+      <h1 class="font-sans font-medium tracking-tightest-2 leading-[0.92] text-ink"
+          style="font-size: clamp(3.25rem, 11.5vw, 11rem)">
+        <span class="block">A film look.</span>
+        <span class="block text-ink-muted">In one pass.</span>
+      </h1>
+
+      <p class="mt-10 sm:mt-12 max-w-[44ch] text-ink-muted text-base sm:text-xl leading-snug text-balance">
+        Color, halation, bloom, grain, vignette. GPU&#8209;accelerated. One binary. Runs on your machine.
+      </p>
+
+      <div class="mt-10 sm:mt-12 flex flex-wrap items-center gap-4">
+        <button
+          id="install-copy"
+          type="button"
+          class="group inline-flex max-w-full items-center gap-2 sm:gap-3 rounded-full border border-accent/70 hover:border-accent pl-4 sm:pl-5 pr-2.5 sm:pr-3 py-2 sm:py-2.5 font-mono text-[12px] sm:text-sm text-ink transition-colors duration-300 ease-out-quart"
+          data-copy={INSTALL.replace(/^\$\s*/, '')}
+          aria-label="Copy install command"
+        >
+          <span class="text-accent select-none">$</span>
+          <span class="select-all truncate">curl -fsSL get.hance.sh | sh</span>
+          <span class="ml-1 sm:ml-2 inline-flex items-center gap-1.5 rounded-full bg-accent/10 text-accent/90 px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-[11px] tracking-wide uppercase shrink-0" data-label>
+            copy
+          </span>
+        </button>
+
+        <span class="inline-flex items-center gap-2 font-mono text-[12px] text-ink-dim uppercase tracking-wider">
+          <span class="size-1.5 rounded-full bg-accent/80" aria-hidden="true"></span>
+          alpha. macOS first.
+        </span>
+      </div>
+
+      <!-- Video placeholder -->
+      <figure class="mt-16 sm:mt-20">
+        <div class="graded-still relative aspect-video rounded-md ring-1 ring-surface-3 overflow-hidden">
+          <div class="filmstrip-grain absolute inset-0 pointer-events-none"></div>
+          <div class="absolute inset-0 grid place-items-center">
+            <button
+              type="button"
+              class="size-20 sm:size-24 flex items-center justify-center rounded-full bg-surface/85 backdrop-blur-[3px] ring-2 ring-accent shadow-[0_0_60px_-10px_oklch(0.74_0.18_55_/_0.7)] hover:bg-surface transition duration-300 ease-out-quart"
+              aria-label="Reel coming soon"
+              disabled
+            >
+              <svg viewBox="0 0 24 24" class="size-8 sm:size-10 translate-x-[2px] fill-accent" aria-hidden="true">
+                <path d="M8 5.5v13l11-6.5z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <figcaption class="mt-4 font-mono text-[12px] text-ink-dim text-center tracking-wider uppercase">
+          graded reel, coming soon
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- EFFECTS STRIP -->
+  <section class="px-6 sm:px-10 lg:px-16 py-14 sm:py-20 border-t border-surface-3/70" aria-labelledby="effects-heading">
+    <div class="max-w-[1280px] mx-auto">
+      <p id="effects-heading" class="font-mono text-[12px] sm:text-[13px] text-ink-dim uppercase tracking-[0.18em]">
+        Eight effects. One render graph. Zero intermediate files.
+      </p>
+      <ul class="mt-6 sm:mt-8 flex flex-wrap items-baseline gap-x-4 sm:gap-x-6 gap-y-2 font-sans">
+        {effects.map((e, i) => (
+          <li class="flex items-baseline gap-x-4 sm:gap-x-6">
+            <span class="text-ink text-[clamp(1.35rem,3.6vw,2.75rem)] font-medium tracking-tight">{e}</span>
+            {i < effects.length - 1 && (
+              <span class="text-accent/70 select-none text-[clamp(1rem,2vw,1.5rem)]" aria-hidden="true">·</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- BEFORE / AFTER -->
+  <section class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28" aria-labelledby="proof-heading">
+    <div class="max-w-[1280px] mx-auto">
+      <p id="proof-heading" class="font-mono text-[12px] sm:text-[13px] text-ink-dim uppercase tracking-[0.18em]">
+        Drag to compare. Untouched on the left, hance default on the right.
+      </p>
+      <div
+        id="ba"
+        class="mt-6 sm:mt-8 relative aspect-[16/8] w-full overflow-hidden rounded-md ring-1 ring-surface-3 select-none touch-none"
+        role="group"
+        aria-label="Before and after comparison"
+      >
+        <!-- Before: untouched, flat, cool -->
+        <div class="absolute inset-0" style="background:
+          radial-gradient(120% 80% at 65% 78%, oklch(0.55 0.04 80 / 0.55) 0%, transparent 55%),
+          radial-gradient(80% 60% at 60% 70%, oklch(0.62 0.05 70 / 0.45) 0%, transparent 60%),
+          linear-gradient(180deg, oklch(0.30 0.015 230) 0%, oklch(0.36 0.020 220) 55%, oklch(0.42 0.025 210) 100%);
+          filter: saturate(0.7) contrast(0.92);"></div>
+        <!-- After: graded -->
+        <div class="ba-after absolute inset-0 graded-still"></div>
+        <div class="filmstrip-grain absolute inset-0 pointer-events-none"></div>
+
+        <!-- Labels -->
+        <span class="absolute top-4 left-4 font-mono text-[11px] text-ink-muted uppercase tracking-wider bg-surface/60 px-2 py-1 rounded">before</span>
+        <span class="absolute top-4 right-4 font-mono text-[11px] text-accent uppercase tracking-wider bg-surface/60 px-2 py-1 rounded">after</span>
+
+        <!-- Handle -->
+        <div class="ba-handle absolute top-0 bottom-0 w-px bg-accent" aria-hidden="true">
+          <div class="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 size-10 rounded-full bg-surface ring-2 ring-accent flex items-center justify-center">
+            <svg viewBox="0 0 24 24" class="size-4 fill-accent" aria-hidden="true"><path d="M9 6l-6 6 6 6V6zm6 0v12l6-6-6-6z"/></svg>
+          </div>
+        </div>
+
+        <!-- Native input for keyboard a11y -->
+        <input
+          id="ba-range"
+          type="range"
+          min="0" max="100" step="1" value="50"
+          aria-label="Comparison position"
+          class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- QUICKSTART -->
+  <section class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28 border-t border-surface-3/70" aria-labelledby="quickstart-heading">
+    <div class="max-w-[1280px] mx-auto">
+      <h2 id="quickstart-heading" class="font-sans font-medium text-ink tracking-tightest-2 leading-[0.95]" style="font-size: clamp(2.25rem, 5.5vw, 4.25rem)">
+        Three commands. Then you ship.
+      </h2>
+      <ol class="mt-14 sm:mt-20 grid gap-14 sm:gap-20">
+        {steps.map((s) => (
+          <li class="grid grid-cols-12 gap-x-6 gap-y-5 items-start">
+            <div class="col-span-12 sm:col-span-2 font-mono text-[13px] text-accent tracking-[0.18em]">{s.n}</div>
+            <div class="col-span-12 sm:col-span-4">
+              <h3 class="font-sans text-2xl sm:text-3xl font-medium tracking-tight text-ink">{s.title}</h3>
+              <p class="mt-3 max-w-[40ch] text-ink-muted leading-relaxed">{s.body}</p>
+            </div>
+            <div class="col-span-12 sm:col-span-6">
+              <div class="cb">
+                {s.code.map((line) => {
+                  const glyph = line.startsWith('$') ? '$' : line.startsWith('→') ? '→' : '';
+                  const rest = glyph ? line.slice(1).trimStart() : line;
+                  const hashIdx = rest.indexOf('#');
+                  const cmd = hashIdx >= 0 ? rest.slice(0, hashIdx).trimEnd() : rest;
+                  const comment = hashIdx >= 0 ? rest.slice(hashIdx) : '';
+                  return (
+                    <div class="cb-row">
+                      <span class="cb-glyph">{glyph || ' '}</span>
+                      <span class="cb-cmd">{cmd}{comment && <span class="cb-comment">{comment}</span>}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28 border-t border-surface-3/70" aria-labelledby="faq-heading">
+    <div class="max-w-[1100px] mx-auto">
+      <h2 id="faq-heading" class="font-sans font-medium text-ink tracking-tightest-2 leading-[0.95]" style="font-size: clamp(2.25rem, 5.5vw, 4.25rem)">
+        Questions, plainly answered.
+      </h2>
+      <div class="mt-14 sm:mt-20 divide-y divide-surface-3/80 border-y border-surface-3/80">
+        {faqs.map((f) => (
+          <details class="group py-6 sm:py-8 transition-colors hover:bg-surface-2/30 rounded-sm">
+            <summary class="flex items-baseline justify-between gap-6 cursor-pointer list-none">
+              <h3 class="font-sans text-lg sm:text-2xl text-ink font-medium tracking-tight pr-4">{f.q}</h3>
+              <span class="font-mono text-[13px] text-accent shrink-0 transition-transform duration-300 ease-out-quart group-open:rotate-45">+</span>
+            </summary>
+            <p class="mt-4 max-w-[68ch] text-ink-muted leading-relaxed text-[15px] sm:text-base">{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="px-6 sm:px-10 lg:px-16 py-12 border-t border-surface-3/70 mt-8">
+    <div class="max-w-[1280px] mx-auto flex flex-wrap items-baseline justify-between gap-4 font-mono text-[12px] text-ink-dim uppercase tracking-wider">
+      <div class="flex items-center gap-3">
+        <span class="text-ink lowercase tracking-tightest-2 text-base font-sans font-medium">hance</span>
+        <span class="text-ink-dim">·</span>
+        <span>alpha</span>
+        <span class="text-ink-dim">·</span>
+        <span>FSL-1.1-Apache-2.0</span>
+      </div>
+      <div class="flex items-center gap-5">
+        <a href={REPO} class="hover:text-accent transition-colors duration-300 ease-out-quart">github.com/orva-studio/hance</a>
+      </div>
+    </div>
+  </footer>
+
+  <script is:inline>
+    // Install pill: click to copy
+    (function () {
+      const btn = document.getElementById('install-copy');
+      if (!btn) return;
+      const labelEl = btn.querySelector('[data-label]');
+      const original = labelEl ? labelEl.textContent : 'copy';
+      btn.addEventListener('click', async () => {
+        const txt = btn.getAttribute('data-copy') || '';
+        try {
+          await navigator.clipboard.writeText(txt);
+          if (labelEl) {
+            labelEl.textContent = 'copied ✓';
+            btn.classList.add('ring-1', 'ring-accent');
+            setTimeout(() => {
+              labelEl.textContent = original;
+              btn.classList.remove('ring-1', 'ring-accent');
+            }, 1500);
+          }
+        } catch (e) {
+          if (labelEl) labelEl.textContent = 'press ⌘C';
+        }
+      });
+    })();
+
+    // Before/after slider
+    (function () {
+      const wrap = document.getElementById('ba');
+      const range = document.getElementById('ba-range');
+      if (!wrap || !range) return;
+      const setPos = (pct) => {
+        const v = Math.max(0, Math.min(100, pct));
+        wrap.style.setProperty('--pos', v + '%');
+        range.value = String(v);
+      };
+      setPos(50);
+      range.addEventListener('input', (e) => setPos(Number(e.target.value)));
+      // Drag/touch on the wrap directly for natural feel
+      const onMove = (clientX) => {
+        const rect = wrap.getBoundingClientRect();
+        setPos(((clientX - rect.left) / rect.width) * 100);
+      };
+      let dragging = false;
+      wrap.addEventListener('pointerdown', (e) => { dragging = true; onMove(e.clientX); });
+      window.addEventListener('pointermove', (e) => { if (dragging) onMove(e.clientX); });
+      window.addEventListener('pointerup', () => { dragging = false; });
+    })();
+  </script>
+</Base>
+
+<style>
+  .link-hover {
+    position: relative;
+  }
+  .link-hover::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -3px;
+    height: 1px;
+    background: oklch(0.74 0.18 55);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .link-hover:hover {
+    color: oklch(0.94 0.015 80);
+  }
+  .link-hover:hover::after {
+    transform: scaleX(1);
+  }
+  details summary::-webkit-details-marker { display: none; }
+
+  .download-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 9999px;
+    padding: 10px 22px;
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: oklch(0.94 0.015 80);
+    background: oklch(0.74 0.18 55 / 0.12);
+    border: 1px solid oklch(0.74 0.18 55);
+    transition: background-color 320ms cubic-bezier(0.16, 1, 0.3, 1),
+                transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .download-pill::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: oklch(0.74 0.18 55);
+  }
+  .download-pill:hover {
+    background: oklch(0.74 0.18 55 / 0.22);
+    transform: translateY(-1px);
+  }
+
+  .cb {
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 14px;
+    color: oklch(0.94 0.015 80);
+    background: oklch(0.17 0.013 220 / 0.5);
+    border: 1px solid oklch(0.22 0.014 220 / 0.7);
+    border-radius: 6px;
+    padding: 18px 22px;
+    overflow-x: auto;
+    line-height: 1.55;
+  }
+  .cb-row {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 14px;
+    align-items: baseline;
+    padding: 8px 0;
+    white-space: nowrap;
+  }
+  .cb-glyph {
+    color: oklch(0.74 0.18 55 / 0.85);
+    user-select: none;
+    font-weight: 500;
+  }
+  .cb-cmd {
+    color: oklch(0.94 0.015 80);
+  }
+  .cb-comment {
+    color: oklch(0.52 0.010 80);
+    margin-left: 10px;
+  }
+</style>
