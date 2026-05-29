@@ -14,7 +14,7 @@ hance ui --port 5000          # use a custom port
 hance ui --no-open            # start the server without opening a browser
 ```
 
-Using an AI agent? The [`/hance ui`](/agent/overview/) skill command opens the editor too — `/hance ui my-video.mp4`.
+Using an AI agent? The [`/hance ui`](/docs/agent/overview/) skill command opens the editor too — `/hance ui my-video.mp4`.
 
 ## Upload & preview
 
