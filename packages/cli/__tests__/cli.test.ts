@@ -10,6 +10,7 @@ describe("resolveSubcommand", () => {
   it("routes 'ui' to ui", () => { expect(resolveSubcommand(["ui"])).toBe("ui"); });
   it("routes 'preview' to preview", () => { expect(resolveSubcommand(["preview", "in.mp4"])).toBe("preview"); });
   it("routes 'preset' to preset", () => { expect(resolveSubcommand(["preset", "list"])).toBe("preset"); });
+  it("routes 'config' to config", () => { expect(resolveSubcommand(["config"])).toBe("config"); });
   it("treats anything else as render", () => { expect(resolveSubcommand(["in.mp4", "-o", "out.mp4"])).toBe("render"); });
   it("treats empty argv as render", () => { expect(resolveSubcommand([])).toBe("render"); });
 });

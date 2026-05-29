@@ -10,7 +10,21 @@ declare const HANCE_VERSION: string | undefined;
 const VERSION: string = (typeof HANCE_VERSION !== "undefined" ? HANCE_VERSION : (process.env.HANCE_VERSION ?? "dev"));
 
 const HELP_TEXT = `
-hance <input> [<input> ...] [options]
+hance — applies cinematic film effects to video/images in one FFmpeg pass.
+
+Usage: hance <input> [<input> ...] [options]
+
+Commands:
+  hance <input>...            render video/images with effects (default; flags below)
+  hance ui [--port <n>]       launch the browser UI for live tweaking
+  hance preview <input>       render a single preview frame or contact sheet
+  hance preset list|save      list presets or save current flags as one
+  hance config [path]         show the resolved config (or just its file path)
+
+Start here:
+  hance clip.mov                      apply the default look
+  hance preset list                   list available presets
+  hance <input> --preset <name>       the fast path — flags below are for fine-tuning
 
   Input/Output:
   --output, -o <path>       Output file (single input) or directory (multiple inputs).
@@ -29,18 +43,34 @@ ${EFFECT_HELP_TEXT}
   Config:
   --no-config               Ignore config file
 
+  Config files are loaded if present (CLI flags override both):
+    ./.hancerc.json                       project config, searched upward from cwd
+    ~/.config/hance/config.json           global config
+  Run "hance config" to see which one is active and the merged values.
+
   General:
   --help, -h                Show this help
   --version, -v             Print version and exit
+
+Examples:
+  hance clip.mov                                  default look, writes clip_hanced.mov
+  hance clip.mov -o out.mp4 --preset portra-400   apply a named preset to a chosen output
+  hance *.jpg -o ./graded/ --export high          batch images into a directory, high-quality export
+  hance shot.mov --grain-amount 0.3 --no-halation tweak one effect, disable another
+  hance shot.mov --exposure 0.5 --contrast 1.2    quick color grade
+  hance preset save mylook --bleach-bypass 0.4    save current flags as a reusable preset
+
+Docs: https://hance.video/docs  (agent guide: https://hance.video/docs/agent/overview)
 `.trim();
 
-export type Subcommand = "ui" | "preview" | "preset" | "render";
+export type Subcommand = "ui" | "preview" | "preset" | "config" | "render";
 
 export function resolveSubcommand(args: string[]): Subcommand {
   switch (args[0]) {
     case "ui": return "ui";
     case "preview": return "preview";
     case "preset": return "preset";
+    case "config": return "config";
     default: return "render";
   }
 }
@@ -193,6 +223,11 @@ async function main() {
   if (sub === "preset") {
     const { runPreset } = await import("./commands/preset");
     await runPreset(args.slice(1));
+    return;
+  }
+  if (sub === "config") {
+    const { runConfig } = await import("./commands/config");
+    await runConfig(args.slice(1));
     return;
   }
 
