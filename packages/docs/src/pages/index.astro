@@ -2,7 +2,6 @@
 import Base from '../layouts/Base.astro';
 
 const REPO = 'https://github.com/Orva-Studio/hance';
-const RELEASE = 'https://github.com/Orva-Studio/hance/releases/latest';
 const INSTALL = '$ npx @orva-studio/hance video.mp4';
 
 const effects = ['Color', 'Halation', 'Bloom', 'Grain', 'Vignette', 'Split Tone', 'Aberration', 'Shake'];
@@ -65,7 +64,7 @@ const faqs = [
       <ul class="flex items-center gap-7 font-mono text-[14px] text-ink">
         <li class="hidden sm:block"><a href="/docs/" class="link-hover text-ink-muted hover:text-ink">Docs</a></li>
         <li><a href={REPO} class="link-hover text-ink-muted hover:text-ink">GitHub</a></li>
-        <li><a href={RELEASE} class="download-pill">Download</a></li>
+        <li><a href="/docs/getting-started/installation/" class="download-pill">Download</a></li>
       </ul>
     </nav>
   </header>
