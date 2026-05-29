@@ -7,6 +7,10 @@ import { SITE_URL, REPO_URL } from "./site.config";
 
 export default defineConfig({
   site: SITE_URL,
+  redirects: {
+    // Docs have no landing of their own — default to the introduction.
+    "/docs": "/docs/getting-started/introduction/",
+  },
   vite: {
     plugins: [tailwindcss()],
   },
