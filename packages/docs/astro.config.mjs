@@ -69,6 +69,12 @@ export default defineConfig({
             { label: "Custom Looks", slug: "docs/looks/custom" },
           ],
         },
+        {
+          label: "Recipes",
+          items: [
+            { label: "Animation Pipelines", slug: "docs/recipes/animation-pipelines" },
+          ],
+        },
         { label: "Architecture", slug: "docs/architecture" },
       ],
     }),
