@@ -4,28 +4,28 @@ import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 
 const REPO = 'https://github.com/Orva-Studio/hance';
-const INSTALL = '$ npx @orva-studio/hance video.mp4';
+const INSTALL = '$ npx @orva-studio/hance your-video.mp4';
 
 const effects = ['Color', 'Halation', 'Bloom', 'Grain', 'Vignette', 'Split Tone', 'Aberration', 'Shake'];
 
 const steps = [
   {
     n: '01',
-    title: 'Run',
-    body: 'No install step — npx fetches and runs the latest hance on macOS or Linux. You just need FFmpeg on your PATH. For frequent use, install a persistent binary to ~/.hance/bin.',
-    code: ['$ npx @orva-studio/hance video.mp4', '$ brew install ffmpeg   # FFmpeg required'],
+    title: 'Preview',
+    body: 'Open the browser editor on your own footage, try looks, and dial one in. No install step — npx fetches the latest hance. You just need FFmpeg on your PATH.',
+    code: ['$ npx @orva-studio/hance ui your-video.mp4', '→ http://localhost:4800'],
   },
   {
     n: '02',
-    title: 'Preview',
-    body: 'Open the local browser UI to dial in a look on your own footage. Save the result as a .hlook preset.',
-    code: ['$ hance ui video.mp4', '→ http://localhost:4800'],
+    title: 'Render',
+    body: 'Bake the look into a new file at export quality. One render graph, no intermediate files, no plugins, no LUT pipeline.',
+    code: ['$ hance your-video.mp4 --preset portra-400 --export high', '→ your-video_hanced.mp4'],
   },
   {
     n: '03',
-    title: 'Batch',
-    body: 'Apply a look headlessly across a folder, in sequence. One render graph per clip, no intermediate files. (Batch requires a Pro license.)',
-    code: ['$ hance *.mov --preset portra-400 -o ./graded/'],
+    title: 'Import',
+    body: 'Drop the graded clip into CapCut, iMovie, ScreenFlow — anywhere. The film look is already baked into the pixels.',
+    code: ['→ CapCut · iMovie · ScreenFlow · the web'],
   },
 ];
 
@@ -66,7 +66,7 @@ const faqs = [
       <h1 class="font-sans font-medium tracking-tightest-2 leading-[0.92] text-ink"
           style="font-size: clamp(3.25rem, 11.5vw, 11rem)">
         <span class="block">A film look.</span>
-        <span class="block text-ink-muted">In one pass.</span>
+        <span class="block text-ink-muted">On any clip.</span>
       </h1>
 
       <p class="mt-10 sm:mt-12 max-w-[44ch] text-ink-muted text-base sm:text-xl leading-snug text-balance">
@@ -82,16 +82,11 @@ const faqs = [
           aria-label="Copy run command"
         >
           <span class="text-accent select-none">$</span>
-          <span class="select-all truncate">npx @orva-studio/hance video.mp4</span>
+          <span class="select-all truncate">npx @orva-studio/hance your-video.mp4</span>
           <span class="ml-1 sm:ml-2 inline-flex items-center gap-1.5 rounded-full bg-accent/10 text-accent/90 px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-[11px] tracking-wide uppercase shrink-0" data-label>
             copy
           </span>
         </button>
-
-        <span class="inline-flex items-center gap-2 font-mono text-[12px] text-ink-dim uppercase tracking-wider">
-          <span class="size-1.5 rounded-full bg-accent/80" aria-hidden="true"></span>
-          alpha. macOS first.
-        </span>
       </div>
 
       <!-- Video placeholder -->
@@ -186,7 +181,7 @@ const faqs = [
   <section class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28 border-t border-surface-3/70" aria-labelledby="quickstart-heading">
     <div class="max-w-[1280px] mx-auto">
       <h2 id="quickstart-heading" class="font-sans font-medium text-ink tracking-tightest-2 leading-[0.95]" style="font-size: clamp(2.25rem, 5.5vw, 4.25rem)">
-        Three commands. Then you ship.
+        Preview. Render. Ship.
       </h2>
       <ol class="mt-14 sm:mt-20 grid gap-14 sm:gap-20">
         {steps.map((s) => (
@@ -216,6 +211,36 @@ const faqs = [
           </li>
         ))}
       </ol>
+
+      <!-- Pipeline / automation upsell -->
+      <div class="mt-16 sm:mt-24 grid gap-5 sm:gap-6 sm:grid-cols-2">
+        <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8">
+          <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink">Pipe in your renders</h3>
+          <p class="mt-3 max-w-[44ch] text-ink-muted leading-relaxed">
+            Already rendering with Remotion, Manim, or raw FFmpeg? Send the output through hance to add film
+            grain, halation, and bloom no LUT can fake.
+          </p>
+          <div class="cb mt-5">
+            <div class="cb-row"><span class="cb-glyph">$</span><span class="cb-cmd">hance render.mp4 --preset cinestill-800t</span></div>
+          </div>
+          <a href="/docs/recipes/animation-pipelines/" class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent hover:underline underline-offset-4">
+            Animation pipeline recipes →
+          </a>
+        </div>
+        <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8">
+          <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink">Batch a whole folder</h3>
+          <p class="mt-3 max-w-[44ch] text-ink-muted leading-relaxed">
+            Apply one consistent look across hundreds of clips, headless, no GUI in the loop. One render graph
+            per clip, no intermediate files.
+          </p>
+          <div class="cb mt-5">
+            <div class="cb-row"><span class="cb-glyph">$</span><span class="cb-cmd">hance *.mov --preset portra-400 -o ./graded/</span></div>
+          </div>
+          <a href="/docs/free-vs-pro/" class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent hover:underline underline-offset-4">
+            Batch requires Pro →
+          </a>
+        </div>
+      </div>
     </div>
   </section>
 
