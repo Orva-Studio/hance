@@ -43,10 +43,11 @@ ${EFFECT_HELP_TEXT}
   Config:
   --no-config               Ignore config file
 
-  Config files are loaded if present (CLI flags override both):
+  One config file is applied if present (a local file shadows the global one;
+  CLI flags override it):
     ./.hancerc.json                       project config, searched upward from cwd
-    ~/.config/hance/config.json           global config
-  Run "hance config" to see which one is active and the merged values.
+    ~/.config/hance/config.json           global config (used only if no local file)
+  Run "hance config" to see which one is active and its values.
 
   General:
   --help, -h                Show this help

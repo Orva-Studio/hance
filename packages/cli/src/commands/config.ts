@@ -1,12 +1,12 @@
 import { loadConfig, findLocalConfig, GLOBAL_CONFIG_PATH, type HanceConfig } from "../config";
 
 const CONFIG_HELP = `\
-hance config           show the active config file path and its merged values
+hance config           show the active config file path and its values
 hance config path      print only the active config file path
 
-Config files (CLI flags override both):
+One config file is applied (a local file shadows the global one; CLI flags override it):
   ./.hancerc.json               project config, searched upward from cwd
-  ~/.config/hance/config.json   global config
+  ~/.config/hance/config.json   global config (used only if no local file)
 `;
 
 export function formatConfig(config: HanceConfig, source: string | null, searchedLocal: string | null): string {
