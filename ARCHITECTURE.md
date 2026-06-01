@@ -126,7 +126,7 @@ ffmpeg -i <input> -f rawvideo -pix_fmt rgba pipe:1
 ```
 
 - **Stage 1 (decoder ffmpeg):** demux + decode to raw RGBA frames.
-- **Stage 2 (wgpu sidecar):** runs the effect chain on the GPU. Init JSON carries `{ width, height, params }`. Effect order is fixed in the sidecar: `colorSettings → halation → aberration → bloom → grain → vignette → splitTone → cameraShake`.
+- **Stage 2 (wgpu sidecar):** runs the effect chain on the GPU. Init JSON carries `{ width, height, params }`. Effect order is fixed in the sidecar: `colorSettings → halation → aberration → bloom → grain → vignette → splitTone → cameraShake`. The light-transport group (`halation → aberration → bloom → grain → vignette`) runs in linear light: a decode (sRGB→linear) pass brackets the start and an encode (linear→sRGB) pass the end, with `rgba16float` intermediates for shadow precision; a final blit converts back to 8-bit for readback. The bracket is only inserted when at least one of those effects is active. The same `colorspace.frag.wgsl` and pass placement are mirrored in the TS preview renderer.
 - **Stage 3 (encoder ffmpeg):** re-encodes RGBA to the chosen codec; copies the original audio track from `<input>`. A `scale=in_range=full:out_range=tv` filter converts full-range RGB to limited-range BT.709 YUV so players don't display a washed-out image.
 
 Progress is reported via FFmpeg's `-progress` file, polled every 100 ms by `parseProgress`.
