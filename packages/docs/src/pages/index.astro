@@ -36,11 +36,11 @@ const faqs = [
   },
   {
     q: 'Does my footage leave my machine?',
-    a: 'No. Everything happens locally on your GPU — there is no upload, and your files never leave your disk. The only thing sent anywhere is optional anonymous crash reporting, which you can disable.',
+    a: 'No. Everything happens locally on your GPU — there is no upload, and your files never leave your disk.',
   },
   {
     q: 'Why CLI-first?',
-    a: 'Because batch grading, ingest pipelines, and scripted workflows should not require dragging clips into a GUI. The optional UI is for dialing in a look; the CLI is for applying it at scale.',
+    a: 'Because batch grading, ingest pipelines, and scripted workflows should not require dragging clips into a GUI. A CLI is also the native interface for AI agents — drive hance from Claude Code or Cursor with the /hance skill, no clicking required. The optional UI is for dialing in a look; the CLI is for applying it at scale.',
   },
   {
     q: 'What does the optional UI do?',
@@ -241,12 +241,12 @@ const faqs = [
   <section id="install" class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28 border-t border-surface-3/70" aria-labelledby="install-heading">
     <div class="max-w-[1280px] mx-auto">
       <h2 id="install-heading" class="font-sans font-medium text-ink tracking-tightest-2 leading-[0.95]" style="font-size: clamp(2.25rem, 5.5vw, 4.25rem)">
-        Three ways to install.
+        Ways to install.
       </h2>
       <p class="mt-6 max-w-[52ch] text-ink-muted leading-relaxed">
         macOS and Linux. The only requirement is FFmpeg on your PATH.
       </p>
-      <div class="mt-14 sm:mt-20 grid gap-5 sm:gap-6 md:grid-cols-3">
+      <div class="mt-14 sm:mt-20 grid gap-5 sm:gap-6 sm:grid-cols-2">
         <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8 flex flex-col">
           <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink">Run with npx</h3>
           <p class="mt-3 text-ink-muted leading-relaxed">No install step — npx fetches and runs the latest hance on demand. The quickest way to try it.</p>
@@ -271,6 +271,16 @@ const faqs = [
           </div>
           <a href="/docs/getting-started/installation/#install-a-persistent-binary" class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent hover:underline underline-offset-4">Details →</a>
         </div>
+        <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8 flex flex-col">
+          <div class="flex items-center gap-3">
+            <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink">Mac app</h3>
+            <span class="inline-flex items-center rounded-full border border-accent/70 bg-accent/10 px-2.5 py-0.5 font-mono text-[10px] text-accent uppercase tracking-wide">Coming soon</span>
+          </div>
+          <p class="mt-3 text-ink-muted leading-relaxed">A native macOS app for grading without the terminal — the full hance look engine in a desktop window.</p>
+          <div class="cb mt-5 opacity-50">
+            <div class="cb-row"><span class="cb-glyph"> </span><span class="cb-cmd">hance.app</span></div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -286,7 +296,7 @@ const faqs = [
           <details class="group py-6 sm:py-8 transition-colors hover:bg-surface-2/30 rounded-sm">
             <summary class="flex items-baseline justify-between gap-6 cursor-pointer list-none">
               <h3 class="font-sans text-lg sm:text-2xl text-ink font-medium tracking-tight pr-4">{f.q}</h3>
-              <span class="font-mono text-[13px] text-accent shrink-0 transition-transform duration-300 ease-out-quart group-open:rotate-45">+</span>
+              <span class="font-mono text-3xl sm:text-4xl leading-none text-accent shrink-0 transition-transform duration-300 ease-out-quart group-open:rotate-45">+</span>
             </summary>
             <p class="mt-4 max-w-[68ch] text-ink-muted leading-relaxed text-[15px] sm:text-base">{f.a}</p>
           </details>
