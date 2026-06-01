@@ -9,6 +9,7 @@ import GRAIN_FRAG from "../../../core/shaders/grain.frag.wgsl";
 import VIGNETTE_FRAG from "../../../core/shaders/vignette.frag.wgsl";
 import SPLIT_TONE_FRAG from "../../../core/shaders/split-tone.frag.wgsl";
 import CAMERA_SHAKE_FRAG from "../../../core/shaders/camera-shake.frag.wgsl";
+import COLORSPACE_FRAG from "../../../core/shaders/colorspace.frag.wgsl";
 
 export {
   FULLSCREEN_VERT,
@@ -21,4 +22,5 @@ export {
   VIGNETTE_FRAG,
   SPLIT_TONE_FRAG,
   CAMERA_SHAKE_FRAG,
+  COLORSPACE_FRAG,
 };
