@@ -8,3 +8,7 @@
 /browser-ui/*       /docs/browser-ui/:splat      301
 /free-vs-pro        /docs/free-vs-pro/           301
 /architecture       /docs/architecture/          301
+
+# Installer one-liner (docs use `curl -fsSL https://hance.video/install.sh | sh`).
+# 302 to the latest GitHub release asset so it always tracks the newest version.
+/install.sh         https://github.com/Orva-Studio/hance/releases/latest/download/install.sh  302
