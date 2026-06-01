@@ -1,3 +1,4 @@
+mod colorspace;
 mod params;
 mod passes;
 mod renderer;
