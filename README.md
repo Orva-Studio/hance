@@ -4,7 +4,7 @@
 
 **Preview a cinematic film look in the browser, then batch-apply it from the CLI.** GPU-accelerated colour, halation, bloom, grain, vignette, split-tone, aberration, and camera shake — one binary, no plugins, no subscriptions.
 
-📖 **[Full documentation →](packages/docs/src/content/docs/getting-started/introduction.md)**
+📖 **[Full documentation →](https://hance.video/docs/getting-started/introduction/)**
 
 ---
 
@@ -22,17 +22,17 @@ hance ui video.mp4
 hance video.mp4 --preset my-look
 ```
 
-Looks saved from the UI live in `~/.hance/presets/` and are referenced by name. See the [Installation](packages/docs/src/content/docs/getting-started/installation.md) and [Quick Start](packages/docs/src/content/docs/getting-started/quick-start.md) guides for details.
+Looks saved from the UI live in `~/.hance/presets/` and are referenced by name. See the [Installation](https://hance.video/docs/getting-started/installation/) and [Quick Start](https://hance.video/docs/getting-started/quick-start/) guides for details.
 
 ## Documentation
 
-- [Introduction](packages/docs/src/content/docs/getting-started/introduction.md) — what hance is and who it's for
-- [Commands & options](packages/docs/src/content/docs/cli/commands.md) — full CLI reference
-- [Effects](packages/docs/src/content/docs/cli/effects.md) — the effect pipeline and per-effect flags
-- [Output quality](packages/docs/src/content/docs/cli/output-quality.md) — codecs, CRF, ProRes
-- [Config file](packages/docs/src/content/docs/cli/config-file.md) — `.hancerc.json` defaults
-- [Looks](packages/docs/src/content/docs/looks/built-in.md) — built-in and custom `.hlook` presets
-- [AI agent usage](packages/docs/src/content/docs/agent/overview.md) — drive hance from Claude Code in plain English
+- [Introduction](https://hance.video/docs/getting-started/introduction/) — what hance is and who it's for
+- [Commands & options](https://hance.video/docs/cli/commands/) — full CLI reference
+- [Effects](https://hance.video/docs/cli/effects/) — the effect pipeline and per-effect flags
+- [Output quality](https://hance.video/docs/cli/output-quality/) — codecs, CRF, ProRes
+- [Config file](https://hance.video/docs/cli/config-file/) — `.hancerc.json` defaults
+- [Looks](https://hance.video/docs/looks/built-in/) — built-in and custom `.hlook` presets
+- [AI agent usage](https://hance.video/docs/agent/overview/) — drive hance from Claude Code in plain English
 
 ## Build from source
 
