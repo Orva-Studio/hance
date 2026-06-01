@@ -260,8 +260,17 @@ impl GpuRenderer {
         passes::run_pass(&mut encoder, &self.color_pipeline, &bg,
             &current_tex!().create_view(&TextureViewDescriptor::default()));
 
+        // The light-transport group runs in linear light. Only bracket the chain
+        // with decode/encode passes when at least one of those effects is active,
+        // so a frame with the whole group disabled passes through byte-for-byte.
+        let light_group_active = self.params.halation_enabled()
+            || self.params.aberration_enabled()
+            || self.params.bloom_enabled()
+            || self.params.grain_enabled()
+            || self.params.vignette_enabled();
+
         // --- Decode to linear light (start of light-transport bracket) ---
-        {
+        if light_group_active {
             let bg = passes::make_std_bind_group(
                 &self.device, &self.std_layout,
                 &current_tex!().create_view(&TextureViewDescriptor::default()),
@@ -418,7 +427,7 @@ impl GpuRenderer {
         }
 
         // --- Encode back to sRGB (end of light-transport bracket) ---
-        {
+        if light_group_active {
             let bg = passes::make_std_bind_group(
                 &self.device, &self.std_layout,
                 &current_tex!().create_view(&TextureViewDescriptor::default()),
