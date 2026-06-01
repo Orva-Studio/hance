@@ -16,7 +16,18 @@ export default defineConfig({
   },
   integrations: [
     starlight({
-      plugins: [starlightLlmsTxt()],
+      plugins: [
+        starlightLlmsTxt({
+          description:
+            "hance applies cinematic film looks to video and images, rendered in one command with no plugins or LUTs.",
+          details: [
+            "hance is a single-binary CLI (run via `npx @orva-studio/hance`) that bakes a film look",
+            "into a new file in one FFmpeg pass. Preview looks in a browser editor, render at export",
+            "quality, then import the graded clip into any editor (CapCut, iMovie, ScreenFlow). It can",
+            "also be driven from AI coding agents like Claude Code or Cursor via its skill commands.",
+          ].join(" "),
+        }),
+      ],
       title: "hance",
       components: {
         ThemeSelect: "./src/components/ThemeSelect.astro",
