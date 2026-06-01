@@ -1,0 +1,41 @@
+name: deploy-docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/docs/**"
+      - ".github/workflows/deploy-docs.yml"
+  workflow_dispatch:
+
+# The `hance` Pages project has no Git integration, so deploys are manual
+# via wrangler. This workflow is that manual step, automated.
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-docs
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      - name: Build docs site
+        working-directory: packages/docs
+        run: bun run build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy packages/docs/dist --project-name=hance --branch=main
