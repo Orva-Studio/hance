@@ -92,26 +92,48 @@ The final blit still targets the 8-bit canvas / output texture. Because the
 encode pass already runs before split-tone, the values reaching the final blit
 are gamma-encoded and convert to 8-bit cleanly.
 
-### Renderer parity (planning prerequisite)
+### Renderer parity (resolved)
 
-There are two consumers of the effect chain:
+There are two renderers consuming the effect chain:
 
-- **Preview:** `packages/ui/app/App.tsx` etc. import `app/gpu/renderer.ts`
-  directly.
-- **Export:** `packages/gpu/src/wgpu-renderer.ts` spawns a separate sidecar
-  binary via `packages/gpu/src/sidecar-path.ts`.
+- **Preview:** `packages/ui/app/gpu/renderer.ts` (TypeScript, in-browser
+  WebGPU), imported by `App.tsx` etc.
+- **Export:** `packages/wgpu/src/renderer.rs` (Rust/wgpu), compiled to the
+  `hance-gpu` sidecar binary that `packages/gpu/src/wgpu-renderer.ts` spawns.
 
-The linear-light boundary must apply to both, or preview and export looks will
-diverge.
+**Shared:** Both renderers load the *same* `.wgsl` files from
+`packages/core/shaders/` (TS via import, Rust via `include_str!`). The new
+`colorspace.frag.wgsl` is therefore written **once** and used by both.
 
-**Planning step 1 (blocking):** Verify whether the export sidecar is built from
-`app/gpu/renderer.ts` (single source of pass ordering) or duplicates the pass
-logic.
+**Duplicated:** Pass ordering and the intermediate texture format constant
+(`format` in TS, `FORMAT = Rgba8Unorm` in Rust) live separately in each
+renderer. Cross-language consolidation into one module is not feasible.
 
-- **If shared:** the change lands once in `renderer.ts` and both inherit it.
-- **If duplicated:** the implementation plan adds consolidating pass-ordering
-  into one shared module *before* inserting the boundary, so linear-light — and
-  every future effect — cannot drift between preview and export.
+**Approach:** Mirror the identical boundary + format change in both
+`renderer.ts` and `renderer.rs`, and add a parity guard against drift:
+
+- A shared golden set of sRGB↔linear values tested against both the TS and Rust
+  transfer-function helpers, ensuring both implement the identical curve.
+- Extend the existing Rust smoke test (`packages/wgpu/tests/smoke.rs`) to assert
+  halation output changes with the linear bracket enabled.
+- A TS renderer integration check via the existing agent-browser WebGPU harness
+  (`packages/ui/__tests__`).
+
+A full cross-renderer per-pixel comparison is intentionally avoided: the TS path
+requires in-browser WebGPU, making a combined-process pixel diff fragile. The
+golden-curve test guards the most drift-prone surface (the transfer math)
+cheaply; per-renderer integration tests guard the boundary placement.
+
+### Pipeline/format consequence
+
+Each render pipeline is bound to one target texture format. Today a single color
+pipeline is reused for both the first color pass (into an intermediate texture)
+and the final blit (into the 8-bit canvas/output texture). Once intermediates
+become `rgba16float` while the output stays 8-bit, these two uses need
+**separate pipelines**: an intermediate-targeting color pipeline (`rgba16float`)
+and a blit pipeline targeting the output format. The conversion-shader pipelines
+also target `rgba16float` (they run inside the linear bracket, into
+intermediates).
 
 ## Testing
 
