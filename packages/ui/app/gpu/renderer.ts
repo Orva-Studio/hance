@@ -5,6 +5,7 @@ import {
 } from "./shaders";
 import { createFullscreenPipeline, createTexture, runPass } from "./passes";
 import { getSplitToneTintValues } from "./splitToneMath";
+import { isLightGroupActive } from "./lightGroup";
 
 export interface PreviewParams {
   [key: string]: string | number | boolean;
@@ -236,8 +237,13 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
       runPass(encoder, colorPipeline, bg, current.createView());
     }
 
+    // The light-transport group runs in linear light. Only bracket the chain
+    // with decode/encode passes when at least one of those effects is active,
+    // so a frame with the whole group disabled passes through byte-for-byte.
+    const lightGroupActive = isLightGroupActive(params);
+
     // --- Decode to linear light (start of light-transport bracket) ---
-    {
+    if (lightGroupActive) {
       const bg = makeStdBindGroup(current, decodeUB);
       runPass(encoder, colorspacePipeline, bg, other.createView());
       swap();
@@ -363,7 +369,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
     }
 
     // --- Encode back to sRGB (end of light-transport bracket) ---
-    {
+    if (lightGroupActive) {
       const bg = makeStdBindGroup(current, encodeUB);
       runPass(encoder, colorspacePipeline, bg, other.createView());
       swap();
