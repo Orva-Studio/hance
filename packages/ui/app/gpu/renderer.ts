@@ -1,7 +1,7 @@
 import {
   FULLSCREEN_VERT, COLOR_SETTINGS_FRAG, THRESHOLD_FRAG, BLUR_FRAG,
   SCREEN_BLEND_FRAG, ABERRATION_FRAG, GRAIN_FRAG, VIGNETTE_FRAG,
-  SPLIT_TONE_FRAG, CAMERA_SHAKE_FRAG,
+  SPLIT_TONE_FRAG, CAMERA_SHAKE_FRAG, COLORSPACE_FRAG,
 } from "./shaders";
 import { createFullscreenPipeline, createTexture, runPass } from "./passes";
 import { getSplitToneTintValues } from "./splitToneMath";
@@ -78,10 +78,19 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const halfW = Math.max(1, Math.floor(previewWidth / 2));
   const halfH = Math.max(1, Math.floor(previewHeight / 2));
 
-  const texA = createTexture(device, previewWidth, previewHeight, format);
-  const texB = createTexture(device, previewWidth, previewHeight, format);
-  const halfA = createTexture(device, halfW, halfH, format);
-  const halfB = createTexture(device, halfW, halfH, format);
+  const INTERMEDIATE_FORMAT: GPUTextureFormat = "rgba16float";
+
+  const texA = createTexture(device, previewWidth, previewHeight, INTERMEDIATE_FORMAT);
+  const texB = createTexture(device, previewWidth, previewHeight, INTERMEDIATE_FORMAT);
+  const halfA = createTexture(device, halfW, halfH, INTERMEDIATE_FORMAT);
+  const halfB = createTexture(device, halfW, halfH, INTERMEDIATE_FORMAT);
+
+  // 8-bit output texture used as the readback source (readPixels assumes 4 bytes/pixel).
+  const outputTex = device.createTexture({
+    size: { width: previewWidth, height: previewHeight },
+    format,
+    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC | GPUTextureUsage.TEXTURE_BINDING,
+  });
 
   const srcTex = device.createTexture({
     size: { width: sourceWidth, height: sourceHeight },
@@ -89,15 +98,18 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
     usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
   });
 
-  const colorPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, COLOR_SETTINGS_FRAG, stdLayout, format);
-  const thresholdPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, THRESHOLD_FRAG, stdLayout, format);
-  const blurPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, BLUR_FRAG, stdLayout, format);
-  const blendPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, SCREEN_BLEND_FRAG, blendLayout, format);
-  const aberrationPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, ABERRATION_FRAG, stdLayout, format);
-  const grainPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, GRAIN_FRAG, stdLayout, format);
-  const vignettePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, VIGNETTE_FRAG, stdLayout, format);
-  const splitTonePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, SPLIT_TONE_FRAG, stdLayout, format);
-  const shakePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, CAMERA_SHAKE_FRAG, stdLayout, format);
+  const colorPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, COLOR_SETTINGS_FRAG, stdLayout, INTERMEDIATE_FORMAT);
+  const thresholdPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, THRESHOLD_FRAG, stdLayout, INTERMEDIATE_FORMAT);
+  const blurPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, BLUR_FRAG, stdLayout, INTERMEDIATE_FORMAT);
+  const blendPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, SCREEN_BLEND_FRAG, blendLayout, INTERMEDIATE_FORMAT);
+  const aberrationPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, ABERRATION_FRAG, stdLayout, INTERMEDIATE_FORMAT);
+  const grainPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, GRAIN_FRAG, stdLayout, INTERMEDIATE_FORMAT);
+  const vignettePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, VIGNETTE_FRAG, stdLayout, INTERMEDIATE_FORMAT);
+  const splitTonePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, SPLIT_TONE_FRAG, stdLayout, INTERMEDIATE_FORMAT);
+  const shakePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, CAMERA_SHAKE_FRAG, stdLayout, INTERMEDIATE_FORMAT);
+  const colorspacePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, COLORSPACE_FRAG, stdLayout, INTERMEDIATE_FORMAT);
+  // Blit reads a 16float intermediate and writes the 8-bit output/canvas format.
+  const blitPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, COLOR_SETTINGS_FRAG, stdLayout, format);
 
   const colorUB = createUniformBuffer(device, 32); // 8 floats
   const blitUB = createUniformBuffer(device, 32); // identity color pass for final blit
@@ -114,6 +126,10 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const bloomBlurUB1 = createUniformBuffer(device, 16);
   const bloomBlurUB2 = createUniformBuffer(device, 16);
   const bloomBlendUB = createUniformBuffer(device, 16);
+  const decodeUB = createUniformBuffer(device, 16);
+  device.queue.writeBuffer(decodeUB, 0, new Float32Array([0, 0, 0, 0])); // 0 = sRGB->linear
+  const encodeUB = createUniformBuffer(device, 16);
+  device.queue.writeBuffer(encodeUB, 0, new Float32Array([1, 0, 0, 0])); // 1 = linear->sRGB
 
   let source: HTMLVideoElement | HTMLImageElement | null = null;
   let imageBitmap: ImageBitmap | null = null;
@@ -218,6 +234,13 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
       const bg = makeStdBindGroup(srcTex, colorUB);
       device.queue.writeBuffer(colorUB, 0, new Float32Array([1, 0, 1, 1, 6500, 0, 0, 0]));
       runPass(encoder, colorPipeline, bg, current.createView());
+    }
+
+    // --- Decode to linear light (start of light-transport bracket) ---
+    {
+      const bg = makeStdBindGroup(current, decodeUB);
+      runPass(encoder, colorspacePipeline, bg, other.createView());
+      swap();
     }
 
     // --- Halation ---
@@ -339,6 +362,13 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
       }
     }
 
+    // --- Encode back to sRGB (end of light-transport bracket) ---
+    {
+      const bg = makeStdBindGroup(current, encodeUB);
+      runPass(encoder, colorspacePipeline, bg, other.createView());
+      swap();
+    }
+
     // --- Split Tone ---
     if (params["no-split-tone"] !== true) {
       const amount = num("split-tone-amount", 0);
@@ -378,17 +408,19 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
       }
     }
 
-    // Track the last rendered output for readPixels
-    lastOutputTex = current;
+    // Blit the 16float intermediate into an 8-bit output texture for readback.
+    const outBG = makeStdBindGroup(current, blitUB);
+    runPass(encoder, blitPipeline, outBG, outputTex.createView());
+    lastOutputTex = outputTex;
 
     // Canvas texture can't be used mid-chain, so blit via neutral passthrough
     const finalBG = makeStdBindGroup(current, blitUB);
-    runPass(encoder, colorPipeline, finalBG, ctx.getCurrentTexture().createView());
+    runPass(encoder, blitPipeline, finalBG, ctx.getCurrentTexture().createView());
 
     device.queue.submit([encoder.finish()]);
   }
 
-  let lastOutputTex: GPUTexture = texA;
+  let lastOutputTex: GPUTexture = outputTex;
 
   async function readPixels(): Promise<Uint8Array> {
     const encoder = device.createCommandEncoder();
@@ -461,6 +493,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
       texB.destroy();
       halfA.destroy();
       halfB.destroy();
+      outputTex.destroy();
       srcTex.destroy();
       device.destroy();
     },
