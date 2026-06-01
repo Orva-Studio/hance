@@ -63,15 +63,11 @@ const faqs = [
   <!-- HERO -->
   <section class="px-6 sm:px-10 lg:px-16 pt-16 sm:pt-24 lg:pt-28 pb-20 sm:pb-28">
     <div class="max-w-[1280px] mx-auto">
-      <h1 class="font-sans font-medium tracking-tightest-2 leading-[0.92] text-ink"
-          style="font-size: clamp(3.25rem, 11.5vw, 11rem)">
-        <span class="block">A film look.</span>
-        <span class="block text-ink-muted">On any clip.</span>
+      <h1 class="font-sans font-medium tracking-tightest-2 leading-[1.05] text-ink text-balance"
+          style="font-size: clamp(1.95rem, 4.2vw, 3.85rem); max-width: 32ch">
+        Cinematic film looks for any editor,
+        <span class="text-ink-muted">rendered in one command, no plugins, no LUTs.</span>
       </h1>
-
-      <p class="mt-10 sm:mt-12 max-w-[44ch] text-ink-muted text-base sm:text-xl leading-snug text-balance">
-        Color, halation, bloom, grain, vignette. GPU&#8209;accelerated. One command. Runs on your machine.
-      </p>
 
       <div class="mt-10 sm:mt-12 flex flex-wrap items-center gap-4">
         <button
@@ -106,9 +102,6 @@ const faqs = [
             </button>
           </div>
         </div>
-        <figcaption class="mt-4 font-mono text-[12px] text-ink-dim text-center tracking-wider uppercase">
-          graded reel, coming soon
-        </figcaption>
       </figure>
     </div>
   </section>
@@ -239,6 +232,44 @@ const faqs = [
           <a href="/docs/free-vs-pro/" class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent hover:underline underline-offset-4">
             Batch requires Pro →
           </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALL -->
+  <section id="install" class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28 border-t border-surface-3/70" aria-labelledby="install-heading">
+    <div class="max-w-[1280px] mx-auto">
+      <h2 id="install-heading" class="font-sans font-medium text-ink tracking-tightest-2 leading-[0.95]" style="font-size: clamp(2.25rem, 5.5vw, 4.25rem)">
+        Three ways to install.
+      </h2>
+      <p class="mt-6 max-w-[52ch] text-ink-muted leading-relaxed">
+        macOS and Linux. The only requirement is FFmpeg on your PATH.
+      </p>
+      <div class="mt-14 sm:mt-20 grid gap-5 sm:gap-6 md:grid-cols-3">
+        <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8 flex flex-col">
+          <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink">Run with npx</h3>
+          <p class="mt-3 text-ink-muted leading-relaxed">No install step — npx fetches and runs the latest hance on demand. The quickest way to try it.</p>
+          <div class="cb mt-5">
+            <div class="cb-row"><span class="cb-glyph">$</span><span class="cb-cmd">npx @orva-studio/hance</span></div>
+          </div>
+          <a href="/docs/getting-started/installation/#run-with-npx-no-install" class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent hover:underline underline-offset-4">Details →</a>
+        </div>
+        <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8 flex flex-col">
+          <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink">From your AI agent</h3>
+          <p class="mt-3 text-ink-muted leading-relaxed">Drive hance from Claude Code or Cursor. The skill's setup command checks FFmpeg and gets you ready in one step.</p>
+          <div class="cb mt-5">
+            <div class="cb-row"><span class="cb-glyph">&gt;</span><span class="cb-cmd">/hance setup</span></div>
+          </div>
+          <a href="/docs/agent/overview/" class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent hover:underline underline-offset-4">Set up the skill →</a>
+        </div>
+        <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8 flex flex-col">
+          <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink">Install the CLI</h3>
+          <p class="mt-3 text-ink-muted leading-relaxed">For frequent use, install a persistent binary to <span class="font-mono text-[0.9em]">~/.hance/bin</span>. No Bun, Rust, or Node required.</p>
+          <div class="cb mt-5">
+            <div class="cb-row"><span class="cb-glyph">$</span><span class="cb-cmd">curl -fsSL https://hance.video/install.sh | sh</span></div>
+          </div>
+          <a href="/docs/getting-started/installation/#install-a-persistent-binary" class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent hover:underline underline-offset-4">Details →</a>
         </div>
       </div>
     </div>

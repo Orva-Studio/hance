@@ -34,7 +34,7 @@ See [AI Agent Usage](/docs/agent/overview/) for installing the skill.
 For frequent CLI use, install `hance` to your PATH so you don't re-download it each run:
 
 ```bash
-curl -fsSL https://github.com/Orva-Studio/hancer/releases/latest/download/install.sh | sh
+curl -fsSL https://hance.video/install.sh | sh
 ```
 
 This installs `hance` and its GPU sidecar to `~/.hance/bin`. The installer detects macOS (arm64/x64) or Linux (x64/arm64). No Bun, Rust, or Node required.
