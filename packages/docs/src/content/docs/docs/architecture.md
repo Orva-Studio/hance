@@ -33,4 +33,6 @@ Every file passes through the same effect chain:
 7. Split toning
 8. Camera shake
 
+The optical effects — halation, chromatic aberration, bloom, grain, and vignette — run in **linear light** (the chain is bracketed by sRGB↔linear conversions, with 16-bit float intermediates) so glows and blurs spread physically correct energy. Color grading, split toning, and camera shake stay in perceptual (gamma) space.
+
 All effects compose into a single GPU render graph — no intermediate files, no re-encoding chains.
