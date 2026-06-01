@@ -1,5 +1,7 @@
 // Standard sRGB piecewise transfer function (IEC 61966-2-1).
 // Operates per channel on a single component in [0, 1].
+// Reference implementation mirroring the WGSL shader; exercised by the unit tests.
+#![allow(dead_code)]
 
 pub fn srgb_to_linear(c: f32) -> f32 {
     if c <= 0.04045 {

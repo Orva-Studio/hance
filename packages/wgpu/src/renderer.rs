@@ -15,7 +15,10 @@ const VIGNETTE_FRAG: &str = include_str!("../../core/shaders/vignette.frag.wgsl"
 const SPLIT_TONE_FRAG: &str = include_str!("../../core/shaders/split-tone.frag.wgsl");
 const SHAKE_FRAG: &str = include_str!("../../core/shaders/camera-shake.frag.wgsl");
 
-const FORMAT: TextureFormat = TextureFormat::Rgba8Unorm;
+const COLORSPACE_FRAG: &str = include_str!("../../core/shaders/colorspace.frag.wgsl");
+
+const INTERMEDIATE_FORMAT: TextureFormat = TextureFormat::Rgba16Float;
+const OUTPUT_FORMAT: TextureFormat = TextureFormat::Rgba8Unorm;
 
 pub struct GpuRenderer {
     device: Device,
@@ -31,6 +34,7 @@ pub struct GpuRenderer {
     tex_b: Texture,
     half_a: Texture,
     half_b: Texture,
+    output_tex: Texture,
 
     // Layouts
     std_layout: BindGroupLayout,
@@ -47,6 +51,8 @@ pub struct GpuRenderer {
     vignette_pipeline: RenderPipeline,
     split_tone_pipeline: RenderPipeline,
     shake_pipeline: RenderPipeline,
+    colorspace_pipeline: RenderPipeline,
+    blit_pipeline: RenderPipeline,
 
     // Uniform buffers
     color_ub: Buffer,
@@ -62,6 +68,9 @@ pub struct GpuRenderer {
     bloom_blur_ub1: Buffer,
     bloom_blur_ub2: Buffer,
     bloom_blend_ub: Buffer,
+    decode_ub: Buffer,
+    encode_ub: Buffer,
+    color_ub_identity: Buffer,
 
     // Readback
     staging_buf: Buffer,
@@ -109,20 +118,23 @@ impl GpuRenderer {
             view_formats: &[],
         });
 
-        let tex_a = passes::create_texture(&device, width, height, FORMAT);
-        let tex_b = passes::create_texture(&device, width, height, FORMAT);
-        let half_a = passes::create_texture(&device, half_w, half_h, FORMAT);
-        let half_b = passes::create_texture(&device, half_w, half_h, FORMAT);
+        let tex_a = passes::create_texture(&device, width, height, INTERMEDIATE_FORMAT);
+        let tex_b = passes::create_texture(&device, width, height, INTERMEDIATE_FORMAT);
+        let half_a = passes::create_texture(&device, half_w, half_h, INTERMEDIATE_FORMAT);
+        let half_b = passes::create_texture(&device, half_w, half_h, INTERMEDIATE_FORMAT);
+        let output_tex = passes::create_texture(&device, width, height, OUTPUT_FORMAT);
 
-        let color_pipeline = passes::create_pipeline(&device, VERT, COLOR_FRAG, &std_layout, FORMAT);
-        let threshold_pipeline = passes::create_pipeline(&device, VERT, THRESHOLD_FRAG, &std_layout, FORMAT);
-        let blur_pipeline = passes::create_pipeline(&device, VERT, BLUR_FRAG, &std_layout, FORMAT);
-        let blend_pipeline = passes::create_pipeline(&device, VERT, BLEND_FRAG, &blend_layout, FORMAT);
-        let aberration_pipeline = passes::create_pipeline(&device, VERT, ABERRATION_FRAG, &std_layout, FORMAT);
-        let grain_pipeline = passes::create_pipeline(&device, VERT, GRAIN_FRAG, &std_layout, FORMAT);
-        let vignette_pipeline = passes::create_pipeline(&device, VERT, VIGNETTE_FRAG, &std_layout, FORMAT);
-        let split_tone_pipeline = passes::create_pipeline(&device, VERT, SPLIT_TONE_FRAG, &std_layout, FORMAT);
-        let shake_pipeline = passes::create_pipeline(&device, VERT, SHAKE_FRAG, &std_layout, FORMAT);
+        let color_pipeline = passes::create_pipeline(&device, VERT, COLOR_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+        let threshold_pipeline = passes::create_pipeline(&device, VERT, THRESHOLD_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+        let blur_pipeline = passes::create_pipeline(&device, VERT, BLUR_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+        let blend_pipeline = passes::create_pipeline(&device, VERT, BLEND_FRAG, &blend_layout, INTERMEDIATE_FORMAT);
+        let aberration_pipeline = passes::create_pipeline(&device, VERT, ABERRATION_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+        let grain_pipeline = passes::create_pipeline(&device, VERT, GRAIN_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+        let vignette_pipeline = passes::create_pipeline(&device, VERT, VIGNETTE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+        let split_tone_pipeline = passes::create_pipeline(&device, VERT, SPLIT_TONE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+        let shake_pipeline = passes::create_pipeline(&device, VERT, SHAKE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+        let colorspace_pipeline = passes::create_pipeline(&device, VERT, COLORSPACE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+        let blit_pipeline = passes::create_pipeline(&device, VERT, COLOR_FRAG, &std_layout, OUTPUT_FORMAT);
 
         let color_ub = passes::create_uniform_buffer(&device, 32);
         let threshold_ub = passes::create_uniform_buffer(&device, 16);
@@ -137,6 +149,12 @@ impl GpuRenderer {
         let bloom_blur_ub1 = passes::create_uniform_buffer(&device, 16);
         let bloom_blur_ub2 = passes::create_uniform_buffer(&device, 16);
         let bloom_blend_ub = passes::create_uniform_buffer(&device, 16);
+        let decode_ub = passes::create_uniform_buffer(&device, 16);
+        queue.write_buffer(&decode_ub, 0, bytemuck_cast(&[0.0f32, 0.0, 0.0, 0.0])); // 0 = sRGB->linear
+        let encode_ub = passes::create_uniform_buffer(&device, 16);
+        queue.write_buffer(&encode_ub, 0, bytemuck_cast(&[1.0f32, 0.0, 0.0, 0.0])); // 1 = linear->sRGB
+        let color_ub_identity = passes::create_uniform_buffer(&device, 32);
+        queue.write_buffer(&color_ub_identity, 0, bytemuck_cast(&[1.0f32, 0.0, 1.0, 1.0, 6500.0, 0.0, 0.0, 0.0]));
 
         let bytes_per_row = ((width * 4 + 255) / 256) * 256;
         let staging_buf = device.create_buffer(&BufferDescriptor {
@@ -158,6 +176,7 @@ impl GpuRenderer {
             tex_b,
             half_a,
             half_b,
+            output_tex,
             std_layout,
             blend_layout,
             sampler,
@@ -170,6 +189,8 @@ impl GpuRenderer {
             vignette_pipeline,
             split_tone_pipeline,
             shake_pipeline,
+            colorspace_pipeline,
+            blit_pipeline,
             color_ub,
             threshold_ub,
             blur_ub1,
@@ -183,6 +204,9 @@ impl GpuRenderer {
             bloom_blur_ub1,
             bloom_blur_ub2,
             bloom_blend_ub,
+            decode_ub,
+            encode_ub,
+            color_ub_identity,
             staging_buf,
         })
     }
@@ -235,6 +259,18 @@ impl GpuRenderer {
         );
         passes::run_pass(&mut encoder, &self.color_pipeline, &bg,
             &current_tex!().create_view(&TextureViewDescriptor::default()));
+
+        // --- Decode to linear light (start of light-transport bracket) ---
+        {
+            let bg = passes::make_std_bind_group(
+                &self.device, &self.std_layout,
+                &current_tex!().create_view(&TextureViewDescriptor::default()),
+                &self.sampler, &self.decode_ub,
+            );
+            passes::run_pass(&mut encoder, &self.colorspace_pipeline, &bg,
+                &other_tex!().create_view(&TextureViewDescriptor::default()));
+            swap!();
+        }
 
         // --- Halation ---
         if self.params.halation_enabled() {
@@ -381,6 +417,18 @@ impl GpuRenderer {
             swap!();
         }
 
+        // --- Encode back to sRGB (end of light-transport bracket) ---
+        {
+            let bg = passes::make_std_bind_group(
+                &self.device, &self.std_layout,
+                &current_tex!().create_view(&TextureViewDescriptor::default()),
+                &self.sampler, &self.encode_ub,
+            );
+            passes::run_pass(&mut encoder, &self.colorspace_pipeline, &bg,
+                &other_tex!().create_view(&TextureViewDescriptor::default()));
+            swap!();
+        }
+
         // --- Split Tone ---
         if self.params.split_tone_enabled() {
             self.write_uniform(&self.split_tone_ub, &self.params.split_tone_uniform());
@@ -407,11 +455,22 @@ impl GpuRenderer {
             swap!();
         }
 
+        // --- Final blit to 8-bit output ---
+        {
+            let bg = passes::make_std_bind_group(
+                &self.device, &self.std_layout,
+                &current_tex!().create_view(&TextureViewDescriptor::default()),
+                &self.sampler, &self.color_ub_identity,
+            );
+            passes::run_pass(&mut encoder, &self.blit_pipeline, &bg,
+                &self.output_tex.create_view(&TextureViewDescriptor::default()));
+        }
+
         // --- Readback ---
         let bytes_per_row = ((self.width * 4 + 255) / 256) * 256;
         encoder.copy_texture_to_buffer(
             TexelCopyTextureInfo {
-                texture: current_tex!(),
+                texture: &self.output_tex,
                 mip_level: 0,
                 origin: Origin3d::ZERO,
                 aspect: TextureAspect::All,
