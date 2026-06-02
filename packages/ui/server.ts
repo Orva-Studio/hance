@@ -1,4 +1,4 @@
-import { EFFECT_SCHEMA, loadPreset, builtinPresetsDir, userPresetsDir, listPresetNames, probe, rebuildPresetIndex, requireCodecLicense } from "@hance/core";
+import { EFFECT_SCHEMA, getDefaults, loadPreset, builtinPresetsDir, userPresetsDir, listPresetNames, probe, rebuildPresetIndex, requireCodecLicense } from "@hance/core";
 import type { PresetData, LicenseContext } from "@hance/core";
 import { runGpuExport } from "@hance/gpu";
 import { join, extname, basename, resolve } from "node:path";
@@ -104,8 +104,10 @@ export function createServer(port: number) {
         const name = url.searchParams.get("name") || "default";
         try {
           const raw = loadPreset(name);
-          // .hlook files have params nested; .json files have them at top level
-          const params = raw.params ?? raw;
+          // .hlook files have params nested; .json files have them at top level.
+          // Seed schema defaults so the renderer receives fully-populated params
+          // (single defaults source — see applyPreset / getDefaults).
+          const params = { ...getDefaults(), ...(raw.params ?? raw) };
           return Response.json(params);
         } catch {
           return new Response("Look not found", { status: 404 });

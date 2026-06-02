@@ -1,5 +1,6 @@
 import { describe, it, expect } from "bun:test";
-import { parseEffectFlags } from "../src/effect-flags";
+import { EFFECT_SCHEMA } from "@hance/core";
+import { parseEffectFlags, EFFECT_HELP_TEXT } from "../src/effect-flags";
 
 describe("parseEffectFlags", () => {
   it("parses numeric effect flags into overrides", () => {
@@ -72,5 +73,44 @@ describe("parseEffectFlags", () => {
 
   it("rejects an invalid --input-lut profile", () => {
     expect(() => parseEffectFlags(["--input-lut", "slog3"])).toThrow(/--input-lut/);
+  });
+});
+
+// These guard that the CLI is derived from EFFECT_SCHEMA: every schema option
+// and every group disable toggle must be a recognized, parseable flag, and the
+// generated help must mention each flag with its default. A new/removed option
+// in the schema is then a one-file change — see issue #61.
+describe("schema-derived CLI flags", () => {
+  it("recognizes every option flag and group disable toggle", () => {
+    for (const group of EFFECT_SCHEMA) {
+      expect(() => parseEffectFlags([`--${group.enableKey}`])).not.toThrow();
+      for (const opt of group.options) {
+        const flag = opt.flag ?? `--${opt.key}`;
+        const args = opt.type === "boolean"
+          ? [flag]
+          : opt.type === "select"
+            ? [flag, opt.choices[0]]
+            : [flag, String(opt.default)];
+        expect(() => parseEffectFlags(args), `flag ${flag}`).not.toThrow();
+      }
+    }
+  });
+
+  it("validates ranges from the schema min/max", () => {
+    const radius = EFFECT_SCHEMA.flatMap(g => g.options).find(o => o.key === "halation-radius")!;
+    if (radius.type === "range") {
+      expect(() => parseEffectFlags(["--halation-radius", String(radius.max + 1)])).toThrow();
+    }
+  });
+
+  it("generates help text covering every option flag and default", () => {
+    for (const group of EFFECT_SCHEMA) {
+      for (const opt of group.options) {
+        const flag = opt.flag ?? `--${opt.key}`;
+        expect(EFFECT_HELP_TEXT).toContain(flag);
+        expect(EFFECT_HELP_TEXT).toContain(`(default: ${opt.default})`);
+      }
+      expect(EFFECT_HELP_TEXT).toContain(`--${group.enableKey}`);
+    }
   });
 });

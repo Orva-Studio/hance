@@ -6,7 +6,7 @@ import {
 import { createFullscreenPipeline, createTexture, runPass } from "./passes";
 import { getSplitToneTintValues } from "./splitToneMath";
 import { isLightGroupActive } from "./lightGroup";
-import { LUT_SIZE, generateLut, isInputLutActive } from "@hance/core";
+import { LUT_SIZE, generateLut, isInputLutActive, HALATION_THRESHOLD, BLUR_SIGMA_FACTOR } from "@hance/core";
 
 export interface PreviewParams {
   [key: string]: string | number | boolean;
@@ -271,12 +271,15 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
     }
   }
 
-  function num(key: string, fallback: number): number {
+  // Params arrive fully populated with schema defaults (see core getDefaults /
+  // applyPreset and the UI's /api/look + initial state), so these helpers only
+  // coerce type; the neutral fallback is a safety net, not a defaults source.
+  function num(key: string, fallback = 0): number {
     const v = params[key];
     return typeof v === "number" ? v : fallback;
   }
 
-  function bool(key: string, fallback: boolean): boolean {
+  function bool(key: string, fallback = false): boolean {
     const v = params[key];
     return typeof v === "boolean" ? v : fallback;
   }
@@ -308,14 +311,14 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
     }
 
     if (params["no-color-settings"] !== true) {
-      const fade = num("fade", 0);
-      const contrast = num("contrast", 1) * (1 - fade);
-      const brightness = num("exposure", 0) * 0.1 + fade * 0.05;
-      const saturation = num("subtractive-sat", 1) * num("richness", 1);
-      const gamma = 1 - num("highlights", 0) * 0.5;
-      const wb = num("white-balance", 6500);
-      const tint = num("tint", 0) / 100;
-      const bleach = num("bleach-bypass", 0);
+      const fade = num("fade");
+      const contrast = num("contrast") * (1 - fade);
+      const brightness = num("exposure") * 0.1 + fade * 0.05;
+      const saturation = num("subtractive-sat") * num("richness");
+      const gamma = 1 - num("highlights") * 0.5;
+      const wb = num("white-balance");
+      const tint = num("tint") / 100;
+      const bleach = num("bleach-bypass");
       device.queue.writeBuffer(colorUB, 0, new Float32Array([contrast, brightness, saturation, gamma, wb, tint, bleach, 0]));
       const bg = makeStdBindGroup(colorInput, colorUB);
       runPass(encoder, colorPipeline, bg, current.createView());
@@ -339,17 +342,17 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
 
     // --- Halation ---
     if (params["no-halation"] !== true) {
-      const amount = num("halation-amount", 0.25);
+      const amount = num("halation-amount");
       if (amount > 0) {
-        const radius = num("halation-radius", 4);
-        const highlightsOnly = bool("halation-highlights-only", true);
+        const radius = num("halation-radius");
+        const highlightsOnly = bool("halation-highlights-only");
 
         // Save pre-halation result for blend
         const preHalation = current;
 
         if (highlightsOnly) {
           // Threshold pass → halfA
-          device.queue.writeBuffer(thresholdUB, 0, new Float32Array([0.65, 0.75, 0, 0]));
+          device.queue.writeBuffer(thresholdUB, 0, new Float32Array([HALATION_THRESHOLD[0], HALATION_THRESHOLD[1], 0, 0]));
           const threshBG = makeStdBindGroup(current, thresholdUB);
           runPass(encoder, thresholdPipeline, threshBG, halfA.createView());
         } else {
@@ -360,7 +363,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
         }
 
         // Horizontal blur → halfB
-        const sigma = radius * 0.5;
+        const sigma = radius * BLUR_SIGMA_FACTOR;
         device.queue.writeBuffer(blurUB1, 0, new Float32Array([1.0 / halfW, 0, sigma, 0]));
         const hBG = makeStdBindGroup(halfA, blurUB1);
         runPass(encoder, blurPipeline, hBG, halfB.createView());
@@ -371,8 +374,8 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
         runPass(encoder, blurPipeline, vBG, halfA.createView());
 
         // Screen blend halation with pre-halation → other
-        const hue = num("halation-hue", 0.04) * 360;
-        const sat = num("halation-saturation", 1);
+        const hue = num("halation-hue") * 360;
+        const sat = num("halation-saturation");
         device.queue.writeBuffer(blendUB, 0, new Float32Array([amount, hue, sat, 0]));
         const blendBG = makeBlendBindGroup(preHalation, halfA, blendUB);
         runPass(encoder, blendPipeline, blendBG, other.createView());
@@ -382,7 +385,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
 
     // --- Chromatic Aberration ---
     if (params["no-aberration"] !== true) {
-      const amount = num("aberration", 0.3);
+      const amount = num("aberration");
       if (amount > 0) {
         device.queue.writeBuffer(aberrationUB, 0, new Float32Array([amount * 0.02, 0, 0, 0]));
         const bg = makeStdBindGroup(current, aberrationUB);
@@ -393,9 +396,9 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
 
     // --- Bloom ---
     if (params["no-bloom"] !== true) {
-      const amount = num("bloom-amount", 0.25);
+      const amount = num("bloom-amount");
       if (amount > 0) {
-        const radius = num("bloom-radius", 10);
+        const radius = num("bloom-radius");
         const preBloom = current;
 
         // FFmpeg bloom blurs the full frame, so downsample without thresholding first.
@@ -404,7 +407,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
         runPass(encoder, blurPipeline, downsampleBG, halfA.createView());
 
         // H-blur → halfB
-        const sigma = radius * 0.5;
+        const sigma = radius * BLUR_SIGMA_FACTOR;
         device.queue.writeBuffer(bloomBlurUB1, 0, new Float32Array([1.0 / halfW, 0, sigma, 0]));
         const hBG = makeStdBindGroup(halfA, bloomBlurUB1);
         runPass(encoder, blurPipeline, hBG, halfB.createView());
@@ -424,14 +427,14 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
 
     // --- Grain ---
     if (params["no-grain"] !== true) {
-      const amount = num("grain-amount", 0.125);
+      const amount = num("grain-amount");
       if (amount > 0) {
         device.queue.writeBuffer(grainUB, 0, new Float32Array([
           amount,
-          num("grain-size", 0),
-          num("grain-softness", 0.1),
-          num("grain-saturation", 0.3),
-          num("grain-defocus", 1),
+          num("grain-size"),
+          num("grain-softness"),
+          num("grain-saturation"),
+          num("grain-defocus"),
           frameCount,
           1.0 / previewWidth,
           1.0 / previewHeight,
@@ -444,10 +447,10 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
 
     // --- Vignette ---
     if (params["no-vignette"] !== true) {
-      const amount = num("vignette-amount", 0.25);
+      const amount = num("vignette-amount");
       if (amount > 0) {
         const angle = amount * Math.PI / 2;
-        const aspect = 1 - num("vignette-size", 0.25) * 0.5;
+        const aspect = 1 - num("vignette-size") * 0.5;
         device.queue.writeBuffer(vignetteUB, 0, new Float32Array([angle, aspect, 0, 0]));
         const bg = makeStdBindGroup(current, vignetteUB);
         runPass(encoder, vignettePipeline, bg, other.createView());
@@ -464,10 +467,10 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
 
     // --- Split Tone ---
     if (params["no-split-tone"] !== true) {
-      const amount = num("split-tone-amount", 0);
+      const amount = num("split-tone-amount");
       if (amount > 0) {
-        const hue = num("split-tone-hue", 20);
-        const pivot = num("split-tone-pivot", 0.3);
+        const hue = num("split-tone-hue");
+        const pivot = num("split-tone-pivot");
         const mode = params["split-tone-mode"] || "natural";
         const protect = params["split-tone-protect-neutrals"] === true ? 1 : 0;
         const { shadowR, shadowB, highlightR, highlightB, midR } = getSplitToneTintValues({
@@ -488,9 +491,9 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
 
     // --- Camera Shake ---
     if (params["no-camera-shake"] !== true) {
-      const amount = num("camera-shake-amount", 0.25);
+      const amount = num("camera-shake-amount");
       if (amount > 0) {
-        const rate = num("camera-shake-rate", 0.5);
+        const rate = num("camera-shake-rate");
         const amplitude = (amount * 3) / previewWidth; // normalize to UV space
         const period1 = Math.max(1, 30 / (rate + 0.01));
         const period2 = period1 * 1.3;

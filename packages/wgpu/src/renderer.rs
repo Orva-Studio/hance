@@ -359,10 +359,11 @@ impl GpuRenderer {
         if self.params.halation_enabled() {
             let amount = self.params.halation_amount();
             let radius = self.params.halation_radius();
-            let sigma = radius * 0.5;
+            let consts = crate::render_constants::render_constants();
+            let sigma = radius * consts.blur_sigma_factor;
 
             if self.params.halation_highlights_only() {
-                self.write_uniform(&self.threshold_ub, &[0.65, 0.75, 0.0, 0.0]);
+                self.write_uniform(&self.threshold_ub, &[consts.halation_threshold[0], consts.halation_threshold[1], 0.0, 0.0]);
                 let bg = passes::make_std_bind_group(
                     &self.device, &self.std_layout,
                     &current_tex!().create_view(&TextureViewDescriptor::default()),
@@ -432,7 +433,7 @@ impl GpuRenderer {
         if self.params.bloom_enabled() {
             let amount = self.params.bloom_amount();
             let radius = self.params.bloom_radius();
-            let sigma = radius * 0.5;
+            let sigma = radius * crate::render_constants::render_constants().blur_sigma_factor;
 
             self.write_uniform(&self.blur_ub1, &[0.0, 0.0, 0.001, 0.0]);
             let ds_bg = passes::make_std_bind_group(

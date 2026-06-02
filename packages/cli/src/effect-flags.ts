@@ -1,93 +1,108 @@
-import type { PresetData, OutputCodec, ExportPreset } from "@hance/core";
+import type { PresetData, OutputCodec, ExportPreset, OptionDef, EffectGroup } from "@hance/core";
+import { EFFECT_SCHEMA } from "@hance/core";
 
-export const EFFECT_HELP_TEXT = `\
-  Input LUT:
-  --input-lut  <rec709|vlog>  Pre-LUT applied before grading (default: rec709)
-  --vlog                      Sugar for --input-lut vlog (Panasonic V-Log)
-  --no-input-lut              Disable the input LUT
+// ---------------------------------------------------------------------------
+// Non-effect flags — these are not effect params and so don't live in the
+// schema. They are the only hand-maintained flag entries left in this file.
+// ---------------------------------------------------------------------------
 
-  Color Settings:
-  --exposure          <-2 to 2>     Exposure adjustment (default: 0)
-  --contrast          <0-3>         Contrast multiplier (default: 1)
-  --highlights        <-1 to 1>     Highlight compression (default: 0)
-  --fade              <0-1>         Fade / lift blacks (default: 0)
-  --white-balance     <1000-15000>  Color temperature in Kelvin (default: 6500)
-  --tint              <-100 to 100> Green-magenta tint (default: 0)
-  --subtractive-sat   <0-3>         Subtractive saturation (default: 1)
-  --richness          <0-3>         Color richness (default: 1)
-  --bleach-bypass     <0-1>         Bleach bypass amount (default: 0)
-  --no-color-settings               Disable color settings
+const CODECS = ["h264", "prores", "h265"] as const;
+const ENCODE_PRESETS = ["fast", "medium", "slow"] as const;
+const EXPORT_PRESETS = ["low", "medium", "high", "max"] as const;
 
-  Halation:
-  --halation-amount         <0-1>   Halation strength (default: 0.25)
-  --halation-radius         <1-100> Blur radius (default: 4)
-  --halation-saturation     <0-1>   Tint strength (default: 1)
-  --halation-hue            <0-1>   Tint hue 0-1 (default: 0.04, ~red-orange)
-  --halation-highlights-only        Restrict to highlights (default: true)
-  --no-halation                     Disable halation
-
-  Chromatic Aberration:
-  --aberration  <0-1>       Aberration amount (default: 0.3)
-  --no-aberration           Disable aberration
-
-  Bloom:
-  --bloom-amount   <0-1>    Bloom strength (default: 0.25)
-  --bloom-radius   <1-100>  Bloom blur radius (default: 10)
-  --no-bloom                Disable bloom
-
-  Grain:
-  --grain-amount     <0-1>    Grain intensity (default: 0.125)
-  --grain-size       <0-5>    Grain particle size (default: 0)
-  --grain-softness   <0-1>    Grain softness (default: 0.1)
-  --grain-saturation <0-1>    Grain color saturation (default: 0.3)
-  --grain-defocus    <0-5>    Image defocus amount (default: 1)
-  --no-grain                  Disable grain
-
-  Vignette:
-  --vignette-amount  <0-1>   Vignette strength (default: 0.25)
-  --vignette-size    <0-1>   Vignette size (default: 0.25)
-  --no-vignette              Disable vignette
-
-  Split Tone:
-  --split-tone-mode      <natural|complementary>  (default: natural)
-  --split-tone-protect-neutrals                   Protect neutral colors
-  --split-tone-amount    <0-1>    Toning amount (default: 0)
-  --split-tone-hue       <0-360>  Hue angle in degrees (default: 20)
-  --split-tone-pivot     <0-1>    Shadow/highlight pivot (default: 0.3)
-  --no-split-tone                 Disable split tone
-
-  Camera Shake:
-  --camera-shake-amount  <0-1>   Shake intensity (default: 0.25)
-  --camera-shake-rate    <0-2>   Shake speed (default: 0.5)
-  --no-camera-shake              Disable camera shake`;
-
-const KNOWN_FLAGS = new Set([
-  "--output", "-o", "--preset", "--codec", "--encode-preset", "--crf", "--blend", "--export",
-  "--input-lut", "--vlog", "--no-input-lut",
-  "--exposure", "--contrast", "--highlights", "--fade",
-  "--white-balance", "--tint", "--subtractive-sat", "--richness", "--bleach-bypass",
-  "--no-color-settings",
-  "--halation-amount", "--halation-radius", "--halation-saturation", "--halation-hue",
-  "--halation-highlights-only", "--no-halation",
-  "--aberration", "--no-aberration",
-  "--bloom-amount", "--bloom-radius", "--no-bloom",
-  "--grain-amount", "--grain-size", "--grain-softness", "--grain-saturation", "--grain-defocus",
-  "--no-grain",
-  "--vignette-amount", "--vignette-size", "--no-vignette",
-  "--split-tone-mode", "--split-tone-protect-neutrals", "--split-tone-amount",
-  "--split-tone-hue", "--split-tone-pivot", "--no-split-tone",
-  "--camera-shake-amount", "--camera-shake-rate", "--no-camera-shake",
-  "--no-config",
-  "--help", "-h",
+const NON_EFFECT_FLAGS = new Set([
+  "--output", "-o", "--preset", "--codec", "--encode-preset", "--crf",
+  "--blend", "--export", "--no-config", "--help", "-h",
 ]);
 
-const BOOLEAN_FLAGS = new Set([
-  "--no-input-lut", "--vlog",
-  "--no-color-settings", "--no-halation", "--no-aberration", "--no-bloom",
-  "--no-grain", "--no-vignette", "--no-split-tone", "--no-camera-shake",
-  "--no-config",
-  "--halation-highlights-only", "--split-tone-protect-neutrals",
+// ---------------------------------------------------------------------------
+// Schema-derived flag metadata
+// ---------------------------------------------------------------------------
+
+/** The CLI flag for an option: its `flag` override, else `--<key>`. */
+function optionFlag(opt: OptionDef): string {
+  return opt.flag ?? `--${opt.key}`;
+}
+
+interface FlagBinding {
+  group: EffectGroup;
+  opt: OptionDef;
+  /** When set, this flag is an alias that writes a fixed value. */
+  aliasValue?: string | boolean;
+}
+
+/** flag string -> how to apply it. Built once from the schema. */
+const FLAG_BINDINGS = new Map<string, FlagBinding>();
+const ENABLE_FLAGS = new Map<string, EffectGroup>();
+
+for (const group of EFFECT_SCHEMA) {
+  ENABLE_FLAGS.set(`--${group.enableKey}`, group);
+  for (const opt of group.options) {
+    FLAG_BINDINGS.set(optionFlag(opt), { group, opt });
+    if (opt.alias) {
+      FLAG_BINDINGS.set(opt.alias.flag, { group, opt, aliasValue: opt.alias.value });
+    }
+  }
+}
+
+const KNOWN_FLAGS = new Set<string>([
+  ...NON_EFFECT_FLAGS,
+  ...ENABLE_FLAGS.keys(),
+  ...FLAG_BINDINGS.keys(),
 ]);
+
+/** Flags that take no value. */
+const BOOLEAN_FLAGS = new Set<string>(["--no-config", ...ENABLE_FLAGS.keys()]);
+for (const [flag, b] of FLAG_BINDINGS) {
+  if (b.aliasValue !== undefined || b.opt.type === "boolean") BOOLEAN_FLAGS.add(flag);
+}
+
+// ---------------------------------------------------------------------------
+// Generated help text
+// ---------------------------------------------------------------------------
+
+function rangeHint(min: number, max: number): string {
+  const span = min < 0 ? `${min} to ${max}` : `${min}-${max}`;
+  return `<${span}>`;
+}
+
+function valueHint(opt: OptionDef): string {
+  if (opt.type === "range") return rangeHint(opt.min, opt.max);
+  if (opt.type === "select") return `<${opt.choices.join("|")}>`;
+  return "";
+}
+
+/** The `flag + hint` head of a help line, used both to render and to size the
+ *  description column so every effect line aligns. */
+function optionHead(opt: OptionDef): string {
+  const hint = valueHint(opt);
+  return hint ? `${optionFlag(opt)} ${hint}` : optionFlag(opt);
+}
+
+function groupHelp(group: EffectGroup, pad: number): string {
+  const lines = [`  ${group.label}:`];
+  const fmt = (head: string, tail: string) => `  ${head.padEnd(pad)}  ${tail}`;
+  for (const opt of group.options) {
+    const tail = opt.description ? `${opt.description} (default: ${opt.default})` : `(default: ${opt.default})`;
+    lines.push(fmt(optionHead(opt), tail));
+    if (opt.alias) lines.push(fmt(opt.alias.flag, opt.alias.help));
+  }
+  lines.push(fmt(`--${group.enableKey}`, group.enableHelp ?? `Disable ${group.label.toLowerCase()}`));
+  return lines.join("\n");
+}
+
+const HELP_COLUMN = Math.max(
+  ...EFFECT_SCHEMA.flatMap(g => [
+    `--${g.enableKey}`.length,
+    ...g.options.flatMap(o => [optionHead(o).length, o.alias?.flag.length ?? 0]),
+  ]),
+);
+
+export const EFFECT_HELP_TEXT = EFFECT_SCHEMA.map(g => groupHelp(g, HELP_COLUMN)).join("\n\n");
+
+// ---------------------------------------------------------------------------
+// Parsing
+// ---------------------------------------------------------------------------
 
 function parseNum(value: string, flag: string, min: number, max: number): number {
   const n = parseFloat(value);
@@ -95,6 +110,13 @@ function parseNum(value: string, flag: string, min: number, max: number): number
     throw new Error(`${flag} must be between ${min} and ${max}, got ${value}`);
   }
   return n;
+}
+
+function oneOf<T extends string>(value: string, flag: string, choices: readonly T[]): T {
+  if (!(choices as readonly string[]).includes(value)) {
+    throw new Error(`${flag} must be ${choices.join(", ")}, got ${value}`);
+  }
+  return value as T;
 }
 
 export interface ParsedEffectFlags {
@@ -127,75 +149,42 @@ export function parseEffectFlags(argv: string[]): ParsedEffectFlags {
     if (!arg.startsWith("-")) { positional.push(arg); i++; continue; }
     if (!KNOWN_FLAGS.has(arg)) throw new Error(`Unknown flag: ${arg}. Use --help for usage.`);
 
+    // Boolean flags (effect toggles, aliases, boolean options, --no-config).
     if (BOOLEAN_FLAGS.has(arg)) {
-      switch (arg) {
-        case "--no-input-lut": overrides["no-input-lut"] = true; break;
-        case "--vlog": overrides["input-lut-profile"] = "vlog"; break;
-        case "--no-color-settings": overrides["no-color-settings"] = true; break;
-        case "--no-halation": overrides["no-halation"] = true; break;
-        case "--no-aberration": overrides["no-aberration"] = true; break;
-        case "--no-bloom": overrides["no-bloom"] = true; break;
-        case "--no-grain": overrides["no-grain"] = true; break;
-        case "--no-vignette": overrides["no-vignette"] = true; break;
-        case "--no-split-tone": overrides["no-split-tone"] = true; break;
-        case "--no-camera-shake": overrides["no-camera-shake"] = true; break;
-        case "--halation-highlights-only": overrides["halation-highlights-only"] = true; break;
-        case "--split-tone-protect-neutrals": overrides["split-tone-protect-neutrals"] = true; break;
-      }
+      if (arg === "--no-config") { i++; continue; }
+      const enableGroup = ENABLE_FLAGS.get(arg);
+      if (enableGroup) { overrides[enableGroup.enableKey] = true; i++; continue; }
+      const binding = FLAG_BINDINGS.get(arg)!;
+      overrides[binding.opt.key] = binding.aliasValue ?? true;
       i++; continue;
     }
 
     const val = argv[i + 1];
     if (val === undefined) throw new Error(`${arg} requires a value`);
 
+    // Non-effect value flags.
     switch (arg) {
-      case "--output": case "-o": outputArg = val; break;
-      case "--input-lut":
-        if (val !== "rec709" && val !== "vlog") throw new Error(`--input-lut must be rec709 or vlog, got ${val}`);
-        overrides["input-lut-profile"] = val; break;
-      case "--preset": presetName = val; break;
+      case "--output": case "-o": outputArg = val; i += 2; continue;
+      case "--preset": presetName = val; i += 2; continue;
       case "--codec":
-        if (val !== "h264" && val !== "prores" && val !== "h265") throw new Error(`--codec must be h264, prores, or h265, got ${val}`);
-        overrideCodec = val; overrides["codec"] = val; break;
+        overrideCodec = oneOf(val, "--codec", CODECS); overrides["codec"] = overrideCodec; i += 2; continue;
       case "--encode-preset":
-        if (val !== "fast" && val !== "medium" && val !== "slow") throw new Error(`--encode-preset must be fast, medium, or slow, got ${val}`);
-        overrideEncodePreset = val; overrides["encode-preset"] = val; break;
+        overrideEncodePreset = oneOf(val, "--encode-preset", ENCODE_PRESETS); overrides["encode-preset"] = overrideEncodePreset; i += 2; continue;
       case "--export":
-        if (val !== "low" && val !== "medium" && val !== "high" && val !== "max") throw new Error(`--export must be low, medium, high, or max, got ${val}`);
-        exportPreset = val as ExportPreset; break;
-      case "--crf": overrideCrf = parseNum(val, "--crf", 0, 51); overrides["crf"] = overrideCrf; break;
-      case "--blend": overrides["blend"] = parseNum(val, "--blend", 0, 1); break;
-      case "--exposure": overrides["exposure"] = parseNum(val, "--exposure", -2, 2); break;
-      case "--contrast": overrides["contrast"] = parseNum(val, "--contrast", 0, 3); break;
-      case "--highlights": overrides["highlights"] = parseNum(val, "--highlights", -1, 1); break;
-      case "--fade": overrides["fade"] = parseNum(val, "--fade", 0, 1); break;
-      case "--white-balance": overrides["white-balance"] = parseNum(val, "--white-balance", 1000, 15000); break;
-      case "--tint": overrides["tint"] = parseNum(val, "--tint", -100, 100); break;
-      case "--subtractive-sat": overrides["subtractive-sat"] = parseNum(val, "--subtractive-sat", 0, 3); break;
-      case "--richness": overrides["richness"] = parseNum(val, "--richness", 0, 3); break;
-      case "--bleach-bypass": overrides["bleach-bypass"] = parseNum(val, "--bleach-bypass", 0, 1); break;
-      case "--halation-amount": overrides["halation-amount"] = parseNum(val, "--halation-amount", 0, 1); break;
-      case "--halation-radius": overrides["halation-radius"] = parseNum(val, "--halation-radius", 1, 100); break;
-      case "--halation-saturation": overrides["halation-saturation"] = parseNum(val, "--halation-saturation", 0, 1); break;
-      case "--halation-hue": overrides["halation-hue"] = parseNum(val, "--halation-hue", 0, 1); break;
-      case "--aberration": overrides["aberration"] = parseNum(val, "--aberration", 0, 1); break;
-      case "--bloom-amount": overrides["bloom-amount"] = parseNum(val, "--bloom-amount", 0, 1); break;
-      case "--bloom-radius": overrides["bloom-radius"] = parseNum(val, "--bloom-radius", 1, 100); break;
-      case "--grain-amount": overrides["grain-amount"] = parseNum(val, "--grain-amount", 0, 1); break;
-      case "--grain-size": overrides["grain-size"] = parseNum(val, "--grain-size", 0, 5); break;
-      case "--grain-softness": overrides["grain-softness"] = parseNum(val, "--grain-softness", 0, 1); break;
-      case "--grain-saturation": overrides["grain-saturation"] = parseNum(val, "--grain-saturation", 0, 1); break;
-      case "--grain-defocus": overrides["grain-defocus"] = parseNum(val, "--grain-defocus", 0, 5); break;
-      case "--vignette-amount": overrides["vignette-amount"] = parseNum(val, "--vignette-amount", 0, 1); break;
-      case "--vignette-size": overrides["vignette-size"] = parseNum(val, "--vignette-size", 0, 1); break;
-      case "--split-tone-mode":
-        if (val !== "natural" && val !== "complementary") throw new Error(`--split-tone-mode must be natural or complementary, got ${val}`);
-        overrides["split-tone-mode"] = val; break;
-      case "--split-tone-amount": overrides["split-tone-amount"] = parseNum(val, "--split-tone-amount", 0, 1); break;
-      case "--split-tone-hue": overrides["split-tone-hue"] = parseNum(val, "--split-tone-hue", 0, 360); break;
-      case "--split-tone-pivot": overrides["split-tone-pivot"] = parseNum(val, "--split-tone-pivot", 0, 1); break;
-      case "--camera-shake-amount": overrides["camera-shake-amount"] = parseNum(val, "--camera-shake-amount", 0, 1); break;
-      case "--camera-shake-rate": overrides["camera-shake-rate"] = parseNum(val, "--camera-shake-rate", 0, 2); break;
+        exportPreset = oneOf(val, "--export", EXPORT_PRESETS); i += 2; continue;
+      case "--crf":
+        overrideCrf = parseNum(val, "--crf", 0, 51); overrides["crf"] = overrideCrf; i += 2; continue;
+      case "--blend":
+        overrides["blend"] = parseNum(val, "--blend", 0, 1); i += 2; continue;
+    }
+
+    // Schema-derived value flags (range + select).
+    const binding = FLAG_BINDINGS.get(arg)!;
+    const opt = binding.opt;
+    if (opt.type === "range") {
+      overrides[opt.key] = parseNum(val, arg, opt.min, opt.max);
+    } else if (opt.type === "select") {
+      overrides[opt.key] = oneOf(val, arg, opt.choices);
     }
     i += 2;
   }

@@ -16,6 +16,7 @@ export { EXPORT_PRESETS, resolveExportPreset, requireCodecLicense } from "./expo
 
 export type { RangeOption, SelectOption, BooleanOption, OptionDef, EffectGroup } from "./schema";
 export { EFFECT_SCHEMA, getDefaults } from "./schema";
+export { HALATION_THRESHOLD, BLUR_SIGMA_FACTOR } from "./render-constants";
 
 export type { PresetData } from "./presets";
 export { loadPreset, applyPreset, builtinPresetsDir, userPresetsDir, listPresetNames, exportLook, importLook } from "./presets";

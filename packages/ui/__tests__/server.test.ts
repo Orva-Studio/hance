@@ -34,6 +34,34 @@ describe("API server", () => {
     expect(data["exposure"]).toBe(0);
   });
 
+  test("GET /api/look is seeded with schema defaults", async () => {
+    // The renderer relies on fully-populated params (no inline fallbacks), so
+    // even keys a look omits must come back at their schema default.
+    const { getDefaults } = await import("@hance/core");
+    const defaults = getDefaults();
+    const res = await fetch(`${base}/api/look?name=default`);
+    const data = await res.json();
+    for (const key of Object.keys(defaults)) {
+      expect(data[key]).toBeDefined();
+    }
+  });
+
+  test("GET /api/look fills omitted keys from schema defaults", async () => {
+    // A minimal look that omits most params still comes back fully populated.
+    const { getDefaults, userPresetsDir } = await import("@hance/core");
+    const dir = userPresetsDir();
+    const file = join(dir, "__defaults_probe.hlook");
+    writeFileSync(file, JSON.stringify({ name: "probe", params: { exposure: 0.5 } }));
+    try {
+      const res = await fetch(`${base}/api/look?name=__defaults_probe`);
+      const data = await res.json();
+      expect(data["exposure"]).toBe(0.5);
+      expect(data["halation-hue"]).toBe(getDefaults()["halation-hue"]);
+    } finally {
+      unlinkSync(file);
+    }
+  });
+
   test("GET /api/initial-file returns 404 when no file set", async () => {
     setInitialFile(null);
     const res = await fetch(`${base}/api/initial-file`);

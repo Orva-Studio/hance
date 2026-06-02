@@ -1,4 +1,21 @@
-export interface RangeOption {
+/** Sugar flag that maps to a fixed value of another option, e.g. `--vlog`. */
+export interface OptionAlias {
+  flag: string;
+  value: string | boolean;
+  help: string;
+}
+
+/** Help metadata shared by every option, used to generate CLI flags + help. */
+interface OptionMeta {
+  /** Human-readable help blurb shown in `--help`. */
+  description: string;
+  /** CLI flag override when it is not simply `--<key>` (e.g. `--input-lut`). */
+  flag?: string;
+  /** Optional sugar alias flag. */
+  alias?: OptionAlias;
+}
+
+export interface RangeOption extends OptionMeta {
   key: string;
   label: string;
   type: "range";
@@ -8,7 +25,7 @@ export interface RangeOption {
   default: number;
 }
 
-export interface SelectOption {
+export interface SelectOption extends OptionMeta {
   key: string;
   label: string;
   type: "select";
@@ -16,7 +33,7 @@ export interface SelectOption {
   default: string;
 }
 
-export interface BooleanOption {
+export interface BooleanOption extends OptionMeta {
   key: string;
   label: string;
   type: "boolean";
@@ -29,6 +46,8 @@ export interface EffectGroup {
   key: string;
   label: string;
   enableKey: string;
+  /** Help line for the `--<enableKey>` toggle. Defaults to `Disable <label>`. */
+  enableHelp?: string;
   options: OptionDef[];
 }
 
@@ -37,8 +56,9 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
     key: "inputLut",
     label: "Input LUT",
     enableKey: "no-input-lut",
+    enableHelp: "Disable the input LUT",
     options: [
-      { key: "input-lut-profile", label: "Profile", type: "select", choices: ["rec709", "vlog"], default: "rec709" },
+      { key: "input-lut-profile", label: "Profile", type: "select", choices: ["rec709", "vlog"], default: "rec709", flag: "--input-lut", description: "Pre-LUT applied before grading", alias: { flag: "--vlog", value: "vlog", help: "Sugar for --input-lut vlog (Panasonic V-Log)" } },
     ],
   },
   {
@@ -46,15 +66,15 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
     label: "Color Settings",
     enableKey: "no-color-settings",
     options: [
-      { key: "exposure", label: "Exposure", type: "range", min: -2, max: 2, step: 0.01, default: 0 },
-      { key: "contrast", label: "Contrast", type: "range", min: 0, max: 3, step: 0.01, default: 1 },
-      { key: "highlights", label: "Highlights", type: "range", min: -1, max: 1, step: 0.01, default: 0 },
-      { key: "fade", label: "Fade", type: "range", min: 0, max: 1, step: 0.01, default: 0 },
-      { key: "white-balance", label: "White Balance", type: "range", min: 1000, max: 15000, step: 100, default: 6500 },
-      { key: "tint", label: "Tint", type: "range", min: -100, max: 100, step: 1, default: 0 },
-      { key: "subtractive-sat", label: "Subtractive Saturation", type: "range", min: 0, max: 3, step: 0.01, default: 1 },
-      { key: "richness", label: "Richness", type: "range", min: 0, max: 3, step: 0.01, default: 1 },
-      { key: "bleach-bypass", label: "Bleach Bypass", type: "range", min: 0, max: 1, step: 0.01, default: 0 },
+      { key: "exposure", label: "Exposure", type: "range", min: -2, max: 2, step: 0.01, default: 0, description: "Exposure adjustment" },
+      { key: "contrast", label: "Contrast", type: "range", min: 0, max: 3, step: 0.01, default: 1, description: "Contrast multiplier" },
+      { key: "highlights", label: "Highlights", type: "range", min: -1, max: 1, step: 0.01, default: 0, description: "Highlight compression" },
+      { key: "fade", label: "Fade", type: "range", min: 0, max: 1, step: 0.01, default: 0, description: "Fade / lift blacks" },
+      { key: "white-balance", label: "White Balance", type: "range", min: 1000, max: 15000, step: 100, default: 6500, description: "Color temperature in Kelvin" },
+      { key: "tint", label: "Tint", type: "range", min: -100, max: 100, step: 1, default: 0, description: "Green-magenta tint" },
+      { key: "subtractive-sat", label: "Subtractive Saturation", type: "range", min: 0, max: 3, step: 0.01, default: 1, description: "Subtractive saturation" },
+      { key: "richness", label: "Richness", type: "range", min: 0, max: 3, step: 0.01, default: 1, description: "Color richness" },
+      { key: "bleach-bypass", label: "Bleach Bypass", type: "range", min: 0, max: 1, step: 0.01, default: 0, description: "Bleach bypass amount" },
     ],
   },
   {
@@ -62,11 +82,11 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
     label: "Halation",
     enableKey: "no-halation",
     options: [
-      { key: "halation-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0.25 },
-      { key: "halation-radius", label: "Radius", type: "range", min: 1, max: 100, step: 1, default: 4 },
-      { key: "halation-saturation", label: "Tint Strength", type: "range", min: 0, max: 1, step: 0.01, default: 1 },
-      { key: "halation-hue", label: "Hue", type: "range", min: 0, max: 1, step: 0.01, default: 0.04 },
-      { key: "halation-highlights-only", label: "Highlights Only", type: "boolean", default: true },
+      { key: "halation-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0.25, description: "Halation strength" },
+      { key: "halation-radius", label: "Radius", type: "range", min: 1, max: 100, step: 1, default: 4, description: "Blur radius" },
+      { key: "halation-saturation", label: "Tint Strength", type: "range", min: 0, max: 1, step: 0.01, default: 1, description: "Tint strength" },
+      { key: "halation-hue", label: "Hue", type: "range", min: 0, max: 1, step: 0.01, default: 0.04, description: "Tint hue 0-1 (~red-orange)" },
+      { key: "halation-highlights-only", label: "Highlights Only", type: "boolean", default: true, description: "Restrict to highlights" },
     ],
   },
   {
@@ -74,7 +94,7 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
     label: "Chromatic Aberration",
     enableKey: "no-aberration",
     options: [
-      { key: "aberration", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0.3 },
+      { key: "aberration", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0.3, description: "Aberration amount" },
     ],
   },
   {
@@ -82,8 +102,8 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
     label: "Bloom",
     enableKey: "no-bloom",
     options: [
-      { key: "bloom-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0.25 },
-      { key: "bloom-radius", label: "Radius", type: "range", min: 1, max: 100, step: 1, default: 10 },
+      { key: "bloom-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0.25, description: "Bloom strength" },
+      { key: "bloom-radius", label: "Radius", type: "range", min: 1, max: 100, step: 1, default: 10, description: "Bloom blur radius" },
     ],
   },
   {
@@ -91,11 +111,11 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
     label: "Grain",
     enableKey: "no-grain",
     options: [
-      { key: "grain-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.001, default: 0.125 },
-      { key: "grain-size", label: "Size", type: "range", min: 0, max: 5, step: 0.1, default: 0 },
-      { key: "grain-softness", label: "Softness", type: "range", min: 0, max: 1, step: 0.01, default: 0.1 },
-      { key: "grain-saturation", label: "Saturation", type: "range", min: 0, max: 1, step: 0.01, default: 0.3 },
-      { key: "grain-defocus", label: "Image Defocus", type: "range", min: 0, max: 5, step: 0.1, default: 1 },
+      { key: "grain-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.001, default: 0.125, description: "Grain intensity" },
+      { key: "grain-size", label: "Size", type: "range", min: 0, max: 5, step: 0.1, default: 0, description: "Grain particle size" },
+      { key: "grain-softness", label: "Softness", type: "range", min: 0, max: 1, step: 0.01, default: 0.1, description: "Grain softness" },
+      { key: "grain-saturation", label: "Saturation", type: "range", min: 0, max: 1, step: 0.01, default: 0.3, description: "Grain color saturation" },
+      { key: "grain-defocus", label: "Image Defocus", type: "range", min: 0, max: 5, step: 0.1, default: 1, description: "Image defocus amount" },
     ],
   },
   {
@@ -103,8 +123,8 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
     label: "Vignette",
     enableKey: "no-vignette",
     options: [
-      { key: "vignette-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0.25 },
-      { key: "vignette-size", label: "Size", type: "range", min: 0, max: 1, step: 0.01, default: 0.25 },
+      { key: "vignette-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0.25, description: "Vignette strength" },
+      { key: "vignette-size", label: "Size", type: "range", min: 0, max: 1, step: 0.01, default: 0.25, description: "Vignette size" },
     ],
   },
   {
@@ -112,11 +132,11 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
     label: "Split Tone",
     enableKey: "no-split-tone",
     options: [
-      { key: "split-tone-mode", label: "Mode", type: "select", choices: ["natural", "complementary"], default: "natural" },
-      { key: "split-tone-protect-neutrals", label: "Protect Neutrals", type: "boolean", default: false },
-      { key: "split-tone-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0 },
-      { key: "split-tone-hue", label: "Hue", type: "range", min: 0, max: 360, step: 1, default: 20 },
-      { key: "split-tone-pivot", label: "Pivot", type: "range", min: 0, max: 1, step: 0.01, default: 0.3 },
+      { key: "split-tone-mode", label: "Mode", type: "select", choices: ["natural", "complementary"], default: "natural", description: "Toning mode" },
+      { key: "split-tone-protect-neutrals", label: "Protect Neutrals", type: "boolean", default: false, description: "Protect neutral colors" },
+      { key: "split-tone-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0, description: "Toning amount" },
+      { key: "split-tone-hue", label: "Hue", type: "range", min: 0, max: 360, step: 1, default: 20, description: "Hue angle in degrees" },
+      { key: "split-tone-pivot", label: "Pivot", type: "range", min: 0, max: 1, step: 0.01, default: 0.3, description: "Shadow/highlight pivot" },
     ],
   },
   {
@@ -124,8 +144,8 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
     label: "Camera Shake",
     enableKey: "no-camera-shake",
     options: [
-      { key: "camera-shake-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0.25 },
-      { key: "camera-shake-rate", label: "Rate", type: "range", min: 0, max: 2, step: 0.01, default: 0.5 },
+      { key: "camera-shake-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0.25, description: "Shake intensity" },
+      { key: "camera-shake-rate", label: "Rate", type: "range", min: 0, max: 2, step: 0.01, default: 0.5, description: "Shake speed" },
     ],
   },
 ];

@@ -6,6 +6,7 @@ import type {
   BloomOptions, GrainOptions, VignetteOptions, SplitToneOptions, CameraShakeOptions,
   FilmOptions, OutputCodec, LicenseContext, InputLutOptions,
 } from "./types";
+import { getDefaults } from "./schema";
 
 export interface PresetData {
   [key: string]: string | number | boolean | undefined;
@@ -93,7 +94,10 @@ export function applyPreset(
   const namedRaw = name === "default" ? {} : loadPreset(name);
   const defaults = unwrapLookParams(defaultRaw);
   const named = name === "default" ? {} : unwrapLookParams(namedRaw);
-  const merged = { ...defaults, ...named, ...overrides };
+  // Schema defaults seed the merge so every exposed param is populated once,
+  // from a single source. Renderers (TS preview + Rust export) and the option
+  // builders below all read fully-populated params and need no inline fallbacks.
+  const merged = { ...getDefaults(), ...defaults, ...named, ...overrides };
 
   // A look may carry the input/pre-LUT as a top-level `preLut` string. Fold it
   // into the merged params so it flows through to the renderers like any option.
@@ -109,65 +113,65 @@ export function applyPreset(
 
   const colorSettings: ColorSettingsOptions = {
     enabled: merged["no-color-settings"] ? false : true,
-    exposure: Number(merged["exposure"] ?? 0),
-    contrast: Number(merged["contrast"] ?? 1),
-    highlights: Number(merged["highlights"] ?? 0),
-    fade: Number(merged["fade"] ?? 0),
-    whiteBalance: Number(merged["white-balance"] ?? 6500),
-    tint: Number(merged["tint"] ?? 0),
-    subtractiveSat: Number(merged["subtractive-sat"] ?? 1),
-    richness: Number(merged["richness"] ?? 1),
-    bleachBypass: Number(merged["bleach-bypass"] ?? 0),
+    exposure: Number(merged["exposure"]),
+    contrast: Number(merged["contrast"]),
+    highlights: Number(merged["highlights"]),
+    fade: Number(merged["fade"]),
+    whiteBalance: Number(merged["white-balance"]),
+    tint: Number(merged["tint"]),
+    subtractiveSat: Number(merged["subtractive-sat"]),
+    richness: Number(merged["richness"]),
+    bleachBypass: Number(merged["bleach-bypass"]),
   };
 
   const halation: HalationOptions = {
     enabled: merged["no-halation"] ? false : true,
-    amount: Number(merged["halation-amount"] ?? 0.25),
-    radius: Number(merged["halation-radius"] ?? 4),
-    saturation: Number(merged["halation-saturation"] ?? 1),
-    hue: Number(merged["halation-hue"] ?? 0.04),
-    highlightsOnly: Boolean(merged["halation-highlights-only"] ?? true),
+    amount: Number(merged["halation-amount"]),
+    radius: Number(merged["halation-radius"]),
+    saturation: Number(merged["halation-saturation"]),
+    hue: Number(merged["halation-hue"]),
+    highlightsOnly: Boolean(merged["halation-highlights-only"]),
   };
 
   const aberration: AberrationOptions = {
     enabled: merged["no-aberration"] ? false : true,
-    amount: Number(merged["aberration"] ?? 0.3),
+    amount: Number(merged["aberration"]),
   };
 
   const bloom: BloomOptions = {
     enabled: merged["no-bloom"] ? false : true,
-    amount: Number(merged["bloom-amount"] ?? 0.25),
-    radius: Number(merged["bloom-radius"] ?? 10),
+    amount: Number(merged["bloom-amount"]),
+    radius: Number(merged["bloom-radius"]),
   };
 
   const grain: GrainOptions = {
     enabled: merged["no-grain"] ? false : true,
-    amount: Number(merged["grain-amount"] ?? 0.125),
-    size: Number(merged["grain-size"] ?? 0),
-    softness: Number(merged["grain-softness"] ?? 0.1),
-    saturation: Number(merged["grain-saturation"] ?? 0.3),
-    imageDefocus: Number(merged["grain-defocus"] ?? 1),
+    amount: Number(merged["grain-amount"]),
+    size: Number(merged["grain-size"]),
+    softness: Number(merged["grain-softness"]),
+    saturation: Number(merged["grain-saturation"]),
+    imageDefocus: Number(merged["grain-defocus"]),
   };
 
   const vignette: VignetteOptions = {
     enabled: merged["no-vignette"] ? false : true,
-    amount: Number(merged["vignette-amount"] ?? 0.25),
-    size: Number(merged["vignette-size"] ?? 0.25),
+    amount: Number(merged["vignette-amount"]),
+    size: Number(merged["vignette-size"]),
   };
 
   const splitTone: SplitToneOptions = {
     enabled: merged["no-split-tone"] ? false : true,
-    mode: (merged["split-tone-mode"] as SplitToneOptions["mode"]) ?? "natural",
-    protectNeutrals: Boolean(merged["split-tone-protect-neutrals"] ?? false),
-    amount: Number(merged["split-tone-amount"] ?? 0),
-    hueAngle: Number(merged["split-tone-hue"] ?? 20),
-    pivot: Number(merged["split-tone-pivot"] ?? 0.3),
+    mode: merged["split-tone-mode"] as SplitToneOptions["mode"],
+    protectNeutrals: Boolean(merged["split-tone-protect-neutrals"]),
+    amount: Number(merged["split-tone-amount"]),
+    hueAngle: Number(merged["split-tone-hue"]),
+    pivot: Number(merged["split-tone-pivot"]),
   };
 
   const cameraShake: CameraShakeOptions = {
     enabled: merged["no-camera-shake"] ? false : true,
-    amount: Number(merged["camera-shake-amount"] ?? 0.25),
-    rate: Number(merged["camera-shake-rate"] ?? 0.5),
+    amount: Number(merged["camera-shake-amount"]),
+    rate: Number(merged["camera-shake-rate"]),
   };
 
   const encodePreset = (merged["encode-preset"] as EffectOptions["encodePreset"]) ?? "medium";
