@@ -24,14 +24,15 @@ The sidecar communicates with the Bun CLI over stdin/stdout using a length-prefi
 
 Every file passes through the same effect chain:
 
-1. Color grading (exposure, contrast, white balance, saturation, fade)
-2. Halation (highlight glow)
-3. Chromatic aberration (lens fringing)
-4. Bloom (soft light diffusion)
-5. Film grain
-6. Vignette
-7. Split toning
-8. Camera shake
+1. Input LUT (log → Rec.709 conversion, e.g. V-Log — skipped unless set)
+2. Color grading (exposure, contrast, white balance, saturation, fade)
+3. Halation (highlight glow)
+4. Chromatic aberration (lens fringing)
+5. Bloom (soft light diffusion)
+6. Film grain
+7. Vignette
+8. Split toning
+9. Camera shake
 
 The optical effects — halation, chromatic aberration, bloom, grain, and vignette — run in **linear light** (the chain is bracketed by sRGB↔linear conversions, with 16-bit float intermediates) so glows and blurs spread physically correct energy. Color grading, split toning, and camera shake stay in perceptual (gamma) space.
 

@@ -5,6 +5,17 @@ description: All effect parameters and their defaults.
 
 Every effect is enabled by default and can be disabled with `--no-<effect>`. Parameters can be overridden individually.
 
+## Input LUT
+
+A pre-grade LUT applied as the very first pass, before color grading. Use it to convert flat log footage to Rec.709 so the rest of the chain works on a normal (un-flattened) image.
+
+| Flag | Values | Default | Description |
+|------|--------|---------|-------------|
+| `--input-lut` | `rec709`, `vlog` | `rec709` | Input color profile |
+| `--vlog` | boolean | off | Shorthand for `--input-lut vlog` (Panasonic V-Log) |
+
+`rec709` is a pass-through and adds no processing. Disable explicitly with `--no-input-lut`.
+
 ## Color settings
 
 Control the base color grade applied before any optical effects.
