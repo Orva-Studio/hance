@@ -1,0 +1,4 @@
+{
+  "halationThreshold": [0.65, 0.75],
+  "blurSigmaFactor": 0.5
+}

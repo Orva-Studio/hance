@@ -1,6 +1,7 @@
 mod colorspace;
 mod params;
 mod passes;
+mod render_constants;
 mod renderer;
 
 use std::io::{self, Read, Write};

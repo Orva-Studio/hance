@@ -18,6 +18,7 @@ import { ViewModeToolbar, type ViewMode } from "./components/ViewModeToolbar";
 import { CompareOverlay } from "./components/CompareOverlay";
 import type { Renderer, PreviewParams } from "./gpu/renderer";
 import type { EffectGroup } from "@hance/core";
+import { getDefaults } from "@hance/core";
 import { consumeSSE } from "./lib/sse";
 import { fetchJson } from "./lib/fetchJson";
 
@@ -165,7 +166,9 @@ export function App() {
         ]);
         setLicenseTier(licenseData.tier);
         setSchema(groups);
-        const disableAll: Record<string, boolean> = {};
+        // Seed schema defaults so enabling an effect renders at its default
+        // value (single defaults source), then switch every effect off.
+        const disableAll: PreviewParams = { ...getDefaults() };
         for (const group of groups) {
           disableAll[group.enableKey] = true;
         }
@@ -224,7 +227,7 @@ export function App() {
   const handleNoLook = useCallback(() => {
     clearLook();
     setAnimating(true);
-    const disableAll: Record<string, boolean> = {};
+    const disableAll: PreviewParams = { ...getDefaults() };
     for (const group of schema) {
       disableAll[group.enableKey] = true;
     }
