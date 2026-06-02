@@ -159,3 +159,24 @@ export function getDefaults(): Record<string, string | number | boolean> {
   }
   return defaults;
 }
+
+/**
+ * Seed schema defaults under successive override layers. This is the single
+ * place the "every exposed param is populated" invariant lives — `applyPreset`,
+ * the UI server's `/api/look`, and the App's initial state all funnel through
+ * here so the renderers (TS preview + Rust export) can drop their inline
+ * fallbacks. Later layers win; an explicit `undefined` in a layer is ignored so
+ * a sparse look can never clobber a default back to undefined → NaN.
+ */
+export function seedDefaults(
+  ...layers: Array<Record<string, string | number | boolean | undefined> | undefined>
+): Record<string, string | number | boolean> {
+  const result = getDefaults();
+  for (const layer of layers) {
+    if (!layer) continue;
+    for (const [key, value] of Object.entries(layer)) {
+      if (value !== undefined) result[key] = value;
+    }
+  }
+  return result;
+}
