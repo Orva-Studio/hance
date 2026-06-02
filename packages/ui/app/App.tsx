@@ -518,7 +518,7 @@ export function App() {
                 This codec isn't supported by the browser preview.
               </div>
               <div className="text-xs text-zinc-500">
-                Transcode to H.264 for preview. Export will still use the original file.
+                Transcode to H.264 for preview (capped at 720p/30fps). Export will still use the original file.
               </div>
               {proxyState === "idle" && (
                 <button
