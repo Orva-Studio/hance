@@ -60,6 +60,8 @@ function createLutLayout(device: GPUDevice): GPUBindGroupLayout {
 }
 
 // JS has no native f16; convert a float to its IEEE-754 half-precision bits.
+// Inputs here are LUT values clamped to [0,1], so the Inf/NaN (e > 142) path is
+// unreachable and intentionally omitted — do not reuse this for arbitrary floats.
 const f32buf = new Float32Array(1);
 const u32buf = new Uint32Array(f32buf.buffer);
 function floatToHalf(val: number): number {
@@ -69,11 +71,6 @@ function floatToHalf(val: number): number {
   let m = (x >> 12) & 0x07ff;
   const e = (x >> 23) & 0xff;
   if (e < 103) return bits;
-  if (e > 142) {
-    bits |= 0x7c00;
-    bits |= (e === 255 ? 0 : 1) && x & 0x007fffff;
-    return bits;
-  }
   if (e < 113) {
     m |= 0x0800;
     bits |= (m >> (114 - e)) + ((m >> (113 - e)) & 1);

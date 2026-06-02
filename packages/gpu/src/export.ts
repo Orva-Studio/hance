@@ -147,10 +147,18 @@ export async function runGpuExport(
 
   const pipeline = `set -o pipefail; ${decoderCmd} | ${sidecarCmd} | ${encoderCmd}`;
 
-  const proc = Bun.spawn(["sh", "-c", pipeline], {
-    stdout: "inherit",
-    stderr: "inherit",
-  });
+  let proc: ReturnType<typeof Bun.spawn>;
+  try {
+    proc = Bun.spawn(["sh", "-c", pipeline], {
+      stdout: "inherit",
+      stderr: "inherit",
+    });
+  } catch (err) {
+    // Spawn failed before the cleanup block below runs; don't leak temp files.
+    try { await unlink(progressPath); } catch {}
+    try { await unlink(initPath); } catch {}
+    throw err;
+  }
 
   let stopPolling = false;
   const pollProgress = (async () => {

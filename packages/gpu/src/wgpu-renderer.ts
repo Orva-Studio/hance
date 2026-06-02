@@ -45,11 +45,18 @@ export async function createHeadlessRenderer(): Promise<HeadlessRenderer> {
     // temp file (the sidecar reads a file path that isn't inline JSON).
     initPath = join(tmpdir(), `hance-init-${process.pid}-${Date.now()}.json`);
     await Bun.write(initPath, initJson);
-    proc = Bun.spawn([sidecarPath(), initPath], {
-      stdin: "pipe",
-      stdout: "pipe",
-      stderr: "inherit",
-    });
+    try {
+      proc = Bun.spawn([sidecarPath(), initPath], {
+        stdin: "pipe",
+        stdout: "pipe",
+        stderr: "inherit",
+      });
+    } catch (err) {
+      // Spawn failed before close() can run; don't leak the temp init file.
+      try { await unlink(initPath); } catch {}
+      initPath = null;
+      throw err;
+    }
 
     reader = proc.stdout.getReader();
   }
