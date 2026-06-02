@@ -34,6 +34,14 @@ export interface EffectGroup {
 
 export const EFFECT_SCHEMA: EffectGroup[] = [
   {
+    key: "inputLut",
+    label: "Input LUT",
+    enableKey: "no-input-lut",
+    options: [
+      { key: "input-lut-profile", label: "Profile", type: "select", choices: ["rec709", "vlog"], default: "rec709" },
+    ],
+  },
+  {
     key: "colorSettings",
     label: "Color Settings",
     enableKey: "no-color-settings",

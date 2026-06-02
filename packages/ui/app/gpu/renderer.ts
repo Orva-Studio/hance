@@ -1,11 +1,12 @@
 import {
   FULLSCREEN_VERT, COLOR_SETTINGS_FRAG, THRESHOLD_FRAG, BLUR_FRAG,
   SCREEN_BLEND_FRAG, ABERRATION_FRAG, GRAIN_FRAG, VIGNETTE_FRAG,
-  SPLIT_TONE_FRAG, CAMERA_SHAKE_FRAG, COLORSPACE_FRAG,
+  SPLIT_TONE_FRAG, CAMERA_SHAKE_FRAG, COLORSPACE_FRAG, LUT_FRAG,
 } from "./shaders";
 import { createFullscreenPipeline, createTexture, runPass } from "./passes";
 import { getSplitToneTintValues } from "./splitToneMath";
 import { isLightGroupActive } from "./lightGroup";
+import { LUT_SIZE, generateLut, isInputLutActive } from "@hance/core";
 
 export interface PreviewParams {
   [key: string]: string | number | boolean;
@@ -48,6 +49,68 @@ function createBlendLayout(device: GPUDevice): GPUBindGroupLayout {
   });
 }
 
+function createLutLayout(device: GPUDevice): GPUBindGroupLayout {
+  return device.createBindGroupLayout({
+    entries: [
+      { binding: 0, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+      { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+      { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: "3d" } },
+    ],
+  });
+}
+
+// JS has no native f16; convert a float to its IEEE-754 half-precision bits.
+const f32buf = new Float32Array(1);
+const u32buf = new Uint32Array(f32buf.buffer);
+function floatToHalf(val: number): number {
+  f32buf[0] = val;
+  const x = u32buf[0];
+  let bits = (x >> 16) & 0x8000;
+  let m = (x >> 12) & 0x07ff;
+  const e = (x >> 23) & 0xff;
+  if (e < 103) return bits;
+  if (e > 142) {
+    bits |= 0x7c00;
+    bits |= (e === 255 ? 0 : 1) && x & 0x007fffff;
+    return bits;
+  }
+  if (e < 113) {
+    m |= 0x0800;
+    bits |= (m >> (114 - e)) + ((m >> (113 - e)) & 1);
+    return bits;
+  }
+  bits |= ((e - 112) << 10) | (m >> 1);
+  bits += m & 1;
+  return bits;
+}
+
+// Build a 33^3 rgba16float 3D LUT texture from the baked core array (alpha = 1).
+function createLutTexture(device: GPUDevice): GPUTexture {
+  const n = LUT_SIZE;
+  const rgb = generateLut("vlog");
+  const texels = new Uint16Array(n * n * n * 4);
+  const one = floatToHalf(1.0);
+  for (let i = 0, o = 0; i < rgb.length; i += 3) {
+    texels[o++] = floatToHalf(rgb[i]);
+    texels[o++] = floatToHalf(rgb[i + 1]);
+    texels[o++] = floatToHalf(rgb[i + 2]);
+    texels[o++] = one;
+  }
+  const tex = device.createTexture({
+    size: { width: n, height: n, depthOrArrayLayers: n },
+    dimension: "3d",
+    format: "rgba16float",
+    usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+  });
+  device.queue.writeTexture(
+    { texture: tex },
+    texels.buffer,
+    { bytesPerRow: n * 4 * 2, rowsPerImage: n },
+    { width: n, height: n, depthOrArrayLayers: n },
+  );
+  return tex;
+}
+
 function alignTo16(n: number): number {
   return Math.ceil(n / 16) * 16;
 }
@@ -75,6 +138,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const sampler = device.createSampler({ magFilter: "linear", minFilter: "linear" });
   const stdLayout = createStandardLayout(device);
   const blendLayout = createBlendLayout(device);
+  const lutLayout = createLutLayout(device);
 
   const halfW = Math.max(1, Math.floor(previewWidth / 2));
   const halfH = Math.max(1, Math.floor(previewHeight / 2));
@@ -109,8 +173,13 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const splitTonePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, SPLIT_TONE_FRAG, stdLayout, INTERMEDIATE_FORMAT);
   const shakePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, CAMERA_SHAKE_FRAG, stdLayout, INTERMEDIATE_FORMAT);
   const colorspacePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, COLORSPACE_FRAG, stdLayout, INTERMEDIATE_FORMAT);
+  const lutPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, LUT_FRAG, lutLayout, INTERMEDIATE_FORMAT);
   // Blit reads a 16float intermediate and writes the 8-bit output/canvas format.
   const blitPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, COLOR_SETTINGS_FRAG, stdLayout, format);
+
+  // The pre-LUT only has one non-identity profile (vlog); build it once.
+  const lutTex = createLutTexture(device);
+  const lutView = lutTex.createView({ dimension: "3d" });
 
   const colorUB = createUniformBuffer(device, 32); // 8 floats
   const blitUB = createUniformBuffer(device, 32); // identity color pass for final blit
@@ -146,6 +215,17 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
         { binding: 0, resource: inputTex.createView() },
         { binding: 1, resource: sampler },
         { binding: 2, resource: { buffer: ub } },
+      ],
+    });
+  }
+
+  function makeLutBindGroup(inputTex: GPUTexture): GPUBindGroup {
+    return device.createBindGroup({
+      layout: lutLayout,
+      entries: [
+        { binding: 0, resource: inputTex.createView() },
+        { binding: 1, resource: sampler },
+        { binding: 2, resource: lutView },
       ],
     });
   }
@@ -219,6 +299,17 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
       other = tmp;
     }
 
+    // --- Input/pre-LUT (first pass, srcTex -> texA) ---
+    // Skipped entirely when identity/disabled so the frame passes through.
+    let colorInput = srcTex;
+    if (isInputLutActive(params)) {
+      runPass(encoder, lutPipeline, makeLutBindGroup(srcTex), texA.createView());
+      colorInput = texA;
+      // Color must write somewhere other than its texA input.
+      current = texB;
+      other = texA;
+    }
+
     if (params["no-color-settings"] !== true) {
       const fade = num("fade", 0);
       const contrast = num("contrast", 1) * (1 - fade);
@@ -229,10 +320,10 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
       const tint = num("tint", 0) / 100;
       const bleach = num("bleach-bypass", 0);
       device.queue.writeBuffer(colorUB, 0, new Float32Array([contrast, brightness, saturation, gamma, wb, tint, bleach, 0]));
-      const bg = makeStdBindGroup(srcTex, colorUB);
+      const bg = makeStdBindGroup(colorInput, colorUB);
       runPass(encoder, colorPipeline, bg, current.createView());
     } else {
-      const bg = makeStdBindGroup(srcTex, colorUB);
+      const bg = makeStdBindGroup(colorInput, colorUB);
       device.queue.writeBuffer(colorUB, 0, new Float32Array([1, 0, 1, 1, 6500, 0, 0, 0]));
       runPass(encoder, colorPipeline, bg, current.createView());
     }
@@ -501,6 +592,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
       halfB.destroy();
       outputTex.destroy();
       srcTex.destroy();
+      lutTex.destroy();
       device.destroy();
     },
   };

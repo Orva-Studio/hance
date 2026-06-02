@@ -6,6 +6,10 @@ pub struct InitMessage {
     pub width: u32,
     pub height: u32,
     pub params: HashMap<String, serde_json::Value>,
+    // Baked input/pre-LUT (33^3 * 3 floats, RGB-major, R fastest). None when the
+    // pre-LUT is identity (rec709) or disabled — the pass is skipped entirely.
+    #[serde(default)]
+    pub lut: Option<Vec<f32>>,
 }
 
 pub struct Params {

@@ -2,8 +2,14 @@ export type {
   ColorSettingsOptions, HalationOptions, AberrationOptions,
   BloomOptions, GrainOptions, VignetteOptions, SplitToneOptions,
   CameraShakeOptions, FilmOptions, OutputCodec, ProbeResult,
-  ExportPreset, PixelFormat, LicenseContext,
+  ExportPreset, PixelFormat, LicenseContext, InputLutOptions,
 } from "./types";
+
+export type { InputLutProfile } from "./lut-profiles";
+export {
+  LUT_SIZE, generateLut, vlogToRec709,
+  inputLutProfile, isInputLutActive, lutDataForParams,
+} from "./lut-profiles";
 
 export type { ExportPresetSettings } from "./export-presets";
 export { EXPORT_PRESETS, resolveExportPreset, requireCodecLicense } from "./export-presets";

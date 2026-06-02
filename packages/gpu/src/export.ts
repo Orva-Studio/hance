@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { unlink } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import type { ProbeResult, OutputCodec, PixelFormat } from "@hance/core";
-import { parseProgress } from "@hance/core";
+import { parseProgress, lutDataForParams } from "@hance/core";
 import { sidecarPath } from "./sidecar-path";
 
 export interface EncoderSettings {
@@ -122,7 +122,14 @@ export async function runGpuExport(
   }
 
   const progressPath = join(tmpdir(), `hance-progress-${process.pid}-${Date.now()}.log`);
-  const initJson = JSON.stringify({ width, height, params });
+  // Ship the baked pre-LUT array (null when identity/disabled) so the sidecar
+  // applies the exact same bytes as the preview — no re-derivation in Rust.
+  const lut = lutDataForParams(params as Record<string, string | number | boolean>);
+  const initJson = JSON.stringify({ width, height, params, lut });
+  // The baked LUT can push init JSON past the OS argv limit, so pass it via a
+  // temp file (the sidecar reads a file path that isn't inline JSON).
+  const initPath = join(tmpdir(), `hance-init-${process.pid}-${Date.now()}.json`);
+  await Bun.write(initPath, initJson);
 
   const decoderCmd = [
     "ffmpeg", "-i", shellEscape(input),
@@ -131,7 +138,7 @@ export async function runGpuExport(
     "pipe:1",
   ].join(" ");
 
-  const sidecarCmd = `${shellEscape(sidecar)} ${shellEscape(initJson)}`;
+  const sidecarCmd = `${shellEscape(sidecar)} ${shellEscape(initPath)}`;
 
   const settings = encoderSettings ?? { codec: "h264", crf: 18, encodePreset: "medium", pixelFormat: "yuv420p" };
   const encoders = await detectEncoders();
@@ -176,5 +183,6 @@ export async function runGpuExport(
   } finally {
     stopPolling = true;
     try { await unlink(progressPath); } catch {}
+    try { await unlink(initPath); } catch {}
   }
 }
