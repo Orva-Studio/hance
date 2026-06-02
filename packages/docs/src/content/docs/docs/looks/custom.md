@@ -30,6 +30,22 @@ A `.hlook` file is a JSON file containing effect parameters:
 
 Only include parameters you want to change from the default. Anything omitted falls back to the default look.
 
+### Input LUT
+
+A look can also carry an input LUT via a top-level `preLut` field (a sibling of `params`, not inside it). This applies a pre-grade conversion before the look's other effects:
+
+```json
+{
+  "name": "V-Log Base",
+  "preLut": "vlog",
+  "params": {
+    "contrast": 1.05
+  }
+}
+```
+
+Accepted values are `rec709` (default, pass-through) and `vlog` (Panasonic V-Log → Rec.709).
+
 ## Where to put looks
 
 Hance searches for looks in two directories:
