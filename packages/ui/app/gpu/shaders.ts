@@ -10,9 +10,11 @@ import VIGNETTE_FRAG from "../../../core/shaders/vignette.frag.wgsl";
 import SPLIT_TONE_FRAG from "../../../core/shaders/split-tone.frag.wgsl";
 import CAMERA_SHAKE_FRAG from "../../../core/shaders/camera-shake.frag.wgsl";
 import COLORSPACE_FRAG from "../../../core/shaders/colorspace.frag.wgsl";
+import LUT_FRAG from "../../../core/shaders/lut.frag.wgsl";
 
 export {
   FULLSCREEN_VERT,
+  LUT_FRAG,
   COLOR_SETTINGS_FRAG,
   THRESHOLD_FRAG,
   BLUR_FRAG,

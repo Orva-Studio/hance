@@ -54,4 +54,23 @@ describe("parseEffectFlags", () => {
     expect(() => parseEffectFlags(["--export", "ultra"])).toThrow(/--export/);
     expect(() => parseEffectFlags(["--encode-preset", "turbo"])).toThrow(/--encode-preset/);
   });
+
+  it("parses --input-lut vlog", () => {
+    const r = parseEffectFlags(["--input-lut", "vlog"]);
+    expect(r.overrides["input-lut-profile"]).toBe("vlog");
+  });
+
+  it("parses --vlog as sugar for --input-lut vlog", () => {
+    const r = parseEffectFlags(["--vlog"]);
+    expect(r.overrides["input-lut-profile"]).toBe("vlog");
+  });
+
+  it("parses --no-input-lut", () => {
+    const r = parseEffectFlags(["--no-input-lut"]);
+    expect(r.overrides["no-input-lut"]).toBe(true);
+  });
+
+  it("rejects an invalid --input-lut profile", () => {
+    expect(() => parseEffectFlags(["--input-lut", "slog3"])).toThrow(/--input-lut/);
+  });
 });

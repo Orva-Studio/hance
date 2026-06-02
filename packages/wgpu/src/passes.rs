@@ -34,6 +34,58 @@ pub fn create_standard_bind_group_layout(device: &Device) -> BindGroupLayout {
     })
 }
 
+pub fn create_lut_bind_group_layout(device: &Device) -> BindGroupLayout {
+    device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+        label: Some("lut_layout"),
+        entries: &[
+            BindGroupLayoutEntry {
+                binding: 0,
+                visibility: ShaderStages::FRAGMENT,
+                ty: BindingType::Texture {
+                    sample_type: TextureSampleType::Float { filterable: true },
+                    view_dimension: TextureViewDimension::D2,
+                    multisampled: false,
+                },
+                count: None,
+            },
+            BindGroupLayoutEntry {
+                binding: 1,
+                visibility: ShaderStages::FRAGMENT,
+                ty: BindingType::Sampler(SamplerBindingType::Filtering),
+                count: None,
+            },
+            BindGroupLayoutEntry {
+                binding: 2,
+                visibility: ShaderStages::FRAGMENT,
+                ty: BindingType::Texture {
+                    sample_type: TextureSampleType::Float { filterable: true },
+                    view_dimension: TextureViewDimension::D3,
+                    multisampled: false,
+                },
+                count: None,
+            },
+        ],
+    })
+}
+
+pub fn make_lut_bind_group(
+    device: &Device,
+    layout: &BindGroupLayout,
+    input: &TextureView,
+    sampler: &Sampler,
+    lut: &TextureView,
+) -> BindGroup {
+    device.create_bind_group(&BindGroupDescriptor {
+        label: None,
+        layout,
+        entries: &[
+            BindGroupEntry { binding: 0, resource: BindingResource::TextureView(input) },
+            BindGroupEntry { binding: 1, resource: BindingResource::Sampler(sampler) },
+            BindGroupEntry { binding: 2, resource: BindingResource::TextureView(lut) },
+        ],
+    })
+}
+
 pub fn create_blend_bind_group_layout(device: &Device) -> BindGroupLayout {
     device.create_bind_group_layout(&BindGroupLayoutDescriptor {
         label: Some("blend_layout"),

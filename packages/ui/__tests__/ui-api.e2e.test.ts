@@ -13,7 +13,7 @@ describe("UI API e2e", () => {
     const data = await res.json();
     expect(Array.isArray(data)).toBe(true);
     expect(data.length).toBeGreaterThanOrEqual(8);
-    expect(data[0].key).toBe("colorSettings");
+    expect(data[0].key).toBe("inputLut");
   });
 
   test("GET /api/looks lists built-in looks", async () => {

@@ -1,3 +1,8 @@
+export interface InputLutOptions {
+  enabled: boolean;
+  profile: "rec709" | "vlog";
+}
+
 export interface ColorSettingsOptions {
   enabled: boolean;
   exposure: number;
@@ -69,6 +74,7 @@ export interface FilmOptions {
   crf: number;
   blend: number;
   pixelFormat: PixelFormat;
+  inputLut: InputLutOptions;
   colorSettings: ColorSettingsOptions;
   halation: HalationOptions;
   aberration: AberrationOptions;

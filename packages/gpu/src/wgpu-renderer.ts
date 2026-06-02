@@ -1,3 +1,7 @@
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { unlink } from "node:fs/promises";
+import { lutDataForParams } from "@hance/core";
 import { sidecarPath } from "./sidecar-path";
 
 export interface HeadlessRenderer {
@@ -13,6 +17,7 @@ export interface HeadlessRenderer {
 
 export async function createHeadlessRenderer(): Promise<HeadlessRenderer> {
   let proc: ReturnType<typeof Bun.spawn> | null = null;
+  let initPath: string | null = null;
   let frameSize = 0;
   let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
   let readBuffer = new Uint8Array(0);
@@ -34,8 +39,13 @@ export async function createHeadlessRenderer(): Promise<HeadlessRenderer> {
   async function init(width: number, height: number, params: Record<string, unknown> = {}): Promise<void> {
     frameSize = width * height * 4;
 
-    const initJson = JSON.stringify({ width, height, params });
-    proc = Bun.spawn([sidecarPath(), initJson], {
+    const lut = lutDataForParams(params as Record<string, string | number | boolean>);
+    const initJson = JSON.stringify({ width, height, params, lut });
+    // The baked LUT can push init JSON past the OS argv limit, so pass it via a
+    // temp file (the sidecar reads a file path that isn't inline JSON).
+    initPath = join(tmpdir(), `hance-init-${process.pid}-${Date.now()}.json`);
+    await Bun.write(initPath, initJson);
+    proc = Bun.spawn([sidecarPath(), initPath], {
       stdin: "pipe",
       stdout: "pipe",
       stderr: "inherit",
@@ -63,6 +73,10 @@ export async function createHeadlessRenderer(): Promise<HeadlessRenderer> {
       await proc.exited;
       proc = null;
       reader = null;
+    }
+    if (initPath) {
+      try { await unlink(initPath); } catch {}
+      initPath = null;
     }
   }
 

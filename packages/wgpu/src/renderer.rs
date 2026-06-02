@@ -16,6 +16,9 @@ const SPLIT_TONE_FRAG: &str = include_str!("../../core/shaders/split-tone.frag.w
 const SHAKE_FRAG: &str = include_str!("../../core/shaders/camera-shake.frag.wgsl");
 
 const COLORSPACE_FRAG: &str = include_str!("../../core/shaders/colorspace.frag.wgsl");
+const LUT_FRAG: &str = include_str!("../../core/shaders/lut.frag.wgsl");
+
+const LUT_N: u32 = 33;
 
 const INTERMEDIATE_FORMAT: TextureFormat = TextureFormat::Rgba16Float;
 const OUTPUT_FORMAT: TextureFormat = TextureFormat::Rgba8Unorm;
@@ -39,7 +42,12 @@ pub struct GpuRenderer {
     // Layouts
     std_layout: BindGroupLayout,
     blend_layout: BindGroupLayout,
+    lut_layout: BindGroupLayout,
     sampler: Sampler,
+
+    // Input/pre-LUT (None = identity/disabled, pass skipped)
+    lut_pipeline: RenderPipeline,
+    lut_tex: Option<Texture>,
 
     // Pipelines
     color_pipeline: RenderPipeline,
@@ -77,7 +85,7 @@ pub struct GpuRenderer {
 }
 
 impl GpuRenderer {
-    pub fn new(width: u32, height: u32, raw_params: &HashMap<String, serde_json::Value>) -> Result<Self, String> {
+    pub fn new(width: u32, height: u32, raw_params: &HashMap<String, serde_json::Value>, lut: Option<&[f32]>) -> Result<Self, String> {
         let instance = Instance::new(&InstanceDescriptor {
             backends: Backends::all(),
             ..Default::default()
@@ -103,6 +111,7 @@ impl GpuRenderer {
 
         let std_layout = passes::create_standard_bind_group_layout(&device);
         let blend_layout = passes::create_blend_bind_group_layout(&device);
+        let lut_layout = passes::create_lut_bind_group_layout(&device);
 
         let half_w = (width / 2).max(1);
         let half_h = (height / 2).max(1);
@@ -135,6 +144,46 @@ impl GpuRenderer {
         let shake_pipeline = passes::create_pipeline(&device, VERT, SHAKE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
         let colorspace_pipeline = passes::create_pipeline(&device, VERT, COLORSPACE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
         let blit_pipeline = passes::create_pipeline(&device, VERT, COLOR_FRAG, &std_layout, OUTPUT_FORMAT);
+        let lut_pipeline = passes::create_pipeline(&device, VERT, LUT_FRAG, &lut_layout, INTERMEDIATE_FORMAT);
+
+        // Upload the baked LUT as a 33^3 rgba16float 3D texture (alpha = 1).
+        let lut_tex = lut.map(|data| {
+            let n = LUT_N as usize;
+            let mut texels: Vec<u8> = Vec::with_capacity(n * n * n * 4 * 2);
+            let one = half::f16::from_f32(1.0).to_le_bytes();
+            for px in data.chunks_exact(3) {
+                for &c in px {
+                    texels.extend_from_slice(&half::f16::from_f32(c).to_le_bytes());
+                }
+                texels.extend_from_slice(&one);
+            }
+            let tex = device.create_texture(&TextureDescriptor {
+                label: Some("input-lut"),
+                size: Extent3d { width: LUT_N, height: LUT_N, depth_or_array_layers: LUT_N },
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: TextureDimension::D3,
+                format: TextureFormat::Rgba16Float,
+                usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
+                view_formats: &[],
+            });
+            queue.write_texture(
+                TexelCopyTextureInfo {
+                    texture: &tex,
+                    mip_level: 0,
+                    origin: Origin3d::ZERO,
+                    aspect: TextureAspect::All,
+                },
+                &texels,
+                TexelCopyBufferLayout {
+                    offset: 0,
+                    bytes_per_row: Some(LUT_N * 4 * 2),
+                    rows_per_image: Some(LUT_N),
+                },
+                Extent3d { width: LUT_N, height: LUT_N, depth_or_array_layers: LUT_N },
+            );
+            tex
+        });
 
         let color_ub = passes::create_uniform_buffer(&device, 32);
         let threshold_ub = passes::create_uniform_buffer(&device, 16);
@@ -179,7 +228,10 @@ impl GpuRenderer {
             output_tex,
             std_layout,
             blend_layout,
+            lut_layout,
             sampler,
+            lut_pipeline,
+            lut_tex,
             color_pipeline,
             threshold_pipeline,
             blur_pipeline,
@@ -246,6 +298,28 @@ impl GpuRenderer {
         let half_w = (self.width / 2).max(1);
         let half_h = (self.height / 2).max(1);
 
+        // --- Input/pre-LUT (first pass, src_tex -> tex_a) ---
+        // Skipped entirely when identity/disabled (lut_tex is None) so the frame
+        // passes through untouched. When active, Color Settings reads tex_a.
+        let color_input = if let Some(lut_tex) = &self.lut_tex {
+            let lut_view = lut_tex.create_view(&TextureViewDescriptor {
+                dimension: Some(TextureViewDimension::D3),
+                ..Default::default()
+            });
+            let bg = passes::make_lut_bind_group(
+                &self.device, &self.lut_layout,
+                &self.src_tex.create_view(&TextureViewDescriptor::default()),
+                &self.sampler, &lut_view,
+            );
+            passes::run_pass(&mut encoder, &self.lut_pipeline, &bg,
+                &self.tex_a.create_view(&TextureViewDescriptor::default()));
+            // Color must write somewhere other than its tex_a input.
+            current_is_b = true;
+            self.tex_a.create_view(&TextureViewDescriptor::default())
+        } else {
+            self.src_tex.create_view(&TextureViewDescriptor::default())
+        };
+
         // --- Color Settings ---
         if !self.params.bool("no-color-settings", false) {
             self.write_uniform(&self.color_ub, &self.params.color_settings_uniform());
@@ -254,7 +328,7 @@ impl GpuRenderer {
         }
         let bg = passes::make_std_bind_group(
             &self.device, &self.std_layout,
-            &self.src_tex.create_view(&TextureViewDescriptor::default()),
+            &color_input,
             &self.sampler, &self.color_ub,
         );
         passes::run_pass(&mut encoder, &self.color_pipeline, &bg,

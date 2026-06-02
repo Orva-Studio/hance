@@ -1,6 +1,11 @@
 import type { PresetData, OutputCodec, ExportPreset } from "@hance/core";
 
 export const EFFECT_HELP_TEXT = `\
+  Input LUT:
+  --input-lut  <rec709|vlog>  Pre-LUT applied before grading (default: rec709)
+  --vlog                      Sugar for --input-lut vlog (Panasonic V-Log)
+  --no-input-lut              Disable the input LUT
+
   Color Settings:
   --exposure          <-2 to 2>     Exposure adjustment (default: 0)
   --contrast          <0-3>         Contrast multiplier (default: 1)
@@ -58,6 +63,7 @@ export const EFFECT_HELP_TEXT = `\
 
 const KNOWN_FLAGS = new Set([
   "--output", "-o", "--preset", "--codec", "--encode-preset", "--crf", "--blend", "--export",
+  "--input-lut", "--vlog", "--no-input-lut",
   "--exposure", "--contrast", "--highlights", "--fade",
   "--white-balance", "--tint", "--subtractive-sat", "--richness", "--bleach-bypass",
   "--no-color-settings",
@@ -76,6 +82,7 @@ const KNOWN_FLAGS = new Set([
 ]);
 
 const BOOLEAN_FLAGS = new Set([
+  "--no-input-lut", "--vlog",
   "--no-color-settings", "--no-halation", "--no-aberration", "--no-bloom",
   "--no-grain", "--no-vignette", "--no-split-tone", "--no-camera-shake",
   "--no-config",
@@ -122,6 +129,8 @@ export function parseEffectFlags(argv: string[]): ParsedEffectFlags {
 
     if (BOOLEAN_FLAGS.has(arg)) {
       switch (arg) {
+        case "--no-input-lut": overrides["no-input-lut"] = true; break;
+        case "--vlog": overrides["input-lut-profile"] = "vlog"; break;
         case "--no-color-settings": overrides["no-color-settings"] = true; break;
         case "--no-halation": overrides["no-halation"] = true; break;
         case "--no-aberration": overrides["no-aberration"] = true; break;
@@ -141,6 +150,9 @@ export function parseEffectFlags(argv: string[]): ParsedEffectFlags {
 
     switch (arg) {
       case "--output": case "-o": outputArg = val; break;
+      case "--input-lut":
+        if (val !== "rec709" && val !== "vlog") throw new Error(`--input-lut must be rec709 or vlog, got ${val}`);
+        overrides["input-lut-profile"] = val; break;
       case "--preset": presetName = val; break;
       case "--codec":
         if (val !== "h264" && val !== "prores" && val !== "h265") throw new Error(`--codec must be h264, prores, or h265, got ${val}`);

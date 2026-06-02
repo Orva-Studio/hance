@@ -9,11 +9,25 @@ fn main() {
     let mut stdin = io::stdin().lock();
     let mut stdout = io::stdout().lock();
 
-    let init_json = match std::env::args().nth(1) {
+    let arg = match std::env::args().nth(1) {
         Some(arg) => arg,
         None => {
-            eprintln!("Usage: hance-gpu <init-json>");
+            eprintln!("Usage: hance-gpu <init-json|init-json-file>");
             std::process::exit(1);
+        }
+    };
+
+    // The init payload carries the baked LUT (~1MB of JSON), which can exceed
+    // the OS argv limit, so callers may pass a file path instead of inline JSON.
+    let init_json = if arg.trim_start().starts_with('{') {
+        arg
+    } else {
+        match std::fs::read_to_string(&arg) {
+            Ok(contents) => contents,
+            Err(e) => {
+                eprintln!("Failed to read init JSON file {arg}: {e}");
+                std::process::exit(1);
+            }
         }
     };
 
@@ -25,7 +39,7 @@ fn main() {
         }
     };
 
-    let mut gpu = match renderer::GpuRenderer::new(init.width, init.height, &init.params) {
+    let mut gpu = match renderer::GpuRenderer::new(init.width, init.height, &init.params, init.lut.as_deref()) {
         Ok(r) => r,
         Err(e) => {
             eprintln!("GPU init failed: {e}");

@@ -4,7 +4,7 @@ import { homedir } from "os";
 import type {
   ColorSettingsOptions, HalationOptions, AberrationOptions,
   BloomOptions, GrainOptions, VignetteOptions, SplitToneOptions, CameraShakeOptions,
-  FilmOptions, OutputCodec, LicenseContext,
+  FilmOptions, OutputCodec, LicenseContext, InputLutOptions,
 } from "./types";
 
 export interface PresetData {
@@ -89,9 +89,23 @@ export function applyPreset(
   name: string,
   overrides: PresetData
 ): ApplyPresetResult {
-  const defaults = unwrapLookParams(loadPreset("default"));
-  const named = name === "default" ? {} : unwrapLookParams(loadPreset(name));
+  const defaultRaw = loadPreset("default");
+  const namedRaw = name === "default" ? {} : loadPreset(name);
+  const defaults = unwrapLookParams(defaultRaw);
+  const named = name === "default" ? {} : unwrapLookParams(namedRaw);
   const merged = { ...defaults, ...named, ...overrides };
+
+  // A look may carry the input/pre-LUT as a top-level `preLut` string. Fold it
+  // into the merged params so it flows through to the renderers like any option.
+  const preLut = overrides.preLut ?? namedRaw.preLut ?? defaultRaw.preLut;
+  if (typeof preLut === "string") {
+    merged["input-lut-profile"] = preLut;
+  }
+
+  const inputLut: InputLutOptions = {
+    enabled: merged["no-input-lut"] ? false : true,
+    profile: merged["input-lut-profile"] === "vlog" ? "vlog" : "rec709",
+  };
 
   const colorSettings: ColorSettingsOptions = {
     enabled: merged["no-color-settings"] ? false : true,
@@ -162,5 +176,5 @@ export function applyPreset(
   const blend = Number(merged["blend"] ?? 1);
   const pixelFormat = "yuv420p";
 
-  return { encodePreset, codec, crf, blend, pixelFormat, colorSettings, halation, aberration, bloom, grain, vignette, splitTone, cameraShake, mergedParams: merged };
+  return { encodePreset, codec, crf, blend, pixelFormat, inputLut, colorSettings, halation, aberration, bloom, grain, vignette, splitTone, cameraShake, mergedParams: merged };
 }

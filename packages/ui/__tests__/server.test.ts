@@ -15,7 +15,7 @@ describe("API server", () => {
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(Array.isArray(data)).toBe(true);
-    expect(data[0].key).toBe("colorSettings");
+    expect(data[0].key).toBe("inputLut");
   });
 
   test("GET /api/looks lists available looks", async () => {

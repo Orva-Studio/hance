@@ -58,6 +58,28 @@ describe("applyPreset", () => {
     const opts = applyPreset("default", { "no-halation": true });
     expect(opts.halation.enabled).toBe(false);
   });
+
+  it("defaults the input LUT to the rec709 identity profile", () => {
+    const opts = applyPreset("default", {});
+    expect(opts.inputLut.enabled).toBe(true);
+    expect(opts.inputLut.profile).toBe("rec709");
+  });
+
+  it("applies an input-lut-profile override", () => {
+    const opts = applyPreset("default", { "input-lut-profile": "vlog" });
+    expect(opts.inputLut.profile).toBe("vlog");
+  });
+
+  it("disables the input LUT via no-input-lut", () => {
+    const opts = applyPreset("default", { "no-input-lut": true });
+    expect(opts.inputLut.enabled).toBe(false);
+  });
+
+  it("reads a top-level preLut field from a look into the input LUT", () => {
+    const opts = applyPreset("default", { preLut: "vlog" });
+    expect(opts.inputLut.profile).toBe("vlog");
+    expect(opts.mergedParams["input-lut-profile"]).toBe("vlog");
+  });
 });
 
 describe("exportLook", () => {
@@ -83,5 +105,11 @@ describe("importLook", () => {
   it("is available on free tier", () => {
     const data = importLook('{"name":"test"}');
     expect(data.name).toBe("test");
+  });
+
+  it("round-trips a top-level preLut string", () => {
+    const json = exportLook("vlog-look", { preLut: "vlog", exposure: 0.2 });
+    const data = importLook(json);
+    expect(data.preLut).toBe("vlog");
   });
 });
