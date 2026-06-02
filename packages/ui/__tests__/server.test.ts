@@ -34,6 +34,25 @@ describe("API server", () => {
     expect(data["exposure"]).toBe(0);
   });
 
+  test("POST then GET /api/look round-trips a top-level preLut field", async () => {
+    const name = `hance-prelut-test-${Date.now()}`;
+    const post = await fetch(`${base}/api/looks`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, data: { exposure: 0.2 }, preLut: "vlog" }),
+    });
+    expect(post.status).toBe(200);
+    try {
+      const res = await fetch(`${base}/api/look?name=${name}`);
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data["exposure"]).toBe(0.2);
+      expect(data["preLut"]).toBe("vlog");
+    } finally {
+      await fetch(`${base}/api/look?name=${name}`, { method: "DELETE" });
+    }
+  });
+
   test("GET /api/initial-file returns 404 when no file set", async () => {
     setInitialFile(null);
     const res = await fetch(`${base}/api/initial-file`);

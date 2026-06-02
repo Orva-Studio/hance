@@ -106,7 +106,9 @@ export function createServer(port: number) {
           const raw = loadPreset(name);
           // .hlook files have params nested; .json files have them at top level
           const params = raw.params ?? raw;
-          return Response.json(params);
+          // preLut is a top-level sibling of params; surface it to the client.
+          const out = raw.preLut !== undefined ? { ...params, preLut: raw.preLut } : params;
+          return Response.json(out);
         } catch {
           return new Response("Look not found", { status: 404 });
         }
@@ -114,10 +116,11 @@ export function createServer(port: number) {
 
       if (url.pathname === "/api/looks" && req.method === "POST") {
         const body = await req.json();
-        const { name, data, description, keywords, characteristics } = body;
+        const { name, data, description, keywords, characteristics, preLut } = body;
         const prep = preparePresetWrite(name, data);
         if (!prep.ok) return prep.res;
-        const lookData = { name, description: description || "", keywords: keywords || [], characteristics: characteristics || [], params: data };
+        const lookData: Record<string, unknown> = { name, description: description || "", keywords: keywords || [], characteristics: characteristics || [], params: data };
+        if (typeof preLut === "string") lookData.preLut = preLut;
         writeFileSync(prep.path, JSON.stringify(lookData, null, 2));
         safeRebuildIndex();
         return Response.json({ ok: true });
@@ -125,7 +128,7 @@ export function createServer(port: number) {
 
       if (url.pathname === "/api/look" && req.method === "PUT") {
         const body = await req.json();
-        const { name, data } = body;
+        const { name, data, preLut } = body;
         const prep = preparePresetWrite(name, data);
         if (!prep.ok) return prep.res;
         const filePath = prep.path;
@@ -141,7 +144,12 @@ export function createServer(port: number) {
             }
           }
         }
-        const updated = { ...existing, params: data };
+        const updated: Record<string, unknown> = { ...existing, params: data };
+        // preLut is a top-level sibling of params; "" or null clears it.
+        if (preLut !== undefined) {
+          if (typeof preLut === "string" && preLut !== "") updated.preLut = preLut;
+          else delete updated.preLut;
+        }
         writeFileSync(filePath, JSON.stringify(updated, null, 2));
         safeRebuildIndex();
         return Response.json({ ok: true });
