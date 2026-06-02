@@ -6,7 +6,7 @@ import type {
   BloomOptions, GrainOptions, VignetteOptions, SplitToneOptions, CameraShakeOptions,
   FilmOptions, OutputCodec, LicenseContext, InputLutOptions,
 } from "./types";
-import { getDefaults } from "./schema";
+import { seedDefaults } from "./schema";
 
 export interface PresetData {
   [key: string]: string | number | boolean | undefined;
@@ -95,9 +95,10 @@ export function applyPreset(
   const defaults = unwrapLookParams(defaultRaw);
   const named = name === "default" ? {} : unwrapLookParams(namedRaw);
   // Schema defaults seed the merge so every exposed param is populated once,
-  // from a single source. Renderers (TS preview + Rust export) and the option
-  // builders below all read fully-populated params and need no inline fallbacks.
-  const merged = { ...getDefaults(), ...defaults, ...named, ...overrides };
+  // from a single source (seedDefaults). Renderers (TS preview + Rust export)
+  // and the option builders below all read fully-populated params and need no
+  // inline fallbacks.
+  const merged = seedDefaults(defaults, named, overrides);
 
   // A look may carry the input/pre-LUT as a top-level `preLut` string. Fold it
   // into the merged params so it flows through to the renderers like any option.
