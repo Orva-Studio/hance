@@ -9,7 +9,41 @@ function encoderArgs(encoder: string): string[] {
   return ["-c:v", encoder, "-preset", "veryfast", "-crf", "23"];
 }
 
-export function transcodeToH264Stream(inputPath: string, outputPath: string): ReadableStream<Uint8Array> {
+export interface ProxyOptions {
+  // Cap the proxy's longest-side height (px). Preview only; never affects export.
+  scaleHeight?: number;
+  // Cap the proxy's framerate (fps). Preview only; never affects export.
+  fps?: number;
+}
+
+// Default proxy is downscaled to 720p for faster preview transcodes. Export
+// reads the original footage, so this only changes what the grading UI shows.
+const DEFAULT_PROXY_OPTIONS: Required<ProxyOptions> = { scaleHeight: 720, fps: 30 };
+
+// Pure builder so the ffmpeg invocation can be unit-tested without spawning.
+export function buildProxyArgs(
+  inputPath: string,
+  outputPath: string,
+  encoder: string,
+  options: ProxyOptions = {},
+): string[] {
+  const { scaleHeight, fps } = { ...DEFAULT_PROXY_OPTIONS, ...options };
+  const filters: string[] = [];
+  // -2 keeps width even and preserves aspect ratio; only downscale, never up.
+  if (scaleHeight > 0) filters.push(`scale=-2:min(${scaleHeight}\\,ih)`);
+  if (fps > 0) filters.push(`fps=min(${fps}\\,source_fps)`);
+  return [
+    "ffmpeg", "-y", "-i", inputPath,
+    ...(filters.length ? ["-vf", filters.join(",")] : []),
+    ...encoderArgs(encoder),
+    "-pix_fmt", "yuv420p",
+    "-movflags", "+faststart", "-c:a", "aac", "-b:a", "128k",
+    "-progress", "pipe:1", "-nostats", "-v", "error",
+    outputPath,
+  ];
+}
+
+export function transcodeToH264Stream(inputPath: string, outputPath: string, options?: ProxyOptions): ReadableStream<Uint8Array> {
   return new ReadableStream({
     async start(controller) {
       const encoder = new TextEncoder();
@@ -21,14 +55,7 @@ export function transcodeToH264Stream(inputPath: string, outputPath: string): Re
         const durationSec = probeResult.duration ?? 0;
         const vcodec = pickH264Encoder();
 
-        const proc = Bun.spawn([
-          "ffmpeg", "-y", "-i", inputPath,
-          ...encoderArgs(vcodec),
-          "-pix_fmt", "yuv420p",
-          "-movflags", "+faststart", "-c:a", "aac", "-b:a", "128k",
-          "-progress", "pipe:1", "-nostats", "-v", "error",
-          outputPath,
-        ], { stdout: "pipe", stderr: "pipe" });
+        const proc = Bun.spawn(buildProxyArgs(inputPath, outputPath, vcodec, options), { stdout: "pipe", stderr: "pipe" });
 
         const reader = proc.stdout.getReader();
         const decoder = new TextDecoder();
