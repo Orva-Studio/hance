@@ -349,7 +349,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
 
         if (highlightsOnly) {
           // Threshold pass → halfA
-          device.queue.writeBuffer(thresholdUB, 0, new Float32Array([0.4, 0.9, 0, 0]));
+          device.queue.writeBuffer(thresholdUB, 0, new Float32Array([0.65, 0.75, 0, 0]));
           const threshBG = makeStdBindGroup(current, thresholdUB);
           runPass(encoder, thresholdPipeline, threshBG, halfA.createView());
         } else {
@@ -373,8 +373,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
         // Screen blend halation with pre-halation → other
         const hue = num("halation-hue", 0.04) * 360;
         const sat = num("halation-saturation", 1);
-        const ambient = amount * 0.18;
-        device.queue.writeBuffer(blendUB, 0, new Float32Array([amount, hue, sat, ambient]));
+        device.queue.writeBuffer(blendUB, 0, new Float32Array([amount, hue, sat, 0]));
         const blendBG = makeBlendBindGroup(preHalation, halfA, blendUB);
         runPass(encoder, blendPipeline, blendBG, other.createView());
         swap();

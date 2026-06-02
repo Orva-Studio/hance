@@ -79,7 +79,7 @@ impl Params {
     }
 
     pub fn halation_hue(&self) -> f32 {
-        self.num("halation-hue", 0.5) * 360.0
+        self.num("halation-hue", 0.04) * 360.0
     }
 
     pub fn halation_saturation(&self) -> f32 {
