@@ -54,10 +54,6 @@ fn fs(@location(0) uv: vec2f) -> @location(0) vec4f {
     overlay = overlay * tintColor;
   }
   let blended = 1.0 - (1.0 - base) * (1.0 - overlay);
-  var result = mix(base, blended, params.opacity);
-  if (params.ambient > 0.0) {
-    let warm = result * mix(vec3f(1.0), tintHue, clamp(params.ambient, 0.0, 1.0));
-    result = warm;
-  }
+  let result = mix(base, blended, params.opacity);
   return vec4f(result, 1.0);
 }
