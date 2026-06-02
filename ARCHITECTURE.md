@@ -51,6 +51,7 @@ FCP-inspired three-column layout built with React 19 and Tailwind CSS v4:
 - **Left panel (LooksPanel)**: 2-column grid of look thumbnails. Click applies, hover previews on canvas. Right-click for rename/delete. Header has + (new look modal) and import buttons.
 - **Center (Canvas)**: WebGPU-rendered preview with aspect-ratio preservation. Shows UploadZone drop zone when no media loaded.
 - **Right panel (AdjustmentsPanel)**: Collapsible effect groups matching EFFECT_SCHEMA. FCP-style RangeSliders with label/track/value. SaveBar appears when values differ from loaded look.
+  - Controls are rendered generically from `EFFECT_SCHEMA` — there is no per-effect UI wiring. Adding a new schema group automatically gives you its control(s), and because the panel's values flow straight into the saved look's `params`, the new effect round-trips through save/load and `.hlook` export with no extra code. (Corollary: a missing UI control or unsaved param means a schema gap, not a UI bug.)
 - **Bottom (Timeline)**: Video only. Play/pause, timecodes, draggable playhead, spacebar toggle.
 - All panel boundaries are resizable via ResizeDivider components with min/max constraints.
 
@@ -217,6 +218,7 @@ File extension: `.hlook` (JSON)
 - The LLM is only needed to generate/enrich description, keywords, and characteristics
 - Looks without metadata still work for applying effects, but won't appear in look matching results
 - `loadPreset` in core supports both `.hlook` (params nested) and legacy `.json` (params at top level)
+- The input LUT has **two equivalent representations**. The canonical one is `params["input-lut-profile"]` (a normal schema option, `rec709` | `vlog`) — this is what the UI's Input LUT control writes and what both renderers read. A `.hlook` may *also* carry a top-level `preLut` string (sibling of `params`) as a CLI/hand-authoring alias; `applyPreset` folds it into `params["input-lut-profile"]`. The UI never emits the top-level form — it saves the nested option like any other effect.
 
 ## Project Files
 
