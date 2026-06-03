@@ -1,0 +1,69 @@
+# Grading reference — judging and dialing in a film look
+
+How to evaluate a grade and refine it toward a convincing film look. Used by
+`refine`, and any time you tune flags on top of a preset for one shot.
+
+## The render → read → adjust loop
+
+You can critique your own grades — you do not need the user in the loop for every
+step. Tune flags on a still, look at the result, decide what is wrong, adjust.
+
+1. Render a **still**, never a full video, while iterating:
+   `<runner> preview <file> --preset <name> [flags] -o /tmp/out.png`
+   (For video, extract one representative frame first.)
+2. **Read the output image** and judge it against the intent and the original.
+3. Name the specific problem (too punchy, hazy, wrong artifact, mood mismatch).
+4. Change one or two flags and re-render. Repeat until it reads as film.
+5. Inspect suspected artifacts at 1:1 — crop the region and read that:
+   `ffmpeg -i out.png -vf "crop=W:H:X:Y" crop.png`
+
+Render variants side by side when a choice is unclear (e.g. two split-tone hues),
+read both, keep the winner.
+
+## What makes a grade read as "film" (not digital)
+
+Presets applied raw often look punchy and digital. Classic film tends to want:
+
+- **Lifted blacks** — `--fade` ~0.04–0.1. Pure black reads digital.
+- **Highlight rolloff** — `--highlights` ~0.12–0.25. Gentle shoulder, not clipped.
+- **Restrained saturation** — `--subtractive-sat` ~0.92–1.05. Oversaturation is the
+  most common "digital" tell. The before image often looks "better" only because
+  the after was pushed too hard.
+- **Grain** — `--grain-amount` ~0.26–0.34, `--grain-size 1`. Texture sells film.
+- **Halation** — `--halation-amount` ~0.18–0.3 on highlights for a soft glow.
+- **Vignette** — `--vignette-amount` ~0.16–0.34 to frame the subject.
+- Drop **chromatic aberration** (`--no-aberration`) unless you want an obvious lens
+  look; it reads as digital fringing.
+
+Start from the preset that owns the image's color identity, then layer these.
+
+## Split tone (teal-orange and when not to)
+
+`--split-tone-mode complementary --split-tone-hue 40` → **warm highlights, cool teal
+shadows** (the classic teal-orange). `--split-tone-hue 220` reverses it. Tune with
+`--split-tone-amount` (~0.3–0.4 is plenty; 0.6 is heavy) and `--split-tone-pivot`.
+
+- **Use it** for action, landscape, cityscape — anything that benefits from cool/warm
+  separation. Match a reference's mood by reading where its highlights vs shadows sit.
+- **Skip it** for warm, intimate, single-mood scenes (sunset portrait, golden hour
+  embrace). Cool shadows fight the warmth — those want consistent warmth instead
+  (`--no-split-tone`, nudge `--white-balance` warmer).
+- Always verify direction by rendering hue 40 vs 220 and reading both.
+
+## Common artifacts and fixes
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Cyan/green "negative" fringe on backlit whites (e.g. a white shirt) | Heavy halation + bloom blooming a bright near-neutral, leaving the complementary cast | Lower `--halation-amount` and `--bloom-amount`; add `--split-tone-protect-neutrals` |
+| Hazy / washed, less crisp than the original | Over-warming a cool scene + too much halation | Cooler/neutral `--white-balance`, lower halation, slightly raise `--contrast`/saturation |
+| Looks digital / harsh | No fade, clipped highlights, oversaturated | Add `--fade`, raise `--highlights`, lower `--subtractive-sat`, add grain |
+| Mood feels off | Toning fights the scene | Re-pick split-tone direction or remove it |
+
+## Image asset prep (for web compares, etc.)
+
+- Crop/scale to the target aspect first (cover, then center-crop):
+  `ffmpeg -i in.jpg -vf "scale=W:H:force_original_aspect_ratio=increase,crop=W:H" out.png`
+- Grade the cropped master, then export web `webp`:
+  `ffmpeg -i graded.png -c:v libwebp -quality 80 out.webp`
+- Grain inflates file size (high-frequency detail compresses poorly) — expect grainy
+  grades to be larger; drop webp quality a little if needed.

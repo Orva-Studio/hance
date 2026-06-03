@@ -58,6 +58,7 @@ export default defineConfig({
           items: [
             { label: "Overview", slug: "docs/agent/overview" },
             { label: "Skill Commands", slug: "docs/agent/commands" },
+            { label: "Grading Workflow", slug: "docs/agent/grading" },
           ],
         },
         { label: "Browser UI", slug: "docs/browser-ui" },

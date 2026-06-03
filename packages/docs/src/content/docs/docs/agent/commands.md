@@ -3,7 +3,7 @@ title: Skill Commands
 description: Detailed reference for each /hance subcommand.
 ---
 
-The `/hance` skill routes to one of five subcommands based on what you ask for.
+The `/hance` skill routes to one of six subcommands based on what you ask for.
 
 ## `/hance setup`
 
@@ -36,6 +36,22 @@ You can also provide a reference image to match:
 ```
 > /hance try match this reference photo.jpg on my-video.mp4
 ```
+
+## `/hance refine`
+
+Perfect a single look on a single file. Where `try` explores options for you to pick
+from, `refine` takes one direction and dials it in — adjusting effects like grain,
+halation, vignette, white balance, and split tone on top of a base preset. The agent
+iterates on a still preview, judging each render against your intent, then offers to
+apply the result and save it as a reusable preset.
+
+```
+> /hance refine portra-400 on sunset.jpg, classic film but less punchy
+> /hance refine the surf shot — add grain and a teal-orange split tone
+> /hance refine match the warmth of this reference.jpg
+```
+
+See [Grading workflow](/docs/agent/grading/) for how the agent evaluates and tunes a look.
 
 ## `/hance batch`
 

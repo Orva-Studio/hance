@@ -5,7 +5,7 @@ description: Apply cinematic film looks to images/video via the Hance CLI. Use w
 
 # /hance
 
-A single entry point that routes to one of six subcommands.
+A single entry point that routes to one of six subcommands: `setup`, `run`, `try`, `refine`, `batch`, `ui`.
 
 ## Routing
 
@@ -16,6 +16,7 @@ Pick the subcommand from the user's request. When in doubt, ask.
 | "install hance" / "set up hance" | `setup` | `subcommands/setup.md` |
 | "apply <preset> to <file>" / "grade with <preset>" | `run` | `subcommands/run.md` |
 | "make this look like X" / "match this reference" / "show me some looks for this" | `try` | `subcommands/try.md` |
+| "make this one look better" / "tune/refine this grade" / "more grain, warmer, etc." | `refine` | `subcommands/refine.md` |
 | "apply X to all of these" / batch a folder | `batch` | `subcommands/batch.md` |
 | "open the editor" / "open the UI" | `ui` | `subcommands/ui.md` |
 
@@ -29,6 +30,8 @@ Pick one runner per invocation, in order:
 
 Runner priority: Bun (`bunx`), then Node (`npx`), then compiled binary as a last resort. Never install the binary for the user — just let them know it exists if they have neither Bun nor Node. Every subcommand must work on a fresh machine; `setup` only verifies runtime + ffmpeg and shows examples.
 
+The compiled binary expects a `hance-gpu` sidecar alongside it; a bare `./hance` checkout without it fails with `ENOENT … hance-gpu`. This is why `bunx`/`npx` are preferred — they always work. When developing in this repo, run the source directly: `bun run packages/cli/src/cli.ts …`.
+
 ## Hard rules
 
 - Never invent flags. Only use names listed in `hance --help` or `hance preset --help`.
@@ -39,6 +42,7 @@ Runner priority: Bun (`bunx`), then Node (`npx`), then compiled binary as a last
 
 - `references/preset-index.md` — `presets/index.json` schema and rebuild contract.
 - `references/compare-page.md` — `/compare` route query params and Edit hand-off.
+- `references/grading.md` — how to judge and dial in a film look: the render→read→adjust loop, what makes a grade read as film, and common artifacts. Read before `refine`.
 
 ## Replaces
 

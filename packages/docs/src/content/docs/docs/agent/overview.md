@@ -21,13 +21,14 @@ The skill uses `bunx @orva-studio/hance` (or `npx` as fallback) under the hood, 
 
 ## Subcommands
 
-The `/hance` skill routes to one of five subcommands based on what you ask for. See the [Skill Commands](/docs/agent/commands/) page for full details.
+The `/hance` skill routes to one of six subcommands based on what you ask for. See the [Skill Commands](/docs/agent/commands/) page for full details.
 
 | Command | Description |
 |---------|-------------|
 | `/hance setup` | Verify your environment is ready |
 | `/hance run` | Apply a preset to a single file |
 | `/hance try` | Explore and compare looks in a browser UI |
+| `/hance refine` | Dial in one look on one file, iterating on a preview |
 | `/hance batch` | Apply one preset to multiple files |
 | `/hance ui` | Open the browser-based editor |
 
