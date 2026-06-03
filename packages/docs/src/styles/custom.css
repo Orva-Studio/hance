@@ -8,6 +8,10 @@
   --sl-color-accent: oklch(0.74 0.18 55);
   --sl-color-accent-high: oklch(0.88 0.12 55);
 
+  /* Nav/sidebar links default to accent-high (paler); pin them to the
+     strong halation orange used on the docs index page so they match. */
+  --sl-color-text-accent: oklch(0.74 0.18 55);
+
   --sl-color-white: oklch(0.94 0.015 80);
   --sl-color-gray-1: oklch(0.84 0.012 80);
   --sl-color-gray-2: oklch(0.72 0.012 80);
