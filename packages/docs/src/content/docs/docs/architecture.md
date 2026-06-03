@@ -1,6 +1,6 @@
 ---
 title: Architecture
-description: How hance is built: monorepo structure, GPU rendering, and IPC.
+description: "How hance is built: monorepo structure, GPU rendering, and IPC."
 ---
 
 Hance is a Bun workspaces monorepo with four packages:
