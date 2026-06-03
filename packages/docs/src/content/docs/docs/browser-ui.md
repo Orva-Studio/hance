@@ -1,6 +1,6 @@
 ---
 title: Browser UI
-description: Full tour of the hance browser-based editor: panels, view modes, and export.
+description: "Full tour of the hance browser-based editor: panels, view modes, and export."
 ---
 
 The hance browser-based editor previews looks in real-time on your footage, rendering effects on the GPU via WebGPU. This page documents every panel and feature.
