@@ -16,8 +16,6 @@
     "bleach-bypass": 0,
     "halation-amount": 0.12,
     "halation-radius": 3,
-    "halation-saturation": 1.2,
-    "halation-hue": 0.04,
     "halation-highlights-only": true,
     "aberration": 0.1,
     "bloom-amount": 0.08,
