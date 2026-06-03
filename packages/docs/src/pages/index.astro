@@ -89,23 +89,46 @@ const faqs = [
         </button>
       </div>
 
-      <!-- Video placeholder -->
+      <!-- Reel: clips graded with the hance portra-400 look -->
       <figure class="mt-16 sm:mt-20">
-        <div class="graded-still relative aspect-video rounded-md ring-1 ring-surface-3 overflow-hidden">
+        <p class="mb-4 font-mono text-[11px] sm:text-[12px] text-white uppercase tracking-[0.14em]">
+          Every clip and still on this page was graded by <a href="https://claude.com/claude-code" class="text-accent hover:underline underline-offset-4">Claude Code</a> with hance. Fully autonomous, zero human touch.
+        </p>
+        <div id="reel" class="group relative aspect-video rounded-md ring-1 ring-surface-3 overflow-hidden bg-surface-2 cursor-pointer">
+          <video
+            id="reel-video"
+            class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+            autoplay
+            loop
+            muted
+            playsinline
+            preload="metadata"
+            poster="/reel-poster.webp"
+            aria-label="A reel of clips graded with hance"
+          >
+            <source src="/reel.webm" type="video/webm" />
+            <source src="/reel.mp4" type="video/mp4" />
+          </video>
           <div class="filmstrip-grain absolute inset-0 pointer-events-none"></div>
-          <div class="absolute inset-0 grid place-items-center">
-            <button
-              type="button"
-              class="size-20 sm:size-24 flex items-center justify-center rounded-full bg-surface/85 backdrop-blur-[3px] ring-2 ring-accent shadow-[0_0_60px_-10px_oklch(0.74_0.18_55_/_0.7)] hover:bg-surface transition duration-300 ease-out-quart"
-              aria-label="Reel coming soon"
-              disabled
-            >
-              <svg viewBox="0 0 24 24" class="size-8 sm:size-10 translate-x-[2px] fill-accent" aria-hidden="true">
-                <path d="M8 5.5v13l11-6.5z" />
-              </svg>
+
+          <!-- Custom controls -->
+          <div class="reel-controls absolute inset-x-0 bottom-0 flex items-center gap-3 sm:gap-4 px-3 sm:px-4 py-3 sm:py-3.5">
+            <button id="reel-toggle" type="button" class="shrink-0 grid place-items-center size-9 rounded-full bg-surface/80 ring-1 ring-accent/70 hover:ring-accent text-accent transition cursor-pointer" aria-label="Pause">
+              <svg class="reel-icon-pause size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+              <svg class="reel-icon-play size-4 hidden translate-x-[1px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 6v12l9-6z"/></svg>
             </button>
+            <div id="reel-track" class="relative flex-1 h-1.5 rounded-full bg-ink/25 cursor-pointer">
+              <div id="reel-progress" class="absolute inset-y-0 left-0 rounded-full bg-accent" style="width:0%"></div>
+              <div id="reel-thumb" class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 size-3 rounded-full bg-accent shadow ring-2 ring-surface" style="left:0%"></div>
+            </div>
+            <span id="reel-time" class="shrink-0 font-mono text-[11px] text-ink-muted tabular-nums select-none">0:00</span>
           </div>
         </div>
+        <figcaption class="mt-4">
+          <p class="font-mono text-[11px] sm:text-[12px] text-ink-dim/80 tracking-[0.04em]">
+            Source footage is a mix of real clips from <a href="https://www.pexels.com" class="text-accent hover:underline underline-offset-4">Pexels</a> and AI-generated clips from <a href="https://ai.byteplus.com/lumina/" class="text-accent hover:underline underline-offset-4">Lumina</a>.
+          </p>
+        </figcaption>
       </figure>
     </div>
   </section>
@@ -137,19 +160,16 @@ const faqs = [
       </p>
       <div
         id="ba"
-        class="mt-6 sm:mt-8 relative aspect-[16/8] w-full overflow-hidden rounded-md ring-1 ring-surface-3 select-none touch-none"
+        class="mt-6 sm:mt-8 relative aspect-video w-full overflow-hidden rounded-md ring-1 ring-surface-3 select-none touch-none"
         role="group"
         aria-label="Before and after comparison"
       >
-        <!-- Before: untouched, flat, cool -->
-        <div class="absolute inset-0" style="background:
-          radial-gradient(120% 80% at 65% 78%, oklch(0.55 0.04 80 / 0.55) 0%, transparent 55%),
-          radial-gradient(80% 60% at 60% 70%, oklch(0.62 0.05 70 / 0.45) 0%, transparent 60%),
-          linear-gradient(180deg, oklch(0.30 0.015 230) 0%, oklch(0.36 0.020 220) 55%, oklch(0.42 0.025 210) 100%);
-          filter: saturate(0.7) contrast(0.92);"></div>
-        <!-- After: graded -->
-        <div class="ba-after absolute inset-0 graded-still"></div>
-        <div class="filmstrip-grain absolute inset-0 pointer-events-none"></div>
+        <!-- Before: untouched original -->
+        <img src="/compare-before.webp" alt="Untouched footage before grading" class="absolute inset-0 w-full h-full object-cover" draggable="false" />
+        <!-- After: graded with the hance cinestill-800t look -->
+        <div class="ba-after absolute inset-0">
+          <img src="/compare-after.webp" alt="The same frame graded with hance" class="absolute inset-0 w-full h-full object-cover" draggable="false" />
+        </div>
 
         <!-- Labels -->
         <span class="absolute top-4 left-4 font-mono text-[11px] text-ink-muted uppercase tracking-wider bg-surface/60 px-2 py-1 rounded">before</span>
@@ -254,24 +274,33 @@ const faqs = [
         <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8 flex flex-col">
           <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink">Run with npx</h3>
           <p class="mt-3 text-ink-muted leading-relaxed">No install step — npx fetches and runs the latest hance on demand. The quickest way to try it.</p>
-          <div class="cb mt-5">
-            <div class="cb-row"><span class="cb-glyph">$</span><span class="cb-cmd">npx @orva-studio/hance</span></div>
+          <div class="cb-block mt-5">
+            <div class="cb">
+              <div class="cb-row"><span class="cb-glyph">$</span><span class="cb-cmd">npx @orva-studio/hance</span></div>
+            </div>
+            <button type="button" class="cb-copy" data-copy="npx @orva-studio/hance" aria-label="Copy command"><span data-label>Copy</span></button>
           </div>
           <a href="/docs/getting-started/installation/#run-with-npx-no-install" class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent hover:underline underline-offset-4">Details →</a>
         </div>
         <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8 flex flex-col">
           <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink">From your AI agent</h3>
           <p class="mt-3 text-ink-muted leading-relaxed">Drive hance from Claude Code or Cursor. The skill's setup command checks FFmpeg and gets you ready in one step.</p>
-          <div class="cb mt-5">
-            <div class="cb-row"><span class="cb-glyph">&gt;</span><span class="cb-cmd">/hance setup</span></div>
+          <div class="cb-block mt-5">
+            <div class="cb">
+              <div class="cb-row"><span class="cb-glyph">&gt;</span><span class="cb-cmd">/hance setup</span></div>
+            </div>
+            <button type="button" class="cb-copy" data-copy="/hance setup" aria-label="Copy command"><span data-label>Copy</span></button>
           </div>
           <a href="/docs/agent/overview/" class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent hover:underline underline-offset-4">Set up the skill →</a>
         </div>
         <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8 flex flex-col">
           <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink">Install the CLI</h3>
           <p class="mt-3 text-ink-muted leading-relaxed">For frequent use, install a persistent binary to <span class="font-mono text-[0.9em]">~/.hance/bin</span>. No Bun, Rust, or Node required.</p>
-          <div class="cb mt-5">
-            <div class="cb-row"><span class="cb-glyph">$</span><span class="cb-cmd">curl -fsSL https://hance.video/install.sh | sh</span></div>
+          <div class="cb-block mt-5">
+            <div class="cb">
+              <div class="cb-row"><span class="cb-glyph">$</span><span class="cb-cmd">curl -fsSL https://hance.video/install.sh | sh</span></div>
+            </div>
+            <button type="button" class="cb-copy" data-copy="curl -fsSL https://hance.video/install.sh | sh" aria-label="Copy command"><span data-label>Copy</span></button>
           </div>
           <a href="/docs/getting-started/installation/#install-a-persistent-binary" class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent hover:underline underline-offset-4">Details →</a>
         </div>
@@ -337,6 +366,79 @@ const faqs = [
       });
     })();
 
+    // Reel: custom play/pause + scrub controls
+    (function () {
+      const video = document.getElementById('reel-video');
+      const toggle = document.getElementById('reel-toggle');
+      const track = document.getElementById('reel-track');
+      const progress = document.getElementById('reel-progress');
+      const thumb = document.getElementById('reel-thumb');
+      const timeEl = document.getElementById('reel-time');
+      if (!video || !toggle || !track) return;
+
+      const iconPlay = toggle.querySelector('.reel-icon-play');
+      const iconPause = toggle.querySelector('.reel-icon-pause');
+      const fmt = (s) => {
+        if (!isFinite(s)) return '0:00';
+        const m = Math.floor(s / 60);
+        const r = Math.floor(s % 60);
+        return m + ':' + String(r).padStart(2, '0');
+      };
+      const setPaused = (paused) => {
+        iconPlay.classList.toggle('hidden', !paused);
+        iconPause.classList.toggle('hidden', paused);
+        toggle.setAttribute('aria-label', paused ? 'Play' : 'Pause');
+      };
+      const togglePlay = () => {
+        if (video.paused) video.play(); else video.pause();
+      };
+      toggle.addEventListener('click', togglePlay);
+      video.addEventListener('click', togglePlay);
+      video.addEventListener('play', () => setPaused(false));
+      video.addEventListener('pause', () => setPaused(true));
+      video.addEventListener('timeupdate', () => {
+        const pct = video.duration ? (video.currentTime / video.duration) * 100 : 0;
+        progress.style.width = pct + '%';
+        thumb.style.left = pct + '%';
+        timeEl.textContent = fmt(video.currentTime);
+      });
+
+      const seekTo = (clientX) => {
+        const rect = track.getBoundingClientRect();
+        const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        if (video.duration) video.currentTime = pct * video.duration;
+      };
+      let scrubbing = false;
+      track.addEventListener('pointerdown', (e) => {
+        scrubbing = true; track.setPointerCapture(e.pointerId); seekTo(e.clientX);
+      });
+      track.addEventListener('pointermove', (e) => { if (scrubbing) seekTo(e.clientX); });
+      track.addEventListener('pointerup', () => { scrubbing = false; });
+    })();
+
+    // Install command blocks: click to copy
+    (function () {
+      const buttons = document.querySelectorAll('.cb-copy');
+      buttons.forEach((btn) => {
+        const labelEl = btn.querySelector('[data-label]');
+        const original = labelEl ? labelEl.textContent : 'Copy';
+        btn.addEventListener('click', async () => {
+          const txt = btn.getAttribute('data-copy') || '';
+          try {
+            await navigator.clipboard.writeText(txt);
+            if (labelEl) labelEl.textContent = 'Copied ✓';
+            btn.classList.add('is-copied');
+            setTimeout(() => {
+              if (labelEl) labelEl.textContent = original;
+              btn.classList.remove('is-copied');
+            }, 1500);
+          } catch (e) {
+            if (labelEl) labelEl.textContent = 'Press ⌘C';
+          }
+        });
+      });
+    })();
+
     // Before/after slider
     (function () {
       const wrap = document.getElementById('ba');
@@ -364,6 +466,67 @@ const faqs = [
 
 <style>
   details summary::-webkit-details-marker { display: none; }
+
+  .reel-controls {
+    background: linear-gradient(180deg, transparent, oklch(0.13 0.012 220 / 0.78));
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1),
+                transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  #reel:hover .reel-controls,
+  #reel:focus-within .reel-controls {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  /* Touch devices: keep controls visible (no hover). */
+  @media (hover: none) {
+    .reel-controls { opacity: 1; transform: none; }
+  }
+  /* Centering transform stays constant; grow on hover so the thumb never shifts. */
+  #reel-thumb { transition: width 160ms cubic-bezier(0.16, 1, 0.3, 1), height 160ms cubic-bezier(0.16, 1, 0.3, 1); }
+  #reel-track:hover #reel-thumb { width: 0.875rem; height: 0.875rem; }
+
+  .cb-block {
+    position: relative;
+  }
+  .cb-copy {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: oklch(0.74 0.18 55);
+    background: oklch(0.17 0.013 220 / 0.85);
+    border: 1px solid oklch(0.74 0.18 55 / 0.45);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 240ms cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 240ms cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .cb-block:hover .cb-copy,
+  .cb-copy:focus-visible {
+    opacity: 1;
+  }
+  .cb-copy:hover {
+    background: oklch(0.74 0.18 55 / 0.15);
+    border-color: oklch(0.74 0.18 55);
+  }
+  .cb-copy.is-copied {
+    color: oklch(0.94 0.015 80);
+    border-color: oklch(0.74 0.18 55);
+  }
+  /* Touch devices have no hover — keep the button visible. */
+  @media (hover: none) {
+    .cb-copy { opacity: 1; }
+  }
 
   .cb {
     font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace;

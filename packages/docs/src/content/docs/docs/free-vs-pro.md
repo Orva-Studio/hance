@@ -5,6 +5,10 @@ description: What's included in the free tier and what requires a pro license.
 
 Hance works out of the box on the free tier. Pro unlocks additional codecs, batch processing, and premium looks.
 
+:::note
+Pro is **coming soon**. The features below outline what a pro license will include. It's not yet available for purchase.
+:::
+
 ## Feature comparison
 
 | Feature | Free | Pro |
