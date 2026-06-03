@@ -18,11 +18,11 @@ Hance is a Bun workspaces monorepo with five packages:
 Hance is not a pure-GPU tool: FFmpeg handles the codec work at both ends, and the GPU handles the pixels in between. `@hance/gpu` orchestrates the round trip.
 
 ```mermaid
-flowchart LR
+flowchart TB
   input[Input video / image] --> decode[FFmpeg decode]
   decode -->|raw RGBA frames| gpu["@hance/gpu (orchestrator)"]
-  gpu <-->|IPC: JSON init + RGBA| sidecar[wgpu sidecar]
-  sidecar -.->|WGSL shaders| shaders[(packages/core shaders)]
+  gpu <-->|"IPC: JSON init + RGBA"| sidecar[wgpu sidecar]
+  sidecar -.->|loads WGSL shaders| shaders[(packages/core shaders)]
   gpu -->|graded RGBA frames| encode[FFmpeg encode]
   encode --> output[Output file]
 ```
