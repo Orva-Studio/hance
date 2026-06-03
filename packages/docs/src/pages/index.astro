@@ -343,7 +343,7 @@ const faqs = [
 
   <script is:inline>
     // Install pill: click to copy
-    (function () {
+    function initInstallPill() {
       const btn = document.getElementById('install-copy');
       if (!btn) return;
       const labelEl = btn.querySelector('[data-label]');
@@ -364,10 +364,10 @@ const faqs = [
           if (labelEl) labelEl.textContent = 'press ⌘C';
         }
       });
-    })();
+    }
 
     // Reel: custom play/pause + scrub controls
-    (function () {
+    function initReel() {
       const video = document.getElementById('reel-video');
       const toggle = document.getElementById('reel-toggle');
       const track = document.getElementById('reel-track');
@@ -392,6 +392,8 @@ const faqs = [
       const togglePlay = () => {
         if (video.paused) video.play(); else video.pause();
       };
+      // Sync the icon with reality in case autoplay was blocked.
+      setPaused(video.paused);
       toggle.addEventListener('click', togglePlay);
       video.addEventListener('click', togglePlay);
       video.addEventListener('play', () => setPaused(false));
@@ -414,10 +416,11 @@ const faqs = [
       });
       track.addEventListener('pointermove', (e) => { if (scrubbing) seekTo(e.clientX); });
       track.addEventListener('pointerup', () => { scrubbing = false; });
-    })();
+      track.addEventListener('pointercancel', () => { scrubbing = false; });
+    }
 
     // Install command blocks: click to copy
-    (function () {
+    function initCommandBlocks() {
       const buttons = document.querySelectorAll('.cb-copy');
       buttons.forEach((btn) => {
         const labelEl = btn.querySelector('[data-label]');
@@ -437,10 +440,10 @@ const faqs = [
           }
         });
       });
-    })();
+    }
 
     // Before/after slider
-    (function () {
+    function initBeforeAfter() {
       const wrap = document.getElementById('ba');
       const range = document.getElementById('ba-range');
       if (!wrap || !range) return;
@@ -460,7 +463,12 @@ const faqs = [
       wrap.addEventListener('pointerdown', (e) => { dragging = true; onMove(e.clientX); });
       window.addEventListener('pointermove', (e) => { if (dragging) onMove(e.clientX); });
       window.addEventListener('pointerup', () => { dragging = false; });
-    })();
+    }
+
+    initInstallPill();
+    initReel();
+    initCommandBlocks();
+    initBeforeAfter();
   </script>
 </Base>
 
