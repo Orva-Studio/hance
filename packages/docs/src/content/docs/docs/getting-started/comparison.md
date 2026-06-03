@@ -39,6 +39,17 @@ There are several tools for adding film looks to video. Here's how hance stacks 
 
 ## What about AI color tools?
 
-Hance can be AI-driven: the [`/hance` agent skill](/docs/agent/overview/) runs a render→read→adjust loop, picking looks and tuning parameters by inspecting preview stills. Other tools use AI for color in different shapes. [Colourlab AI](https://colourlab.ai/) (in the table above) auto-balances and matches shots inside an NLE, locally. [Imagen](https://imagen-ai.com/video/) goes further into automation: a cloud auto-editor where you upload footage and a hosted model makes the grading and editing calls for you.
+Hance can be AI-driven too. The [`/hance` agent skill](/docs/agent/overview/) runs a render, read, adjust loop: it picks looks and tunes parameters by inspecting preview stills.
 
-The line isn't "AI or not": it's **how you run it**. Hance is a headless CLI and agent that runs upstream of any editor: scriptable, batchable, with no GUI or timeline required, and it bundles a broader film-texture set (halation, bloom, aberration, shake) alongside grading and grain in one pass. Reach for a GUI colorist app when you're grading shot-by-shot inside an NLE; reach for hance when you want grading and texture applied programmatically, in batch, or by an agent.
+Other tools use AI for color in different shapes:
+
+- **[Colourlab AI](https://colourlab.ai/)** (in the table above) auto-balances and matches shots inside an NLE, locally.
+- **[Imagen](https://imagen-ai.com/video/)** goes further into automation. It is a cloud auto-editor: you upload footage and a hosted model makes the grading and editing calls for you.
+
+The real difference isn't "AI or not." It's **how you run it**:
+
+- Hance is a headless CLI and agent that runs upstream of any editor.
+- It is scriptable and batchable, with no GUI or timeline required.
+- It bundles a broader film-texture set (halation, bloom, aberration, shake) alongside grading and grain in one pass.
+
+Reach for a GUI colorist app when you're grading shot-by-shot inside an NLE. Reach for hance when you want grading and texture applied programmatically, in batch, or by an agent.
