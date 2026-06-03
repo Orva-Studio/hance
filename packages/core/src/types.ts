@@ -20,8 +20,6 @@ export interface HalationOptions {
   enabled: boolean;
   amount: number;
   radius: number;
-  saturation: number;
-  hue: number;
   highlightsOnly: boolean;
 }
 

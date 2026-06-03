@@ -103,6 +103,10 @@ describe("parseArgs", () => {
     expect(parse(["input.mp4", "--unknown"])).rejects.toThrow();
   });
 
+  it("halation-hue is no longer a recognized flag", async () => {
+    expect(parse(["input.mp4", "--halation-hue", "0.1"])).rejects.toThrow();
+  });
+
   it("throws on out-of-range value", async () => {
     expect(parse(["input.mp4", "--exposure", "10"])).rejects.toThrow();
   });
