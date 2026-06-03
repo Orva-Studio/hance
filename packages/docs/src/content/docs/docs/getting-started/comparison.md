@@ -44,6 +44,9 @@ There are several tools for adding film looks to video. Here's how hance stacks 
 
 ## What about AI auto-editors?
 
-Tools like [Imagen](https://imagen-ai.com/video/) take a different approach: you upload footage and an AI model makes the grading and editing decisions for you in the cloud. That's a good fit if you want a hands-off, automated result and don't mind sending footage to a third party.
+Hance can be AI-driven too. The [`/hance` agent skill](/docs/agent/overview/) lets an AI assistant run a render→read→adjust loop, picking looks and tuning parameters by inspecting preview stills. The difference from cloud tools like [Imagen](https://imagen-ai.com/video/) is where the work happens and what you get back:
 
-Hance is the opposite by design: **deterministic and local**. You choose the look, and the same input produces the same output every time: offline, scriptable, with no upload, account, or per-render cost. Use an AI auto-editor when you want the tool to decide; use hance when you want to.
+- **Cloud auto-editors** are a black box: you upload footage, a hosted model decides, and you get a rendered file. Fast and hands-off, but you can't see or reproduce the pipeline, and your footage leaves your machine.
+- **Hance** keeps the engine **local and deterministic**. Whether you or an agent drives it, the look is expressed as explicit looks and parameters you can read, version, and re-run: same input, same output, every time, offline, with no per-render cost. AI assists by choosing those parameters, not by hiding them.
+
+Reach for a cloud auto-editor when you want a result without touching the controls. Reach for hance when you want the look to be transparent and reproducible, with or without an agent in the loop.
