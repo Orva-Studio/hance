@@ -19,15 +19,24 @@ When you render from the CLI, hance is not a pure-GPU tool: FFmpeg handles the c
 
 ```mermaid
 flowchart TB
+  cli["packages/cli (parse args)"] -->|build render params| core["@hance/core (effects, presets, WGSL shaders)"]
+  core -.->|params| gpu["@hance/gpu (orchestrator)"]
+  core -.->|WGSL shaders| sidecar[wgpu sidecar]
   input[Input video / image] --> decode[FFmpeg decode]
-  decode -->|raw RGBA frames| gpu["@hance/gpu (orchestrator)"]
-  gpu <-->|"IPC: JSON init + RGBA"| sidecar[wgpu sidecar]
-  sidecar -.->|loads WGSL shaders| shaders[(packages/core shaders)]
+  decode -->|raw RGBA frames| gpu
+  gpu <-->|"IPC: JSON init + RGBA"| sidecar
   gpu -->|graded RGBA frames| encode[FFmpeg encode]
   encode --> output[Output file]
 ```
 
-The **browser UI preview** is a separate path. It loads the media into an `<img>` or `<video>` element and uploads it straight into a WebGPU texture, so previewing an image never touches FFmpeg. Both paths run the same WGSL shaders, so the preview matches the CLI render.
+The **browser UI preview** is a separate path. It loads the media into an `<img>` or `<video>` element and uploads it straight into a WebGPU texture, so previewing an image never touches FFmpeg. Crucially it loads the **same `@hance/core` WGSL shaders** as the CLI sidecar, so the preview matches the final render.
+
+```mermaid
+flowchart TB
+  media["&lt;img&gt; / &lt;video&gt; element"] -->|WebGPU texture| uir["@hance/ui renderer"]
+  core["@hance/core WGSL shaders"] -.->|same shaders| uir
+  uir --> canvas[Canvas preview]
+```
 
 ## GPU rendering
 
