@@ -36,14 +36,12 @@ Disable with `--no-color-settings`.
 
 ## Halation
 
-Simulates the glow that occurs when bright light passes through film emulsion and reflects off the base.
+Simulates the glow that occurs when bright light passes through film emulsion and reflects off the base. The warm edge ring emerges from per-channel (R/G/B) scatter recombined in linear light — there is no tint colour to set.
 
 | Flag | Range | Default | Description |
 |------|-------|---------|-------------|
 | `--halation-amount` | 0–1 | `0.25` | Halation strength |
 | `--halation-radius` | 1–100 | `4` | Blur radius |
-| `--halation-saturation` | 0–1 | `1` | Tint strength |
-| `--halation-hue` | 0–1 | `0.04` | Tint hue (0.04 ≈ red-orange) |
 | `--halation-highlights-only` | boolean | `true` | Restrict to highlights |
 
 Disable with `--no-halation`.

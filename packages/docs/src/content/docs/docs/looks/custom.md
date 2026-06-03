@@ -20,7 +20,6 @@ A `.hlook` file is a JSON file containing effect parameters:
     "white-balance": 5500,
     "subtractive-sat": 0.85,
     "halation-amount": 0.35,
-    "halation-hue": 0.06,
     "grain-amount": 0.2,
     "grain-size": 1,
     "vignette-amount": 0.35
