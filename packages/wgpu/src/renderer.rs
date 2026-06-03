@@ -72,11 +72,9 @@ pub struct GpuRenderer {
     color_ub: Buffer,
     threshold_ub: Buffer,
     blur_ub1: Buffer,
-    blur_ub2: Buffer,
     scatter_blur_ub1: Buffer,
     scatter_blur_ub2: Buffer,
     combine_ub: Buffer,
-    blend_ub: Buffer,
     aberration_ub: Buffer,
     grain_ub: Buffer,
     vignette_ub: Buffer,
@@ -201,11 +199,9 @@ impl GpuRenderer {
         let color_ub = passes::create_uniform_buffer(&device, 32);
         let threshold_ub = passes::create_uniform_buffer(&device, 16);
         let blur_ub1 = passes::create_uniform_buffer(&device, 16);
-        let blur_ub2 = passes::create_uniform_buffer(&device, 16);
         let scatter_blur_ub1 = passes::create_uniform_buffer(&device, 48);
         let scatter_blur_ub2 = passes::create_uniform_buffer(&device, 48);
         let combine_ub = passes::create_uniform_buffer(&device, 16);
-        let blend_ub = passes::create_uniform_buffer(&device, 16);
         let aberration_ub = passes::create_uniform_buffer(&device, 16);
         let grain_ub = passes::create_uniform_buffer(&device, 32);
         let vignette_ub = passes::create_uniform_buffer(&device, 16);
@@ -266,11 +262,9 @@ impl GpuRenderer {
             color_ub,
             threshold_ub,
             blur_ub1,
-            blur_ub2,
             scatter_blur_ub1,
             scatter_blur_ub2,
             combine_ub,
-            blend_ub,
             aberration_ub,
             grain_ub,
             vignette_ub,
