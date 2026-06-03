@@ -42,11 +42,11 @@ There are several tools for adding film looks to video. Here's how hance stacks 
 - You want a **larger library of film stocks**: Dehancer and FilmBox offer more stock emulations.
 - You need **per-clip adjustments within a timeline**: NLE plugins let you tweak each clip on the timeline without round-tripping.
 
-## What about AI auto-editors?
+## What about AI color tools?
 
-Hance can be AI-driven too. The [`/hance` agent skill](/docs/agent/overview/) lets an AI assistant run a render→read→adjust loop, picking looks and tuning parameters by inspecting preview stills. The difference from cloud tools like [Imagen](https://imagen-ai.com/video/) is where the work happens and what you get back:
+Hance can be AI-driven: the [`/hance` agent skill](/docs/agent/overview/) runs a render→read→adjust loop, picking looks and tuning parameters by inspecting preview stills. A few other tools use AI for color, in different shapes:
 
-- **Cloud auto-editors** are a black box: you upload footage, a hosted model decides, and you get a rendered file. Fast and hands-off, but you can't see or reproduce the pipeline, and your footage leaves your machine.
-- **Hance** keeps the engine **local and deterministic**. Whether you or an agent drives it, the look is expressed as explicit looks and parameters you can read, version, and re-run: same input, same output, every time, offline, with no per-render cost. AI assists by choosing those parameters, not by hiding them.
+- **[Colourlab AI](https://colourlab.ai/)** is a desktop app and NLE plugin (Resolve, Premiere, Final Cut) for colorists: AI auto-balancing, shot matching across a timeline, reference grading, plus grain and film emulation in its Pro tier. Like hance, it processes media locally.
+- **[Imagen](https://imagen-ai.com/video/)** is a cloud auto-editor: you upload footage and a hosted model makes the grading and editing calls for you.
 
-Reach for a cloud auto-editor when you want a result without touching the controls. Reach for hance when you want the look to be transparent and reproducible, with or without an agent in the loop.
+The line isn't "AI or not": it's **how you run it**. Hance is a headless CLI and agent that runs upstream of any editor: scriptable, batchable, with no GUI or timeline required, and it bundles a broader film-texture set (halation, bloom, aberration, shake) alongside grading and grain in one pass. Reach for a GUI colorist app like Colourlab when you're grading shot-by-shot inside an NLE; reach for hance when you want grading and texture applied programmatically, in batch, or by an agent.
