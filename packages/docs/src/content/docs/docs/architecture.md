@@ -19,10 +19,12 @@ When you render from the CLI, hance is not a pure-GPU tool: FFmpeg handles the c
 
 ```mermaid
 flowchart TB
-  cli["packages/cli (parse args)"] -->|build render params| core["@hance/core (effects, presets, WGSL shaders)"]
-  core -.->|params| gpu["@hance/gpu (orchestrator)"]
+  cmd["$ hance &lt;input&gt;"] --> cli["packages/cli (parse args)"]
+  cli -->|build render params| core["@hance/core (effects, presets, WGSL shaders)"]
+  cli -->|start render: input + params| gpu["@hance/gpu (orchestrator)"]
+  core -.->|params| gpu
   core -.->|WGSL shaders| sidecar[wgpu sidecar]
-  input[Input video / image] --> decode[FFmpeg decode]
+  gpu -->|spawns| decode[FFmpeg decode]
   decode -->|raw RGBA frames| gpu
   gpu <-->|"IPC: JSON init + RGBA"| sidecar
   gpu -->|graded RGBA frames| encode[FFmpeg encode]
