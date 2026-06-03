@@ -129,8 +129,6 @@ export function applyPreset(
     enabled: merged["no-halation"] ? false : true,
     amount: Number(merged["halation-amount"]),
     radius: Number(merged["halation-radius"]),
-    saturation: Number(merged["halation-saturation"]),
-    hue: Number(merged["halation-hue"]),
     highlightsOnly: Boolean(merged["halation-highlights-only"]),
   };
 
