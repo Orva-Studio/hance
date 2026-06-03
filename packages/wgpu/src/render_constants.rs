@@ -11,6 +11,12 @@ pub struct RenderConstants {
     pub halation_threshold: [f32; 2],
     #[serde(rename = "blurSigmaFactor")]
     pub blur_sigma_factor: f32,
+    #[serde(rename = "halationChannelSigma")]
+    pub halation_channel_sigma: [f32; 3],
+    #[serde(rename = "halationPsf")]
+    pub halation_psf: [[f32; 2]; 2],
+    #[serde(rename = "halationRing")]
+    pub halation_ring: f32,
 }
 
 const RENDER_CONSTANTS_JSON: &str = include_str!("../../core/constants/render.json");
