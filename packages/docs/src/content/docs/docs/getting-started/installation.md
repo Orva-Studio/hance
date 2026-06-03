@@ -7,7 +7,7 @@ The only system requirement is FFmpeg (see [below](#requirements)).
 
 ## Run with npx (no install)
 
-The quickest way to try hance — no install step, on macOS or Linux:
+The quickest way to try hance, no install step, on macOS or Linux:
 
 ```bash
 npx @orva-studio/hance video.mp4
@@ -16,12 +16,12 @@ npx @orva-studio/hance video.mp4
 This downloads and runs the latest hance on demand. Swap `npx` for `bunx` if you use [Bun](https://bun.sh).
 
 :::caution[FFmpeg required]
-hance needs **FFmpeg** (and `ffprobe`) on your PATH — `brew install ffmpeg`, `apt install ffmpeg`, or see [Requirements](#requirements). Without it, hance exits with an error. (`/hance setup` checks this for you.)
+hance needs **FFmpeg** (and `ffprobe`) on your PATH: `brew install ffmpeg`, `apt install ffmpeg`, or see [Requirements](#requirements). Without it, hance exits with an error. (`/hance setup` checks this for you.)
 :::
 
 ## With an AI agent
 
-If you drive hance from an AI agent, run the skill's setup command — it verifies FFmpeg and gets you ready in one step:
+If you drive hance from an AI agent, run the skill's setup command, which verifies FFmpeg and gets you ready in one step:
 
 ```
 > /hance setup
@@ -56,7 +56,7 @@ sudo apt install ffmpeg
 ```
 
 :::note
-Windows is not currently supported — hance ships binaries for macOS (arm64/x64) and Linux (x64/arm64) only.
+Windows is not currently supported; hance ships binaries for macOS (arm64/x64) and Linux (x64/arm64) only.
 :::
 
 ## Verify

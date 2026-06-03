@@ -49,8 +49,8 @@ Accepted values are `rec709` (default, pass-through) and `vlog` (Panasonic V-Log
 
 Hance searches for looks in two directories:
 
-1. **User looks** — `~/.hance/presets/`
-2. **Built-in looks** — ships with the binary
+1. **User looks**: `~/.hance/presets/`
+2. **Built-in looks**: ships with the binary
 
 User looks take precedence over built-in looks with the same name.
 

@@ -1,6 +1,6 @@
 ---
 title: Browser UI
-description: Full tour of the hance browser-based editor — panels, view modes, and export.
+description: Full tour of the hance browser-based editor: panels, view modes, and export.
 ---
 
 The hance browser-based editor previews looks in real-time on your footage, rendering effects on the GPU via WebGPU. This page documents every panel and feature.
@@ -14,7 +14,7 @@ hance ui --port 5000          # use a custom port
 hance ui --no-open            # start the server without opening a browser
 ```
 
-Using an AI agent? The [`/hance ui`](/docs/agent/overview/) skill command opens the editor too — `/hance ui my-video.mp4`.
+Using an AI agent? The [`/hance ui`](/docs/agent/overview/) skill command opens the editor too: `/hance ui my-video.mp4`.
 
 ## Upload & preview
 
@@ -30,7 +30,7 @@ Browse and apply any of the 40+ built-in film stock looks. Click a look to previ
 
 ## Adjustments panel
 
-Fine-tune every effect parameter with sliders. All the same controls available on the CLI — colour, halation, bloom, grain, vignette, split tone, aberration, and camera shake — grouped into collapsible sections.
+Fine-tune every effect parameter with sliders. All the same controls available on the CLI (colour, halation, bloom, grain, vignette, split tone, aberration, and camera shake), grouped into collapsible sections.
 
 *<!-- Screenshot: adjustments panel with sliders -->*
 
@@ -38,9 +38,9 @@ Fine-tune every effect parameter with sliders. All the same controls available o
 
 Switch between three view modes to evaluate your grade:
 
-- **Normal** — full-screen preview of the graded result
-- **Split** — side-by-side comparison of the original and graded frames
-- **Reference** — compare against a reference image
+- **Normal**: full-screen preview of the graded result
+- **Split**: side-by-side comparison of the original and graded frames
+- **Reference**: compare against a reference image
 
 *<!-- Screenshot: split view mode -->*
 
@@ -52,7 +52,7 @@ For video files, a timeline scrubber lets you navigate through your footage and 
 
 ## Undo / redo
 
-Full undo/redo history for parameter changes. Experiment freely — you can always step back.
+Full undo/redo history for parameter changes. Experiment freely; you can always step back.
 
 ## Zoom & pan
 
@@ -66,6 +66,6 @@ Save your current settings as a new `.hlook` file directly from the UI. Saved lo
 
 ## Export
 
-Export your graded video or image from the editor. Choose codec, quality, and export preset — the same options available on the CLI.
+Export your graded video or image from the editor. Choose codec, quality, and export preset: the same options available on the CLI.
 
 *<!-- Screenshot: export modal -->*

@@ -7,7 +7,7 @@ The `/hance` skill routes to one of five subcommands based on what you ask for.
 
 ## `/hance setup`
 
-Verifies your environment is ready — checks for Bun (or Node as fallback), FFmpeg, and shows example commands. Use this the first time you run hance from your AI agent.
+Verifies your environment is ready: checks for Bun (or Node as fallback), FFmpeg, and shows example commands. Use this the first time you run hance from your AI agent.
 
 ```
 > /hance setup
@@ -15,7 +15,7 @@ Verifies your environment is ready — checks for Bun (or Node as fallback), FFm
 
 ## `/hance run`
 
-Apply a specific preset to a single file. The simplest path — name a look and a file.
+Apply a specific preset to a single file. The simplest path: name a look and a file.
 
 ```
 > /hance run portra-400 on my-video.mp4
