@@ -78,14 +78,6 @@ impl Params {
         self.bool("halation-highlights-only", true)
     }
 
-    pub fn halation_hue(&self) -> f32 {
-        self.num("halation-hue", 0.04) * 360.0
-    }
-
-    pub fn halation_saturation(&self) -> f32 {
-        self.num("halation-saturation", 1.0)
-    }
-
     pub fn aberration_enabled(&self) -> bool {
         !self.bool("no-aberration", false) && self.num("aberration", 0.3) > 0.0
     }
