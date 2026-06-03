@@ -29,7 +29,9 @@ flowchart TB
   encode --> output[Output file]
 ```
 
-The **browser UI preview** is a separate path. It loads the media into an `<img>` or `<video>` element and uploads it straight into a WebGPU texture, so previewing an image never touches FFmpeg. Crucially it loads the **same `@hance/core` WGSL shaders** as the CLI sidecar, so the preview matches the final render.
+## How a frame flows (browser UI preview)
+
+The browser UI preview is a separate path. It loads the media into an `<img>` or `<video>` element and uploads it straight into a WebGPU texture, so previewing an image never touches FFmpeg. Crucially it loads the **same `@hance/core` WGSL shaders** as the CLI sidecar, so the preview matches the final render.
 
 ```mermaid
 flowchart TB
