@@ -9,25 +9,18 @@ There are several tools for adding film looks to video. Here's how hance stacks 
 
 | | Hance | Colourlab AI | Dehancer | FilmBox |
 |---|---|---|---|---|
-| **Standalone CLI** | ✓ | — | — | — |
-| **No NLE required** | ✓ | ✓ | — | — |
+| **CLI, scriptable & batchable** | ✓ | — | — | — |
+| **Runs without an NLE** | ✓ | ✓ | — | — |
 | **Browser-based UI** | ✓ | — | — | — |
-| **Batch processing** | ✓ | ✓ | — | — |
-| **Scriptable / automatable** | ✓ | — | — | — |
-| **Self-hostable** | ✓ | — | — | — |
 | **AI agent integration** | ✓ | — | — | — |
 | **AI auto-grading / shot match** | — | ✓ | — | — |
-| **GPU-accelerated** | ✓ | ✓ | ✓ | ✓ |
 | **Film stock emulation** | 40+ looks | Neural Looks | 60+ stocks | 90+ stocks |
-| **Halation** | ✓ | — | ✓ | — |
-| **Bloom** | ✓ | — | ✓ | — |
+| **Optical effects** (halation, bloom, aberration, vignette) | ✓ | — | ✓ | — |
 | **Film grain** | ✓ | ✓ (Pro) | ✓ | ✓ |
-| **Chromatic aberration** | ✓ | — | ✓ | — |
-| **Vignette** | ✓ | — | ✓ | — |
 | **Camera shake** | ✓ | — | — | — |
 | **Split toning** | ✓ | — | — | — |
 | **Pricing** | Free / $49 Pro | $15/mo+ | $99–$399 | $89–$129 |
-| **Plugin (Premiere, Resolve, etc.)** | — | ✓ | ✓ | ✓ |
+| **NLE plugin** (Premiere, Resolve, etc.) | — | ✓ | ✓ | ✓ |
 
 ## When to use hance
 
