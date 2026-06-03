@@ -13,9 +13,9 @@ Hance is a Bun workspaces monorepo with five packages:
 | `packages/ui` | Browser-based interactive preview |
 | `packages/wgpu` | Rust wgpu sidecar binary |
 
-## How a frame flows
+## How a frame flows (CLI render)
 
-Hance is not a pure-GPU tool: FFmpeg handles the codec work at both ends, and the GPU handles the pixels in between. `@hance/gpu` orchestrates the round trip.
+When you render from the CLI, hance is not a pure-GPU tool: FFmpeg handles the codec work at both ends, and the GPU handles the pixels in between. `@hance/gpu` orchestrates the round trip for both video and image inputs.
 
 ```mermaid
 flowchart TB
@@ -26,6 +26,8 @@ flowchart TB
   gpu -->|graded RGBA frames| encode[FFmpeg encode]
   encode --> output[Output file]
 ```
+
+The **browser UI preview** is a separate path. It loads the media into an `<img>` or `<video>` element and uploads it straight into a WebGPU texture, so previewing an image never touches FFmpeg. Both paths run the same WGSL shaders, so the preview matches the CLI render.
 
 ## GPU rendering
 
