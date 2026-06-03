@@ -11,6 +11,8 @@ import SPLIT_TONE_FRAG from "../../../core/shaders/split-tone.frag.wgsl";
 import CAMERA_SHAKE_FRAG from "../../../core/shaders/camera-shake.frag.wgsl";
 import COLORSPACE_FRAG from "../../../core/shaders/colorspace.frag.wgsl";
 import LUT_FRAG from "../../../core/shaders/lut.frag.wgsl";
+import SCATTER_BLUR_FRAG from "../../../core/shaders/scatter-blur.frag.wgsl";
+import HALATION_COMBINE_FRAG from "../../../core/shaders/halation-combine.frag.wgsl";
 
 export {
   FULLSCREEN_VERT,
@@ -25,4 +27,6 @@ export {
   SPLIT_TONE_FRAG,
   CAMERA_SHAKE_FRAG,
   COLORSPACE_FRAG,
+  SCATTER_BLUR_FRAG,
+  HALATION_COMBINE_FRAG,
 };

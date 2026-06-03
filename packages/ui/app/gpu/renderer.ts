@@ -2,11 +2,12 @@ import {
   FULLSCREEN_VERT, COLOR_SETTINGS_FRAG, THRESHOLD_FRAG, BLUR_FRAG,
   SCREEN_BLEND_FRAG, ABERRATION_FRAG, GRAIN_FRAG, VIGNETTE_FRAG,
   SPLIT_TONE_FRAG, CAMERA_SHAKE_FRAG, COLORSPACE_FRAG, LUT_FRAG,
+  SCATTER_BLUR_FRAG, HALATION_COMBINE_FRAG,
 } from "./shaders";
 import { createFullscreenPipeline, createTexture, runPass } from "./passes";
 import { getSplitToneTintValues } from "./splitToneMath";
 import { isLightGroupActive } from "./lightGroup";
-import { LUT_SIZE, generateLut, isInputLutActive, HALATION_THRESHOLD, BLUR_SIGMA_FACTOR } from "@hance/core";
+import { LUT_SIZE, generateLut, isInputLutActive, HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING } from "@hance/core";
 
 export interface PreviewParams {
   [key: string]: string | number | boolean;
@@ -45,6 +46,18 @@ function createBlendLayout(device: GPUDevice): GPUBindGroupLayout {
       { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
       { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: {} },
       { binding: 3, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } },
+    ],
+  });
+}
+
+function createCombineLayout(device: GPUDevice): GPUBindGroupLayout {
+  return device.createBindGroupLayout({
+    entries: [
+      { binding: 0, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+      { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+      { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+      { binding: 3, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+      { binding: 4, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } },
     ],
   });
 }
@@ -135,6 +148,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const sampler = device.createSampler({ magFilter: "linear", minFilter: "linear" });
   const stdLayout = createStandardLayout(device);
   const blendLayout = createBlendLayout(device);
+  const combineLayout = createCombineLayout(device);
   const lutLayout = createLutLayout(device);
 
   const halfW = Math.max(1, Math.floor(previewWidth / 2));
@@ -146,6 +160,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const texB = createTexture(device, previewWidth, previewHeight, INTERMEDIATE_FORMAT);
   const halfA = createTexture(device, halfW, halfH, INTERMEDIATE_FORMAT);
   const halfB = createTexture(device, halfW, halfH, INTERMEDIATE_FORMAT);
+  const coreTex = createTexture(device, halfW, halfH, INTERMEDIATE_FORMAT);
 
   // 8-bit output texture used as the readback source (readPixels assumes 4 bytes/pixel).
   const outputTex = device.createTexture({
@@ -163,6 +178,8 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const colorPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, COLOR_SETTINGS_FRAG, stdLayout, INTERMEDIATE_FORMAT);
   const thresholdPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, THRESHOLD_FRAG, stdLayout, INTERMEDIATE_FORMAT);
   const blurPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, BLUR_FRAG, stdLayout, INTERMEDIATE_FORMAT);
+  const scatterBlurPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, SCATTER_BLUR_FRAG, stdLayout, INTERMEDIATE_FORMAT);
+  const combinePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, HALATION_COMBINE_FRAG, combineLayout, INTERMEDIATE_FORMAT);
   const blendPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, SCREEN_BLEND_FRAG, blendLayout, INTERMEDIATE_FORMAT);
   const aberrationPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, ABERRATION_FRAG, stdLayout, INTERMEDIATE_FORMAT);
   const grainPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, GRAIN_FRAG, stdLayout, INTERMEDIATE_FORMAT);
@@ -184,6 +201,9 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const thresholdUB = createUniformBuffer(device, 16);
   const blurUB1 = createUniformBuffer(device, 16);
   const blurUB2 = createUniformBuffer(device, 16);
+  const scatterBlurUB1 = createUniformBuffer(device, 48);
+  const scatterBlurUB2 = createUniformBuffer(device, 48);
+  const combineUB = createUniformBuffer(device, 16);
   const blendUB = createUniformBuffer(device, 16);
   const aberrationUB = createUniformBuffer(device, 16);
   const grainUB = createUniformBuffer(device, 32); // 8 floats
@@ -235,6 +255,19 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
         { binding: 1, resource: sampler },
         { binding: 2, resource: overlayTex.createView() },
         { binding: 3, resource: { buffer: ub } },
+      ],
+    });
+  }
+
+  function makeCombineBindGroup(baseTex: GPUTexture, scatterTex: GPUTexture, coreTexture: GPUTexture, ub: GPUBuffer): GPUBindGroup {
+    return device.createBindGroup({
+      layout: combineLayout,
+      entries: [
+        { binding: 0, resource: baseTex.createView() },
+        { binding: 1, resource: sampler },
+        { binding: 2, resource: scatterTex.createView() },
+        { binding: 3, resource: coreTexture.createView() },
+        { binding: 4, resource: { buffer: ub } },
       ],
     });
   }
@@ -346,39 +379,43 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
       if (amount > 0) {
         const radius = num("halation-radius");
         const highlightsOnly = bool("halation-highlights-only");
-
-        // Save pre-halation result for blend
         const preHalation = current;
 
+        // Threshold (or plain downsample) → coreTex
         if (highlightsOnly) {
-          // Threshold pass → halfA
           device.queue.writeBuffer(thresholdUB, 0, new Float32Array([HALATION_THRESHOLD[0], HALATION_THRESHOLD[1], 0, 0]));
-          const threshBG = makeStdBindGroup(current, thresholdUB);
-          runPass(encoder, thresholdPipeline, threshBG, halfA.createView());
+          runPass(encoder, thresholdPipeline, makeStdBindGroup(current, thresholdUB), coreTex.createView());
         } else {
-          // Downsample directly (use blur with sigma=0.001 as passthrough-ish)
           device.queue.writeBuffer(blurUB1, 0, new Float32Array([0, 0, 0.001, 0]));
-          const bg = makeStdBindGroup(current, blurUB1);
-          runPass(encoder, blurPipeline, bg, halfA.createView());
+          runPass(encoder, blurPipeline, makeStdBindGroup(current, blurUB1), coreTex.createView());
         }
 
-        // Horizontal blur → halfB
-        const sigma = radius * BLUR_SIGMA_FACTOR;
-        device.queue.writeBuffer(blurUB1, 0, new Float32Array([1.0 / halfW, 0, sigma, 0]));
-        const hBG = makeStdBindGroup(halfA, blurUB1);
-        runPass(encoder, blurPipeline, hBG, halfB.createView());
+        const baseSigma = radius * BLUR_SIGMA_FACTOR;
+        const sigR = baseSigma * HALATION_CHANNEL_SIGMA[0];
+        const sigG = baseSigma * HALATION_CHANNEL_SIGMA[1];
+        const sigB = baseSigma * HALATION_CHANNEL_SIGMA[2];
+        const p0 = HALATION_PSF[0];
+        const p1 = HALATION_PSF[1];
 
-        // Vertical blur → halfA
-        device.queue.writeBuffer(blurUB2, 0, new Float32Array([0, 1.0 / halfH, sigma, 0]));
-        const vBG = makeStdBindGroup(halfB, blurUB2);
-        runPass(encoder, blurPipeline, vBG, halfA.createView());
+        // Per-channel H scatter: coreTex → halfB
+        device.queue.writeBuffer(scatterBlurUB1, 0, new Float32Array([
+          1.0 / halfW, 0, 0, 0,
+          sigR, sigG, sigB, 0,
+          p0[0], p0[1], p1[0], p1[1],
+        ]));
+        runPass(encoder, scatterBlurPipeline, makeStdBindGroup(coreTex, scatterBlurUB1), halfB.createView());
 
-        // Screen blend halation with pre-halation → other
-        const hue = num("halation-hue") * 360;
-        const sat = num("halation-saturation");
-        device.queue.writeBuffer(blendUB, 0, new Float32Array([amount, hue, sat, 0]));
-        const blendBG = makeBlendBindGroup(preHalation, halfA, blendUB);
-        runPass(encoder, blendPipeline, blendBG, other.createView());
+        // Per-channel V scatter: halfB → halfA
+        device.queue.writeBuffer(scatterBlurUB2, 0, new Float32Array([
+          0, 1.0 / halfH, 0, 0,
+          sigR, sigG, sigB, 0,
+          p0[0], p0[1], p1[0], p1[1],
+        ]));
+        runPass(encoder, scatterBlurPipeline, makeStdBindGroup(halfB, scatterBlurUB2), halfA.createView());
+
+        // Ring extraction + additive recombine → other
+        device.queue.writeBuffer(combineUB, 0, new Float32Array([amount, HALATION_RING, 0, 0]));
+        runPass(encoder, combinePipeline, makeCombineBindGroup(preHalation, halfA, coreTex, combineUB), other.createView());
         swap();
       }
     }
@@ -589,6 +626,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
       texB.destroy();
       halfA.destroy();
       halfB.destroy();
+      coreTex.destroy();
       outputTex.destroy();
       srcTex.destroy();
       lutTex.destroy();
