@@ -36,7 +36,7 @@ Disable with `--no-color-settings`.
 
 ## Halation
 
-Simulates the glow that occurs when bright light passes through film emulsion and reflects off the base. The warm edge ring emerges from per-channel (R/G/B) scatter recombined in linear light — there is no tint colour to set.
+Simulates the glow that occurs when bright light passes through film emulsion and reflects off the base. The warm edge ring emerges from per-channel (R/G/B) scatter recombined in linear light; there is no tint colour to set.
 
 | Flag | Range | Default | Description |
 |------|-------|---------|-------------|

@@ -30,7 +30,7 @@ Pro is **coming soon**. The features below outline what a pro license will inclu
 
 The free tier supports H.264 and H.265 output. Pro unlocks:
 
-- **ProRes** — near-lossless 4:2:2 10-bit output for professional editing workflows
+- **ProRes**: near-lossless 4:2:2 10-bit output for professional editing workflows
 
 Using a pro codec on the free tier will show an error:
 

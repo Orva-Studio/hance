@@ -3,13 +3,13 @@ title: Default Look
 description: What hance applies when you don't specify a preset.
 ---
 
-When you run `hance video.mp4` without `--preset`, hance loads the built-in `default` look. This is a balanced cinematic starting point — not a neutral pass-through.
+When you run `hance video.mp4` without `--preset`, hance loads the built-in `default` look. This is a balanced cinematic starting point, not a neutral pass-through.
 
 ## What the default look does
 
 | Effect | Setting | What it does |
 |--------|---------|--------------|
-| **Color** | All neutral | No color shift — exposure 0, contrast 1, white balance 6500K |
+| **Color** | All neutral | No color shift: exposure 0, contrast 1, white balance 6500K |
 | **Halation** | 0.25 amount, radius 4 | Subtle warm glow around highlights |
 | **Chromatic aberration** | 0.3 | Slight color fringing at edges |
 | **Bloom** | 0.25 amount, radius 10 | Gentle light diffusion |

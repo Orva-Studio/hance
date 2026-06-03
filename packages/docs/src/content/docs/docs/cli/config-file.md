@@ -9,8 +9,8 @@ Instead of passing the same flags every time, save them in a config file.
 
 Hance checks two locations, in order:
 
-1. **Local** — `.hancerc.json` in the current directory (or any parent directory)
-2. **Global** — `~/.config/hance/config.json`
+1. **Local**: `.hancerc.json` in the current directory (or any parent directory)
+2. **Global**: `~/.config/hance/config.json`
 
 The first one found wins. CLI flags always override config values.
 
