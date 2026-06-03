@@ -29,7 +29,7 @@ flowchart TB
   gpu <-->|"IPC: JSON init + RGBA"| sidecar
   gpu -->|graded RGBA frames| encode[FFmpeg encode]
   encode --> output[Output file]
-  classDef pkg fill:#e8843c,stroke:#e8843c,color:#1a1a1a;
+  classDef pkg color:#e8843c;
   class cli,core,gpu,sidecar pkg;
 ```
 
@@ -42,7 +42,7 @@ flowchart TB
   media["&lt;img&gt; / &lt;video&gt; element"] -->|WebGPU texture| uir["@hance/ui renderer"]
   core["@hance/core WGSL shaders"] -.->|same shaders| uir
   uir --> canvas[Canvas preview]
-  classDef pkg fill:#e8843c,stroke:#e8843c,color:#1a1a1a;
+  classDef pkg color:#e8843c;
   class uir,core pkg;
 ```
 
