@@ -1,4 +1,5 @@
 import { defineConfig } from "astro/config";
+import mermaid from "astro-mermaid";
 import starlight from "@astrojs/starlight";
 import tailwindcss from "@tailwindcss/vite";
 import starlightLlmsTxt from "starlight-llms-txt";
@@ -15,6 +16,10 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   integrations: [
+    mermaid({
+      theme: "dark",
+      autoTheme: true,
+    }),
     starlight({
       plugins: [
         starlightLlmsTxt({

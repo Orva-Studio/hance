@@ -1,24 +1,43 @@
 ---
 title: Architecture
-description: "How hance is built: monorepo structure, GPU rendering, and IPC."
+description: "How hance is built: monorepo structure, FFmpeg codec I/O, GPU rendering, and IPC."
 ---
 
-Hance is a Bun workspaces monorepo with four packages:
+Hance is a Bun workspaces monorepo with five packages:
 
 | Package | Purpose |
 |---------|---------|
-| `packages/core` | Pure TypeScript effect/preset/arg logic |
+| `packages/core` | Pure TypeScript effect/preset/arg logic and the shared WGSL shaders |
 | `packages/cli` | The compiled `hance` binary entry point |
+| `packages/gpu` | Render orchestration: drives the sidecar, runs the image pipeline, handles export |
 | `packages/ui` | Browser-based interactive preview |
 | `packages/wgpu` | Rust wgpu sidecar binary |
 
+## How a frame flows
+
+Hance is not a pure-GPU tool: FFmpeg handles the codec work at both ends, and the GPU handles the pixels in between. `@hance/gpu` orchestrates the round trip.
+
+```mermaid
+flowchart LR
+  input[Input video / image] --> decode[FFmpeg decode]
+  decode -->|raw RGBA frames| gpu["@hance/gpu (orchestrator)"]
+  gpu <-->|IPC: JSON init + RGBA| sidecar[wgpu sidecar]
+  sidecar -.->|WGSL shaders| shaders[(packages/core shaders)]
+  gpu -->|graded RGBA frames| encode[FFmpeg encode]
+  encode --> output[Output file]
+```
+
 ## GPU rendering
 
-Effects are rendered on the GPU via the native Rust [wgpu](https://wgpu.rs) sidecar. WGSL shaders are shared between the browser preview and the Rust sidecar, so what you see in `hance ui` is exactly what you get from the CLI.
+Effects are rendered on the GPU via the native Rust [wgpu](https://wgpu.rs) sidecar. The WGSL shaders in `packages/core` are shared between the browser preview and the Rust sidecar, so what you see in `hance ui` is exactly what you get from the CLI.
 
 ## IPC protocol
 
-The sidecar communicates with the Bun CLI over stdin/stdout using a length-prefixed JSON init message followed by raw RGBA frames. This keeps the CLI lightweight while offloading pixel work to the GPU.
+The sidecar communicates with the Bun process over stdin/stdout using a length-prefixed JSON init message followed by raw RGBA frames. This keeps the orchestration lightweight while offloading pixel work to the GPU.
+
+## Codec I/O
+
+`@hance/gpu` shells out to FFmpeg to decode the input into raw RGBA frames (`-f rawvideo -pix_fmt rgba`) and to encode the processed frames back into the output container. `ffmpeg` and `ffprobe` must be on your `PATH`. The GPU work happens entirely between decode and encode, so there are no intermediate files.
 
 ## Processing pipeline
 
