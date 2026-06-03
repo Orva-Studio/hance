@@ -14,6 +14,8 @@ const GRAIN_FRAG: &str = include_str!("../../core/shaders/grain.frag.wgsl");
 const VIGNETTE_FRAG: &str = include_str!("../../core/shaders/vignette.frag.wgsl");
 const SPLIT_TONE_FRAG: &str = include_str!("../../core/shaders/split-tone.frag.wgsl");
 const SHAKE_FRAG: &str = include_str!("../../core/shaders/camera-shake.frag.wgsl");
+const SCATTER_BLUR_FRAG: &str = include_str!("../../core/shaders/scatter-blur.frag.wgsl");
+const COMBINE_FRAG: &str = include_str!("../../core/shaders/halation-combine.frag.wgsl");
 
 const COLORSPACE_FRAG: &str = include_str!("../../core/shaders/colorspace.frag.wgsl");
 const LUT_FRAG: &str = include_str!("../../core/shaders/lut.frag.wgsl");
@@ -37,11 +39,13 @@ pub struct GpuRenderer {
     tex_b: Texture,
     half_a: Texture,
     half_b: Texture,
+    core_tex: Texture,
     output_tex: Texture,
 
     // Layouts
     std_layout: BindGroupLayout,
     blend_layout: BindGroupLayout,
+    combine_layout: BindGroupLayout,
     lut_layout: BindGroupLayout,
     sampler: Sampler,
 
@@ -53,6 +57,8 @@ pub struct GpuRenderer {
     color_pipeline: RenderPipeline,
     threshold_pipeline: RenderPipeline,
     blur_pipeline: RenderPipeline,
+    scatter_blur_pipeline: RenderPipeline,
+    combine_pipeline: RenderPipeline,
     blend_pipeline: RenderPipeline,
     aberration_pipeline: RenderPipeline,
     grain_pipeline: RenderPipeline,
@@ -67,6 +73,9 @@ pub struct GpuRenderer {
     threshold_ub: Buffer,
     blur_ub1: Buffer,
     blur_ub2: Buffer,
+    scatter_blur_ub1: Buffer,
+    scatter_blur_ub2: Buffer,
+    combine_ub: Buffer,
     blend_ub: Buffer,
     aberration_ub: Buffer,
     grain_ub: Buffer,
@@ -111,6 +120,7 @@ impl GpuRenderer {
 
         let std_layout = passes::create_standard_bind_group_layout(&device);
         let blend_layout = passes::create_blend_bind_group_layout(&device);
+        let combine_layout = passes::create_combine_bind_group_layout(&device);
         let lut_layout = passes::create_lut_bind_group_layout(&device);
 
         let half_w = (width / 2).max(1);
@@ -131,11 +141,14 @@ impl GpuRenderer {
         let tex_b = passes::create_texture(&device, width, height, INTERMEDIATE_FORMAT);
         let half_a = passes::create_texture(&device, half_w, half_h, INTERMEDIATE_FORMAT);
         let half_b = passes::create_texture(&device, half_w, half_h, INTERMEDIATE_FORMAT);
+        let core_tex = passes::create_texture(&device, half_w, half_h, INTERMEDIATE_FORMAT);
         let output_tex = passes::create_texture(&device, width, height, OUTPUT_FORMAT);
 
         let color_pipeline = passes::create_pipeline(&device, VERT, COLOR_FRAG, &std_layout, INTERMEDIATE_FORMAT);
         let threshold_pipeline = passes::create_pipeline(&device, VERT, THRESHOLD_FRAG, &std_layout, INTERMEDIATE_FORMAT);
         let blur_pipeline = passes::create_pipeline(&device, VERT, BLUR_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+        let scatter_blur_pipeline = passes::create_pipeline(&device, VERT, SCATTER_BLUR_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+        let combine_pipeline = passes::create_pipeline(&device, VERT, COMBINE_FRAG, &combine_layout, INTERMEDIATE_FORMAT);
         let blend_pipeline = passes::create_pipeline(&device, VERT, BLEND_FRAG, &blend_layout, INTERMEDIATE_FORMAT);
         let aberration_pipeline = passes::create_pipeline(&device, VERT, ABERRATION_FRAG, &std_layout, INTERMEDIATE_FORMAT);
         let grain_pipeline = passes::create_pipeline(&device, VERT, GRAIN_FRAG, &std_layout, INTERMEDIATE_FORMAT);
@@ -189,6 +202,9 @@ impl GpuRenderer {
         let threshold_ub = passes::create_uniform_buffer(&device, 16);
         let blur_ub1 = passes::create_uniform_buffer(&device, 16);
         let blur_ub2 = passes::create_uniform_buffer(&device, 16);
+        let scatter_blur_ub1 = passes::create_uniform_buffer(&device, 48);
+        let scatter_blur_ub2 = passes::create_uniform_buffer(&device, 48);
+        let combine_ub = passes::create_uniform_buffer(&device, 16);
         let blend_ub = passes::create_uniform_buffer(&device, 16);
         let aberration_ub = passes::create_uniform_buffer(&device, 16);
         let grain_ub = passes::create_uniform_buffer(&device, 32);
@@ -225,9 +241,11 @@ impl GpuRenderer {
             tex_b,
             half_a,
             half_b,
+            core_tex,
             output_tex,
             std_layout,
             blend_layout,
+            combine_layout,
             lut_layout,
             sampler,
             lut_pipeline,
@@ -235,6 +253,8 @@ impl GpuRenderer {
             color_pipeline,
             threshold_pipeline,
             blur_pipeline,
+            scatter_blur_pipeline,
+            combine_pipeline,
             blend_pipeline,
             aberration_pipeline,
             grain_pipeline,
@@ -247,6 +267,9 @@ impl GpuRenderer {
             threshold_ub,
             blur_ub1,
             blur_ub2,
+            scatter_blur_ub1,
+            scatter_blur_ub2,
+            combine_ub,
             blend_ub,
             aberration_ub,
             grain_ub,
@@ -360,8 +383,12 @@ impl GpuRenderer {
             let amount = self.params.halation_amount();
             let radius = self.params.halation_radius();
             let consts = crate::render_constants::render_constants();
-            let sigma = radius * consts.blur_sigma_factor;
+            let base_sigma = radius * consts.blur_sigma_factor;
+            let cs = consts.halation_channel_sigma;
+            let sig = [base_sigma * cs[0], base_sigma * cs[1], base_sigma * cs[2]];
+            let psf = consts.halation_psf;
 
+            // Threshold (or plain downsample) -> core_tex
             if self.params.halation_highlights_only() {
                 self.write_uniform(&self.threshold_ub, &[consts.halation_threshold[0], consts.halation_threshold[1], 0.0, 0.0]);
                 let bg = passes::make_std_bind_group(
@@ -370,7 +397,7 @@ impl GpuRenderer {
                     &self.sampler, &self.threshold_ub,
                 );
                 passes::run_pass(&mut encoder, &self.threshold_pipeline, &bg,
-                    &self.half_a.create_view(&TextureViewDescriptor::default()));
+                    &self.core_tex.create_view(&TextureViewDescriptor::default()));
             } else {
                 self.write_uniform(&self.blur_ub1, &[0.0, 0.0, 0.001, 0.0]);
                 let bg = passes::make_std_bind_group(
@@ -379,38 +406,48 @@ impl GpuRenderer {
                     &self.sampler, &self.blur_ub1,
                 );
                 passes::run_pass(&mut encoder, &self.blur_pipeline, &bg,
-                    &self.half_a.create_view(&TextureViewDescriptor::default()));
+                    &self.core_tex.create_view(&TextureViewDescriptor::default()));
             }
 
-            self.write_uniform(&self.blur_ub1, &[1.0 / half_w as f32, 0.0, sigma, 0.0]);
+            // Per-channel H scatter: core_tex -> half_b
+            self.write_uniform(&self.scatter_blur_ub1, &[
+                1.0 / half_w as f32, 0.0, 0.0, 0.0,
+                sig[0], sig[1], sig[2], 0.0,
+                psf[0][0], psf[0][1], psf[1][0], psf[1][1],
+            ]);
             let h_bg = passes::make_std_bind_group(
                 &self.device, &self.std_layout,
-                &self.half_a.create_view(&TextureViewDescriptor::default()),
-                &self.sampler, &self.blur_ub1,
+                &self.core_tex.create_view(&TextureViewDescriptor::default()),
+                &self.sampler, &self.scatter_blur_ub1,
             );
-            passes::run_pass(&mut encoder, &self.blur_pipeline, &h_bg,
+            passes::run_pass(&mut encoder, &self.scatter_blur_pipeline, &h_bg,
                 &self.half_b.create_view(&TextureViewDescriptor::default()));
 
-            self.write_uniform(&self.blur_ub2, &[0.0, 1.0 / half_h as f32, sigma, 0.0]);
+            // Per-channel V scatter: half_b -> half_a
+            self.write_uniform(&self.scatter_blur_ub2, &[
+                0.0, 1.0 / half_h as f32, 0.0, 0.0,
+                sig[0], sig[1], sig[2], 0.0,
+                psf[0][0], psf[0][1], psf[1][0], psf[1][1],
+            ]);
             let v_bg = passes::make_std_bind_group(
                 &self.device, &self.std_layout,
                 &self.half_b.create_view(&TextureViewDescriptor::default()),
-                &self.sampler, &self.blur_ub2,
+                &self.sampler, &self.scatter_blur_ub2,
             );
-            passes::run_pass(&mut encoder, &self.blur_pipeline, &v_bg,
+            passes::run_pass(&mut encoder, &self.scatter_blur_pipeline, &v_bg,
                 &self.half_a.create_view(&TextureViewDescriptor::default()));
 
-            let hue = self.params.halation_hue();
-            let sat = self.params.halation_saturation();
-            self.write_uniform(&self.blend_ub, &[amount, hue, sat, 0.0]);
-            let blend_bg = passes::make_blend_bind_group(
-                &self.device, &self.blend_layout,
+            // Ring extraction + additive recombine: base + amount*max(scatter - ring*core, 0)
+            self.write_uniform(&self.combine_ub, &[amount, consts.halation_ring, 0.0, 0.0]);
+            let combine_bg = passes::make_combine_bind_group(
+                &self.device, &self.combine_layout,
                 &current_tex!().create_view(&TextureViewDescriptor::default()),
                 &self.sampler,
                 &self.half_a.create_view(&TextureViewDescriptor::default()),
-                &self.blend_ub,
+                &self.core_tex.create_view(&TextureViewDescriptor::default()),
+                &self.combine_ub,
             );
-            passes::run_pass(&mut encoder, &self.blend_pipeline, &blend_bg,
+            passes::run_pass(&mut encoder, &self.combine_pipeline, &combine_bg,
                 &other_tex!().create_view(&TextureViewDescriptor::default()));
             swap!();
         }

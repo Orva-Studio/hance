@@ -130,6 +130,82 @@ pub fn create_blend_bind_group_layout(device: &Device) -> BindGroupLayout {
     })
 }
 
+pub fn create_combine_bind_group_layout(device: &Device) -> BindGroupLayout {
+    device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+        label: Some("combine_layout"),
+        entries: &[
+            BindGroupLayoutEntry {
+                binding: 0,
+                visibility: ShaderStages::FRAGMENT,
+                ty: BindingType::Texture {
+                    sample_type: TextureSampleType::Float { filterable: true },
+                    view_dimension: TextureViewDimension::D2,
+                    multisampled: false,
+                },
+                count: None,
+            },
+            BindGroupLayoutEntry {
+                binding: 1,
+                visibility: ShaderStages::FRAGMENT,
+                ty: BindingType::Sampler(SamplerBindingType::Filtering),
+                count: None,
+            },
+            BindGroupLayoutEntry {
+                binding: 2,
+                visibility: ShaderStages::FRAGMENT,
+                ty: BindingType::Texture {
+                    sample_type: TextureSampleType::Float { filterable: true },
+                    view_dimension: TextureViewDimension::D2,
+                    multisampled: false,
+                },
+                count: None,
+            },
+            BindGroupLayoutEntry {
+                binding: 3,
+                visibility: ShaderStages::FRAGMENT,
+                ty: BindingType::Texture {
+                    sample_type: TextureSampleType::Float { filterable: true },
+                    view_dimension: TextureViewDimension::D2,
+                    multisampled: false,
+                },
+                count: None,
+            },
+            BindGroupLayoutEntry {
+                binding: 4,
+                visibility: ShaderStages::FRAGMENT,
+                ty: BindingType::Buffer {
+                    ty: BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            },
+        ],
+    })
+}
+
+pub fn make_combine_bind_group(
+    device: &Device,
+    layout: &BindGroupLayout,
+    base: &TextureView,
+    sampler: &Sampler,
+    scatter: &TextureView,
+    core: &TextureView,
+    uniform: &Buffer,
+) -> BindGroup {
+    device.create_bind_group(&BindGroupDescriptor {
+        label: Some("combine_bind_group"),
+        layout,
+        entries: &[
+            BindGroupEntry { binding: 0, resource: BindingResource::TextureView(base) },
+            BindGroupEntry { binding: 1, resource: BindingResource::Sampler(sampler) },
+            BindGroupEntry { binding: 2, resource: BindingResource::TextureView(scatter) },
+            BindGroupEntry { binding: 3, resource: BindingResource::TextureView(core) },
+            BindGroupEntry { binding: 4, resource: uniform.as_entire_binding() },
+        ],
+    })
+}
+
 pub fn create_pipeline(
     device: &Device,
     vertex_shader: &str,

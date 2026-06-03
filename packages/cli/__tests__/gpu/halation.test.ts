@@ -56,16 +56,45 @@ describe("halation (headless sidecar)", () => {
     await renderer.close();
   });
 
-  it("glows warm just outside a highlight (red > blue)", () => {
-    // A few px to the right of the block's right edge, vertically centered.
+  const lum = (o: Uint8Array, x: number, y: number) => {
+    const i = (y * W + x) * 4;
+    return o[i] + o[i + 1] + o[i + 2];
+  };
+
+  it("glows warm just outside a highlight with no hue param", () => {
     const [r, g, b] = px(out, BLOCK_HI + 2, 32);
-    expect(r).toBeGreaterThan(0); // glow reaches here at all
-    expect(r).toBeGreaterThan(b); // warm, not cold/cyan
+    expect(r).toBeGreaterThan(0);
+    expect(r).toBeGreaterThan(b); // warm emerges from per-channel scatter, not a tint
     expect(r).toBeGreaterThanOrEqual(g);
   });
 
+  it("red scatters wider than blue (per-channel radii)", () => {
+    // Sample far out where only the widest channel still reaches.
+    const far = px(out, BLOCK_HI + 7, 32);
+    expect(far[0]).toBeGreaterThan(far[2]); // red persists past blue
+  });
+
+  it("rings the edge rather than filling the disk", () => {
+    // Glow just outside the edge should exceed the added energy deep inside the
+    // bright core (interior delta ~0 because base is already max there).
+    const edge = lum(out, BLOCK_HI + 1, 32);
+    const interior = lum(out, 32, 32);
+    expect(edge).toBeGreaterThan(0);
+    // interior is saturated white (765) from base; ring must be a distinct bright
+    // band outside it, i.e. edge glow is present and non-trivial.
+    expect(edge).toBeGreaterThan(30);
+    expect(interior).toBe(765);
+  });
+
+  it("scatter is isotropic (H and V profiles match)", () => {
+    for (let d = 1; d <= 10; d++) {
+      const h = lum(out, Math.min(32 + d, W - 1), 32);
+      const v = lum(out, 32, Math.min(32 + d, H - 1));
+      expect(Math.abs(h - v)).toBeLessThanOrEqual(2);
+    }
+  });
+
   it("leaves the far field neutral (no global warm wash)", () => {
-    // Far corner, well outside any glow radius.
     const [r, g, b] = px(out, 1, 1);
     expect(Math.abs(r - b)).toBeLessThanOrEqual(2);
     expect(Math.abs(r - g)).toBeLessThanOrEqual(2);
