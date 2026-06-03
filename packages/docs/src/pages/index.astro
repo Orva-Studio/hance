@@ -8,6 +8,14 @@ const INSTALL = '$ npx @orva-studio/hance your-video.mp4';
 
 const effects = ['Color', 'Halation', 'Bloom', 'Grain', 'Vignette', 'Split Tone', 'Aberration', 'Shake'];
 
+// Before/after carousel slides. Every "after" was graded by hance with the named preset.
+const compareSlides = [
+  { key: 'default', preset: 'cinestill-800t', subject: 'Neon night street' },
+  { key: 'surf', preset: 'provia-100f', subject: 'Surfer carving a wave', tuned: true },
+  { key: 'runner', preset: 'ultramax-400', subject: 'Sprinter on the blocks', tuned: true },
+  { key: 'city', preset: 'kodachrome-64', subject: 'City skyline at golden hour', tuned: true },
+];
+
 const steps = [
   {
     n: '01',
@@ -160,40 +168,96 @@ const faqs = [
   <section class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28" aria-labelledby="proof-heading">
     <div class="max-w-[1280px] mx-auto">
       <p id="proof-heading" class="font-mono text-[12px] sm:text-[13px] text-ink-dim uppercase tracking-[0.18em]">
-        Drag to compare. Untouched on the left, hance default on the right.
+        Drag to compare. Untouched on the left, hance on the right.
       </p>
-      <div
-        id="ba"
-        class="mt-6 sm:mt-8 relative aspect-video w-full overflow-hidden rounded-md ring-1 ring-surface-3 select-none touch-none"
-        role="group"
-        aria-label="Before and after comparison"
-      >
-        <!-- Before: untouched original -->
-        <img src="/compare-before.webp" alt="Untouched footage before grading" class="absolute inset-0 w-full h-full object-cover" draggable="false" />
-        <!-- After: graded with the hance cinestill-800t look -->
-        <div class="ba-after absolute inset-0">
-          <img src="/compare-after.webp" alt="The same frame graded with hance" class="absolute inset-0 w-full h-full object-cover" draggable="false" />
-        </div>
 
-        <!-- Labels -->
-        <span class="absolute top-4 left-4 font-mono text-[11px] text-ink-muted uppercase tracking-wider bg-surface/60 px-2 py-1 rounded">before</span>
-        <span class="absolute top-4 right-4 font-mono text-[11px] text-accent uppercase tracking-wider bg-surface/60 px-2 py-1 rounded">after</span>
+      <div id="ba-carousel" class="mt-6 sm:mt-8 relative" aria-roledescription="carousel" aria-label="Before and after comparisons">
+        <!-- Viewport -->
+        <div class="overflow-hidden rounded-md ring-1 ring-surface-3">
+          <div id="ba-track" class="flex transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
+            {compareSlides.map((slide, i) => {
+              const before = slide.key === 'default' ? '/compare-before.webp' : `/compare-${slide.key}-before.webp`;
+              const after = slide.key === 'default' ? '/compare-after.webp' : `/compare-${slide.key}-after.webp`;
+              return (
+                <div
+                  class="ba-slide w-full shrink-0"
+                  role="group"
+                  aria-roledescription="slide"
+                  aria-label={`${i + 1} of ${compareSlides.length}: ${slide.subject}`}
+                >
+                  <div
+                    class="ba relative aspect-video w-full overflow-hidden select-none touch-none"
+                    data-preset={slide.preset}
+                    data-tuned={slide.tuned ? 'true' : 'false'}
+                  >
+                    <!-- Before: untouched original -->
+                    <img src={before} alt={`${slide.subject}, untouched before grading`} class="absolute inset-0 w-full h-full object-cover" draggable="false" loading={i === 0 ? 'eager' : 'lazy'} />
+                    <!-- After: graded with hance -->
+                    <div class="ba-after absolute inset-0">
+                      <img src={after} alt={`${slide.subject}, graded with the hance ${slide.preset} look`} class="absolute inset-0 w-full h-full object-cover" draggable="false" loading={i === 0 ? 'eager' : 'lazy'} />
+                    </div>
 
-        <!-- Handle -->
-        <div class="ba-handle absolute top-0 bottom-0 w-px bg-accent" aria-hidden="true">
-          <div class="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 size-10 rounded-full bg-surface ring-2 ring-accent flex items-center justify-center">
-            <svg viewBox="0 0 24 24" class="size-4 fill-accent" aria-hidden="true"><path d="M9 6l-6 6 6 6V6zm6 0v12l6-6-6-6z"/></svg>
+                    <!-- Labels -->
+                    <span class="absolute top-4 left-4 font-mono text-[11px] text-ink-muted uppercase tracking-wider bg-surface/60 px-2 py-1 rounded">before</span>
+                    <span class="absolute top-4 right-4 font-mono text-[11px] text-accent uppercase tracking-wider bg-surface/60 px-2 py-1 rounded">after</span>
+
+                    <!-- Handle -->
+                    <div class="ba-handle absolute top-0 bottom-0 w-px bg-accent" aria-hidden="true">
+                      <div class="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 size-10 rounded-full bg-surface ring-2 ring-accent flex items-center justify-center">
+                        <svg viewBox="0 0 24 24" class="size-4 fill-accent" aria-hidden="true"><path d="M9 6l-6 6 6 6V6zm6 0v12l6-6-6-6z"/></svg>
+                      </div>
+                    </div>
+
+                    <!-- Native input for keyboard a11y -->
+                    <input
+                      type="range"
+                      min="0" max="100" step="1" value="50"
+                      aria-label={`Comparison position for ${slide.subject}`}
+                      class="ba-range absolute inset-0 w-full h-full opacity-0 cursor-ew-resize"
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        <!-- Native input for keyboard a11y -->
-        <input
-          id="ba-range"
-          type="range"
-          min="0" max="100" step="1" value="50"
-          aria-label="Comparison position"
-          class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize"
-        />
+        <!-- Arrows -->
+        <button
+          id="ba-prev"
+          type="button"
+          aria-label="Previous comparison"
+          class="absolute left-3 top-[calc(50%-1.5rem)] -translate-y-1/2 size-10 rounded-full bg-surface/70 ring-1 ring-surface-3 text-ink hover:bg-surface hover:ring-accent transition flex items-center justify-center backdrop-blur-sm"
+        >
+          <svg viewBox="0 0 24 24" class="size-5 fill-current" aria-hidden="true"><path d="M15 6l-6 6 6 6V6z"/></svg>
+        </button>
+        <button
+          id="ba-next"
+          type="button"
+          aria-label="Next comparison"
+          class="absolute right-3 top-[calc(50%-1.5rem)] -translate-y-1/2 size-10 rounded-full bg-surface/70 ring-1 ring-surface-3 text-ink hover:bg-surface hover:ring-accent transition flex items-center justify-center backdrop-blur-sm"
+        >
+          <svg viewBox="0 0 24 24" class="size-5 fill-current" aria-hidden="true"><path d="M9 6l6 6-6 6V6z"/></svg>
+        </button>
+
+        <!-- Caption + dots -->
+        <div class="mt-4 flex items-center justify-between gap-4">
+          <p class="font-mono text-[12px] text-ink-dim">
+            <span class="text-ink-muted">graded with</span>
+            <span id="ba-caption" class="text-accent">{compareSlides[0].preset}</span><span id="ba-tuned" class="text-ink-dim">{compareSlides[0].tuned ? ' (tuned)' : ''}</span>
+          </p>
+          <div id="ba-dots" class="flex items-center gap-2" role="tablist" aria-label="Choose comparison">
+            {compareSlides.map((slide, i) => (
+              <button
+                type="button"
+                class="ba-dot size-2.5 rounded-full bg-surface-3 transition hover:bg-ink-dim"
+                role="tab"
+                aria-label={`Show ${slide.subject}`}
+                data-index={i}
+              ></button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -447,32 +511,79 @@ const faqs = [
     }
 
     // Before/after slider
+    // Wire each before/after slider independently. Each .ba element owns its
+    // own --pos, inherited by its .ba-after clip and .ba-handle.
     function initBeforeAfter() {
-      const wrap = document.getElementById('ba');
-      const range = document.getElementById('ba-range');
-      if (!wrap || !range) return;
-      const setPos = (pct) => {
-        const v = Math.max(0, Math.min(100, pct));
-        wrap.style.setProperty('--pos', v + '%');
-        range.value = String(v);
+      document.querySelectorAll('.ba').forEach((wrap) => {
+        const range = wrap.querySelector('.ba-range');
+        if (!range) return;
+        const setPos = (pct) => {
+          const v = Math.max(0, Math.min(100, pct));
+          wrap.style.setProperty('--pos', v + '%');
+          range.value = String(v);
+        };
+        setPos(50);
+        range.addEventListener('input', (e) => setPos(Number(e.target.value)));
+        const onMove = (clientX) => {
+          const rect = wrap.getBoundingClientRect();
+          setPos(((clientX - rect.left) / rect.width) * 100);
+        };
+        let dragging = false;
+        wrap.addEventListener('pointerdown', (e) => { dragging = true; onMove(e.clientX); });
+        window.addEventListener('pointermove', (e) => { if (dragging) onMove(e.clientX); });
+        window.addEventListener('pointerup', () => { dragging = false; });
+      });
+    }
+
+    // Carousel: arrows + dots step between comparison slides. Drag is reserved
+    // for the comparison slider, so slides change only via explicit controls.
+    function initCompareCarousel() {
+      const root = document.getElementById('ba-carousel');
+      const track = document.getElementById('ba-track');
+      if (!root || !track) return;
+      const slides = Array.from(track.children);
+      const dots = Array.from(root.querySelectorAll('.ba-dot'));
+      const caption = document.getElementById('ba-caption');
+      const prev = document.getElementById('ba-prev');
+      const next = document.getElementById('ba-next');
+      let index = 0;
+
+      const render = () => {
+        track.style.transform = `translateX(-${index * 100}%)`;
+        slides.forEach((slide, i) => {
+          const active = i === index;
+          slide.toggleAttribute('inert', !active);
+          slide.setAttribute('aria-hidden', String(!active));
+        });
+        dots.forEach((dot, i) => {
+          const active = i === index;
+          dot.classList.toggle('bg-accent', active);
+          dot.classList.toggle('bg-surface-3', !active);
+          dot.setAttribute('aria-selected', String(active));
+        });
+        const ba = slides[index].querySelector('.ba');
+        const preset = ba?.dataset.preset;
+        if (caption && preset) caption.textContent = preset;
+        const tunedEl = document.getElementById('ba-tuned');
+        if (tunedEl) tunedEl.textContent = ba?.dataset.tuned === 'true' ? ' (tuned)' : '';
       };
-      setPos(50);
-      range.addEventListener('input', (e) => setPos(Number(e.target.value)));
-      // Drag/touch on the wrap directly for natural feel
-      const onMove = (clientX) => {
-        const rect = wrap.getBoundingClientRect();
-        setPos(((clientX - rect.left) / rect.width) * 100);
-      };
-      let dragging = false;
-      wrap.addEventListener('pointerdown', (e) => { dragging = true; onMove(e.clientX); });
-      window.addEventListener('pointermove', (e) => { if (dragging) onMove(e.clientX); });
-      window.addEventListener('pointerup', () => { dragging = false; });
+
+      const goTo = (i) => { index = (i + slides.length) % slides.length; render(); };
+      prev?.addEventListener('click', () => goTo(index - 1));
+      next?.addEventListener('click', () => goTo(index + 1));
+      dots.forEach((dot, i) => dot.addEventListener('click', () => goTo(i)));
+      root.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(index - 1); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); goTo(index + 1); }
+      });
+      render();
     }
 
     initInstallPill();
     initReel();
     initCommandBlocks();
     initBeforeAfter();
+    initCompareCarousel();
   </script>
 </Base>
 

@@ -13,7 +13,7 @@ If both args look like files, or neither, ask the user.
 
 ## What to do
 
-1. Pick the runner per `SKILL.md` (binary > `bunx` > `npx`).
+1. Pick the runner per `SKILL.md` (`bunx` > `npx` > binary).
 2. Default output path: same dir as input, with `_<preset>` appended before the extension. Confirm with the user before overwriting an existing file.
 3. Run:
    ```sh
