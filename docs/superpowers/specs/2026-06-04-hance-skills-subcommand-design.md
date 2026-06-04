@@ -103,6 +103,25 @@ Content is embedded, so `path` extracts on demand to a version-pinned cache dir
 writing only if absent, then prints the dir. Gives agent-browser parity for
 anyone wanting files on disk without writing on every invocation.
 
+## Boundary: keep skills out of the browser UI
+
+`EFFECT_SCHEMA` lives in `@hance/core` and is imported by both the CLI and the
+browser UI (`packages/ui/server.ts`, `LookInfoModal.tsx`). The skill docs
+reference that schema, but the skill content itself is a CLI-only,
+agent-facing concern and must never reach the UI bundle or surface in the
+browser.
+
+Constraints:
+
+- `skills.generated.ts`, `commands/skills.ts`, and the `scripts/gen-skills.ts`
+  output live in `packages/cli` only. **Nothing skills-related goes into
+  `@hance/core`** (which the UI imports) or into `packages/ui`.
+- The `skills` subcommand is reachable only through the CLI entry; there is no
+  UI route, component, or server endpoint that exposes skill content.
+
+Test-enforced: a guard test asserts `packages/ui` has no import path resolving
+to `skills.generated` or `commands/skills`, so the boundary can't regress.
+
 ## Error handling
 
 - `get <unknown>` → exit 1, message listing valid names.
@@ -118,6 +137,9 @@ anyone wanting files on disk without writing on every invocation.
 - **Drift guard**: regenerate the manifest in-test from `skills/**/*.md` and
   assert it matches what the CLI serves — adding a doc without rebuilding fails
   CI.
+- **UI boundary guard**: assert no module under `packages/ui` imports
+  `skills.generated` or `commands/skills` (keeps skill content out of the UI
+  bundle).
 - **E2E** (`packages/cli/__tests__/e2e/`): `hance skills`, `hance skills get
   refine`, `hance skills path` against the built binary.
 
