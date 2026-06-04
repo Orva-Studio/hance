@@ -25,3 +25,10 @@ test("every generated skill has a known kind", () => {
     expect(["subcommand", "reference"]).toContain(doc.kind);
   }
 });
+
+import { resolveSubcommand } from "../src/cli";
+
+test("skills resolves as a subcommand", () => {
+  expect(resolveSubcommand(["skills"])).toBe("skills");
+  expect(resolveSubcommand(["skills", "get", "refine"])).toBe("skills");
+});

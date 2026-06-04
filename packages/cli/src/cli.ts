@@ -20,6 +20,7 @@ Commands:
   hance preview <input>       render a single preview frame or contact sheet
   hance preset list|save      list presets or save current flags as one
   hance config [path]         show the resolved config (or just its file path)
+  hance skills [get <name>]   print the agent skill docs (for AI harnesses)
 
 Start here:
   hance clip.mov                      apply the default look
@@ -61,10 +62,11 @@ Examples:
   hance shot.mov --exposure 0.5 --contrast 1.2    quick color grade
   hance preset save mylook --bleach-bypass 0.4    save current flags as a reusable preset
 
+Agents: run "hance skills" first for the agent skill router.
 Docs: https://hance.video/docs  (agent guide: https://hance.video/docs/agent/overview)
 `.trim();
 
-export type Subcommand = "ui" | "preview" | "preset" | "config" | "render";
+export type Subcommand = "ui" | "preview" | "preset" | "config" | "skills" | "render";
 
 export function resolveSubcommand(args: string[]): Subcommand {
   switch (args[0]) {
@@ -72,6 +74,7 @@ export function resolveSubcommand(args: string[]): Subcommand {
     case "preview": return "preview";
     case "preset": return "preset";
     case "config": return "config";
+    case "skills": return "skills";
     default: return "render";
   }
 }
@@ -229,6 +232,12 @@ async function main() {
   if (sub === "config") {
     const { runConfig } = await import("./commands/config");
     await runConfig(args.slice(1));
+    return;
+  }
+
+  if (sub === "skills") {
+    const { runSkills } = await import("./commands/skills");
+    await runSkills(args.slice(1));
     return;
   }
 
