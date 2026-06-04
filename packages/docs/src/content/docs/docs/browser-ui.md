@@ -31,6 +31,22 @@ ProRes (and similar professional or intermediate codecs) cannot be played by web
 
 *<!-- Screenshot: upload zone / main preview -->*
 
+### Clearing the preview cache
+
+To avoid re-transcoding the same footage, hance caches each H.264 preview proxy on disk, keyed by the file's contents. Re-uploading the same file loads instantly from the cache instead of transcoding again. The cache is never cleared automatically, so it can grow over time. When it passes 5 GB the editor shows a one-off warning.
+
+The proxies live in your system temp directory under `hance-proxy`. Your operating system usually clears the temp directory on reboot, but you can remove them at any time:
+
+```bash
+# macOS / Linux
+rm -rf "${TMPDIR:-/tmp}/hance-proxy"
+
+# Windows (PowerShell)
+Remove-Item -Recurse -Force "$env:TEMP\hance-proxy"
+```
+
+Deleting the cache only removes preview proxies. It never touches your original footage, and the next upload simply rebuilds the proxy it needs.
+
 ## Looks panel
 
 Browse and apply any of the 40+ built-in film stock looks. Click a look to preview it instantly on your footage. Each look shows a thumbnail preview so you can compare at a glance.

@@ -23,12 +23,18 @@ import { consumeSSE } from "./lib/sse";
 import { fetchJson } from "./lib/fetchJson";
 import { useProxyStream } from "./hooks/useProxyStream";
 
+// Warn once the on-disk preview proxy cache passes this size. Caching never
+// evicts (by design), so this nudges the user to clear it manually.
+const PROXY_CACHE_WARN_BYTES = 5 * 1024 ** 3;
+
 export function App() {
   const { file, objectUrl, isVideo, upload, error: uploadError, clearError } = useUpload();
   const proxy = useProxyStream();
   const previewSrc = proxy.previewSrc ?? objectUrl;
   const [previewError, setPreviewError] = useState<Error | null>(null);
   const [licenseTier, setLicenseTier] = useState<"free" | "pro">("free");
+  const [cacheWarningDismissed, setCacheWarningDismissed] = useState(false);
+  const showCacheWarning = proxy.cacheBytes > PROXY_CACHE_WARN_BYTES && !cacheWarningDismissed;
 
   useInitialFile(upload);
 
@@ -622,6 +628,27 @@ export function App() {
             />
           </div>
         </>
+      )}
+
+      {showCacheWarning && (
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-8 z-50 flex items-center gap-3 max-w-md bg-zinc-900 border border-amber-500/50 px-4 py-2 rounded-md text-xs text-zinc-200 shadow-lg">
+          <span>
+            Preview cache is {(proxy.cacheBytes / 1024 ** 3).toFixed(1)} GB.{" "}
+            <a
+              href="https://hance.video/docs/browser-ui/#clearing-the-preview-cache"
+              target="_blank"
+              rel="noreferrer"
+              className="underline text-accent hover:text-accent-hover"
+            >
+              How to clear it
+            </a>
+          </span>
+          <button
+            onClick={() => setCacheWarningDismissed(true)}
+            className="text-zinc-400 hover:text-zinc-200"
+            aria-label="Dismiss"
+          >×</button>
+        </div>
       )}
 
       {showSaveAsNew && (
