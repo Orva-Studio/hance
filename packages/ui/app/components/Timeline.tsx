@@ -3,6 +3,8 @@ import { computeTicks } from "./timelineTicks";
 
 interface Props {
   videoRef: HTMLVideoElement | null;
+  durationHint?: number;   // seconds, from X-Proxy-Duration; used before metadata loads
+  streaming?: boolean;     // true while the proxy is still buffering in
 }
 
 export function formatTimecode(seconds: number): string {
@@ -23,8 +25,9 @@ export function formatTimecodeFrames(seconds: number, fps = 30): string {
   return `${pad(h)}:${pad(m)}:${pad(s)}:${pad(f)}`;
 }
 
-export function Timeline({ videoRef }: Props) {
-  const [duration, setDuration] = useState(0);
+export function Timeline({ videoRef, durationHint = 0, streaming = false }: Props) {
+  const [duration, setDuration] = useState(durationHint);
+  const [bufferedEnd, setBufferedEnd] = useState(0);
   const [playing, setPlaying] = useState(false);
   const draggingRef = useRef(false);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -52,7 +55,7 @@ export function Timeline({ videoRef }: Props) {
     if (!videoRef) return;
 
     function onLoadedMetadata() {
-      setDuration(videoRef!.duration);
+      if (videoRef!.duration) setDuration(Math.max(videoRef!.duration, durationHint));
     }
     function onPlay() { setPlaying(true); }
     function onPause() { setPlaying(false); }
@@ -60,12 +63,15 @@ export function Timeline({ videoRef }: Props) {
     videoRef.addEventListener("loadedmetadata", onLoadedMetadata);
     videoRef.addEventListener("play", onPlay);
     videoRef.addEventListener("pause", onPause);
-    if (videoRef.duration) setDuration(videoRef.duration);
+    if (videoRef.duration) setDuration(Math.max(videoRef.duration, durationHint));
     setPlaying(!videoRef.paused);
 
     function updateTime() {
       if (videoRef && !draggingRef.current) {
         updatePlayheadDOM(videoRef.currentTime);
+      }
+      if (videoRef && videoRef.buffered.length) {
+        setBufferedEnd(videoRef.buffered.end(videoRef.buffered.length - 1));
       }
       rafRef.current = requestAnimationFrame(updateTime);
     }
@@ -77,9 +83,11 @@ export function Timeline({ videoRef }: Props) {
       videoRef.removeEventListener("play", onPlay);
       videoRef.removeEventListener("pause", onPause);
     };
-  }, [videoRef]);
+  }, [videoRef, durationHint]);
 
-
+  useEffect(() => {
+    if (durationHint > 0) setDuration((d) => Math.max(d, durationHint));
+  }, [durationHint]);
 
   const seekToPosition = useCallback((clientX: number) => {
     if (!trackRef.current || !videoRef || !durationRef.current) return;
@@ -179,6 +187,12 @@ export function Timeline({ videoRef }: Props) {
         className="relative flex-1 cursor-pointer overflow-hidden"
         onMouseDown={onMouseDown}
       >
+        {streaming && duration > 0 && (
+          <div
+            className="absolute inset-y-0 left-0 bg-accent/20 transition-[width] duration-200 pointer-events-none"
+            style={{ width: `${Math.min(100, (bufferedEnd / duration) * 100)}%` }}
+          />
+        )}
         {/* Clip bar */}
         <div className="absolute left-0 right-0 top-12 h-10 rounded bg-gradient-to-b from-cyan-500/90 to-cyan-600/90 shadow-inner overflow-hidden" />
 

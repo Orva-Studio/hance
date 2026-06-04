@@ -573,7 +573,11 @@ export function App() {
         <>
           <ResizeDivider direction="vertical" onMouseDown={bottomPanel.onMouseDown} />
           <div className="flex-shrink-0" style={{ height: bottomPanel.size }}>
-            <Timeline videoRef={videoElement} />
+            <Timeline
+              videoRef={videoElement}
+              durationHint={proxy.durationHint}
+              streaming={proxy.state === "streaming"}
+            />
           </div>
         </>
       )}
