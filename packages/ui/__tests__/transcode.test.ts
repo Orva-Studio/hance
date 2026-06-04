@@ -31,6 +31,18 @@ describe("buildProxyArgs", () => {
     expect(args).not.toContain("-vf");
   });
 
+  test("caps decode threads before -i and lets 0 mean unlimited", () => {
+    const capped = buildProxyArgs("in.mov", "out.mp4", "libx264", { threads: 4 });
+    const ti = capped.indexOf("-threads");
+    expect(ti).toBeGreaterThan(-1);
+    expect(capped[ti + 1]).toBe("4");
+    // Input-side: must come before -i so it caps the decoder.
+    expect(ti).toBeLessThan(capped.indexOf("-i"));
+
+    const unlimited = buildProxyArgs("in.mov", "out.mp4", "libx264", { threads: 0 });
+    expect(unlimited).not.toContain("-threads");
+  });
+
   test("includes the chosen encoder and the input path", () => {
     const args = buildProxyArgs("in.mov", "out.mp4", "h264_videotoolbox");
     expect(args).toContain("h264_videotoolbox");
