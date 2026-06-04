@@ -26,6 +26,18 @@ function proxyCacheBytes(dir: string): number {
   return total;
 }
 
+// Resolve a client-supplied path and confirm it stays inside `allowedDir`,
+// defeating `..` traversal that a raw startsWith() check would let through.
+// Returns the normalized path only if it exists within the dir, else null.
+function resolveWithinDir(rawPath: string | null, allowedDir: string): string | null {
+  if (!rawPath) return null;
+  const resolved = resolve(rawPath);
+  const root = resolve(allowedDir);
+  if (resolved !== root && !resolved.startsWith(root + "/")) return null;
+  if (!existsSync(resolved)) return null;
+  return resolved;
+}
+
 function safeExt(name: string): string {
   const ext = extname(name).toLowerCase();
   return /^\.[a-z0-9]{1,8}$/.test(ext) ? ext : "";
@@ -384,9 +396,8 @@ export function createServer(port: number) {
       }
 
       if (url.pathname === "/api/proxy-file" && req.method === "GET") {
-        const filePath = url.searchParams.get("path");
-        const allowedDir = join(tmpdir(), "hance-proxy");
-        if (!filePath || !filePath.startsWith(allowedDir + "/") || !existsSync(filePath)) {
+        const filePath = resolveWithinDir(url.searchParams.get("path"), join(tmpdir(), "hance-proxy"));
+        if (!filePath) {
           return new Response("File not found", { status: 404 });
         }
         return new Response(Bun.file(filePath), {
@@ -398,9 +409,8 @@ export function createServer(port: number) {
       }
 
       if (url.pathname === "/api/download" && req.method === "GET") {
-        const filePath = url.searchParams.get("path");
-        const allowedDir = join(tmpdir(), "hance-export");
-        if (!filePath || !filePath.startsWith(allowedDir + "/") || !existsSync(filePath)) {
+        const filePath = resolveWithinDir(url.searchParams.get("path"), join(tmpdir(), "hance-export"));
+        if (!filePath) {
           return new Response("File not found", { status: 404 });
         }
         return new Response(Bun.file(filePath), {

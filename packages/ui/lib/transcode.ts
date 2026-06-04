@@ -96,6 +96,10 @@ export async function streamFragmentedMp4(
   });
 
   const fileWriter = createWriteStream(outputPath);
+  // Capture the first disk-tee failure (e.g. ENOSPC). A partial/failed write
+  // must never be marked cacheable, so we surface it instead of writing .done.
+  let writeError: Error | null = null;
+  fileWriter.on("error", (err) => { writeError ??= err as Error; });
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -104,6 +108,7 @@ export async function streamFragmentedMp4(
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
+          if (writeError) throw writeError;
           fileWriter.write(value);
           controller.enqueue(value);
         }
@@ -114,6 +119,11 @@ export async function streamFragmentedMp4(
           const stderr = await new Response(proc.stderr).text();
           try { unlinkSync(outputPath); } catch {}
           controller.error(new Error(`ffmpeg failed: ${stderr.trim()}`));
+          return;
+        }
+        if (writeError) {
+          try { unlinkSync(outputPath); } catch {}
+          controller.error(new Error(`proxy disk write failed: ${writeError.message}`));
           return;
         }
         // Mark the proxy cacheable now that the full file is on disk.

@@ -36,8 +36,23 @@ export function useProxyStream(): ProxyStreamApi {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [cacheBytes, setCacheBytes] = useState(0);
   const blobUrlRef = useRef<string | null>(null);
+  // Incremented on every start(). Each run captures its value and bails the
+  // moment it changes, so a newer upload can't be clobbered by an older
+  // stream's async callbacks still resolving in the background.
+  const runRef = useRef(0);
+
+  const revokeBlob = useCallback(() => {
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
+  }, []);
 
   const start = useCallback(async (file: File) => {
+    const run = ++runRef.current;
+    const isStale = () => run !== runRef.current;
+    // A new run supersedes any in-flight one; drop its blob immediately.
+    revokeBlob();
     setState("streaming");
     setProgress(0);
     setErrorMsg(null);
@@ -51,8 +66,10 @@ export function useProxyStream(): ProxyStreamApi {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: file.name, size: file.size, lastModified: file.lastModified }),
       });
+      if (isStale()) return;
       if (probe.ok) {
         const hit = await probe.json();
+        if (isStale()) return;
         setCacheBytes(Number(hit.cacheBytes ?? 0));
         if (hit.cached && hit.proxyPath) {
           setDurationHint(Number(hit.durationSec ?? 0));
@@ -64,6 +81,7 @@ export function useProxyStream(): ProxyStreamApi {
       }
     } catch {
       // Lookup is an optimization; fall through to the normal transcode path.
+      if (isStale()) return;
     }
 
     const formData = new FormData();
@@ -74,8 +92,13 @@ export function useProxyStream(): ProxyStreamApi {
     try {
       res = await fetch("/api/proxy", { method: "POST", body: formData });
     } catch (err) {
+      if (isStale()) return;
       setState("error");
       setErrorMsg((err as Error).message);
+      return;
+    }
+    if (isStale()) {
+      res.body?.cancel().catch(() => {});
       return;
     }
     if (!res.ok || !res.body) {
@@ -94,10 +117,12 @@ export function useProxyStream(): ProxyStreamApi {
     if (!mseSupported()) {
       try {
         await res.arrayBuffer();
+        if (isStale()) return;
         setPreviewSrc(fileUrl);
         setProgress(1);
         setState("ready");
       } catch (err) {
+        if (isStale()) return;
         setState("error");
         setErrorMsg((err as Error).message);
       }
@@ -110,6 +135,7 @@ export function useProxyStream(): ProxyStreamApi {
     setPreviewSrc(blobUrl);
 
     mediaSource.addEventListener("sourceopen", async () => {
+      if (isStale()) { revokeBlob(); return; }
       const sourceBuffer = mediaSource.addSourceBuffer(PROXY_MIME);
       // Without this the streaming blob reports duration === Infinity until
       // endOfStream, which breaks duration-based UI (e.g. timeline ticks).
@@ -131,27 +157,31 @@ export function useProxyStream(): ProxyStreamApi {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
+          // A newer upload arrived mid-stream: stop feeding this MediaSource
+          // and let the cancel()/revoke below tear it down.
+          if (isStale()) { reader.cancel().catch(() => {}); return; }
           await appendChunk(value);
           const end = sourceBuffer.buffered.length
             ? sourceBuffer.buffered.end(sourceBuffer.buffered.length - 1)
             : 0;
           setProgress(computeBufferedProgress(end, durationSec));
         }
+        if (isStale()) return;
         if (mediaSource.readyState === "open") mediaSource.endOfStream();
         setProgress(1);
         setState("ready");
-        setPreviewSrc(fileUrl); // swap handled by the consumer (Task 5) to preserve currentTime
+        // Swap the streaming blob for the on-disk file so the whole clip is
+        // seekable. App.tsx freezes the playhead across this swap.
+        setPreviewSrc(fileUrl);
       } catch (err) {
+        if (isStale()) return;
         setState("error");
         setErrorMsg((err as Error).message);
       } finally {
-        if (blobUrlRef.current) {
-          URL.revokeObjectURL(blobUrlRef.current);
-          blobUrlRef.current = null;
-        }
+        revokeBlob();
       }
     }, { once: true });
-  }, []);
+  }, [revokeBlob]);
 
   return { previewSrc, state, progress, durationHint, errorMsg, cacheBytes, start };
 }
