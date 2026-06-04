@@ -1,6 +1,6 @@
 # Hance
 
-> ⚠️ **Alpha software.** Mainly tested on macOS by a single developer. Expect rough edges on Linux/Windows, and pin versions if you rely on it.
+> ⚠️ **Alpha software.** Mainly tested on macOS by a single developer. Expect rough edges on Linux, and pin versions if you rely on it. Windows is not supported; binaries ship for macOS (arm64/x64) and Linux (x64/arm64) only.
 
 **Preview a cinematic film look in the browser, then batch-apply it from the CLI.** GPU-accelerated colour, halation, bloom, grain, vignette, split-tone, aberration, and camera shake — one binary, no plugins, no subscriptions.
 
@@ -11,9 +11,11 @@
 ## Quick start
 
 ```sh
-# Install (needs ffmpeg on your PATH)
-brew install ffmpeg
-curl -fsSL https://github.com/Orva-Studio/hancer/releases/latest/download/install.sh | sh
+# Try it with no install (needs ffmpeg on your PATH: `brew install ffmpeg`)
+npx @orva-studio/hance video.mp4    # or `bunx` if you use Bun
+
+# Or install a persistent binary to ~/.hance/bin
+curl -fsSL https://hance.video/install.sh | sh
 
 # Preview presets on your footage and dial in a look
 hance ui video.mp4
