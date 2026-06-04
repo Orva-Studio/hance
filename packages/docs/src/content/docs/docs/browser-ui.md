@@ -20,6 +20,15 @@ Using an AI agent? The [`/hance ui`](/docs/agent/overview/) skill command opens 
 
 Drag and drop a video or image into the editor, or pass a file path when launching. The preview updates in real-time as you adjust parameters.
 
+The preview is rendered at a reduced resolution for smooth, real-time interaction — it does not limit the quality of what you export:
+
+- **Images** preview at up to **1920×1080** (1080p), preserving aspect ratio. Export re-renders at the full source resolution (see [Export](#export)).
+- **Videos** play back through the browser's native player. Formats the browser can't decode — notably **ProRes** — are transcoded to an H.264 proxy capped at **720p / 30fps** purely for preview. The proxy is never used for export; exporting always re-renders from your original file.
+
+:::note
+ProRes (and similar professional/intermediate codecs) can't be played by web browsers, so hance generates a lightweight H.264 proxy on upload so you can scrub and preview. This only affects what you see in the editor, not your final render.
+:::
+
 *<!-- Screenshot: upload zone / main preview -->*
 
 ## Looks panel
@@ -67,5 +76,9 @@ Save your current settings as a new `.hlook` file directly from the UI. Saved lo
 ## Export
 
 Export your graded video or image from the editor. Choose codec, quality, and export preset: the same options available on the CLI.
+
+:::note
+Images export at the **full resolution of the source**, not the downscaled preview — the effects are re-rendered at native size on export. Very large sources are bounded by your GPU's maximum texture size; if there isn't enough GPU memory, the export reports an error rather than silently downscaling.
+:::
 
 *<!-- Screenshot: export modal -->*
