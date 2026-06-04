@@ -59,6 +59,10 @@ export function App() {
     }
   }, [videoElement]);
 
+  // True once the preview has decoded its first frame; until then the canvas
+  // is black, so we show an explanatory loading card instead.
+  const [firstFrameReady, setFirstFrameReady] = useState(false);
+
   // Show a spinner whenever the video stalls — at start while the streaming
   // proxy fills, or mid-clip if playback catches up to the transcode head.
   const [isBuffering, setIsBuffering] = useState(false);
@@ -127,6 +131,7 @@ export function App() {
 
   useEffect(() => {
     setPreviewError(null);
+    setFirstFrameReady(false);
     setReferenceImage(null);
     setViewMode("normal");
     setSplitPosition(0.5);
@@ -234,6 +239,7 @@ export function App() {
 
   const handleVideoReady = useCallback((v: HTMLVideoElement) => {
     setVideoElement(v);
+    setFirstFrameReady(true);
   }, []);
 
   const handleParamChange = useCallback((key: string, value: number | string | boolean) => {
@@ -544,7 +550,22 @@ export function App() {
               <button className="underline" onClick={() => file && proxy.start(file)}>Retry</button>
             </div>
           )}
-          {isBuffering && isVideo && (
+          {isVideo && !firstFrameReady && proxy.state !== "error" && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+              <div className="flex flex-col items-center gap-3 max-w-xs text-center px-6 py-5 bg-zinc-900/90 backdrop-blur rounded-lg border border-zinc-800">
+                <span className="w-5 h-5 rounded-full border-2 border-zinc-600 border-t-accent animate-spin" />
+                <div className="text-sm text-zinc-200">
+                  {proxy.state === "streaming" ? "Converting .mov to H.264…" : "Loading preview…"}
+                </div>
+                <div className="text-xs text-zinc-500">
+                  {proxy.state === "streaming"
+                    ? "The preview will start buffering in shortly."
+                    : "Checking whether the browser can play this file."}
+                </div>
+              </div>
+            </div>
+          )}
+          {isBuffering && isVideo && firstFrameReady && (
             <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 backdrop-blur text-xs text-zinc-200">
                 <span className="w-3 h-3 rounded-full border-2 border-zinc-500 border-t-accent animate-spin" />
