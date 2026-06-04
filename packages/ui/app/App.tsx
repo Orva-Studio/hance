@@ -431,7 +431,6 @@ export function App() {
           filename={null}
           file={null}
           params={params}
-          canvas={null}
           renderer={null}
           isVideo={false}
           hasChanges={false}
@@ -461,7 +460,6 @@ export function App() {
         filename={file?.name || null}
         file={file}
         params={params}
-        canvas={canvas}
         renderer={renderer}
         isVideo={isVideo}
         hasChanges={hasChanges}
