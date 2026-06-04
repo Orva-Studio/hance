@@ -24,6 +24,9 @@ npm/@orva-studio/*/bin/
 # Generated preset index (rebuild with: bun run scripts/build-preset-index.ts)
 /presets/index.json
 
+# Generated skills module (rebuild with: bun run scripts/gen-skills.ts)
+packages/cli/src/skills.generated.ts
+
 # Worktrees
 .worktrees/
 
