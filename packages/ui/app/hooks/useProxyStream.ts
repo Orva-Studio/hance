@@ -42,8 +42,33 @@ export function useProxyStream(): ProxyStreamApi {
     setProgress(0);
     setErrorMsg(null);
 
+    // Cheap probe first: if this exact file was transcoded before, load the
+    // finished proxy directly with no upload and no streaming. Metadata-only,
+    // so a hit is effectively instant regardless of source size.
+    try {
+      const probe = await fetch("/api/proxy/lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: file.name, size: file.size, lastModified: file.lastModified }),
+      });
+      if (probe.ok) {
+        const hit = await probe.json();
+        setCacheBytes(Number(hit.cacheBytes ?? 0));
+        if (hit.cached && hit.proxyPath) {
+          setDurationHint(Number(hit.durationSec ?? 0));
+          setPreviewSrc(`/api/proxy-file?path=${encodeURIComponent(hit.proxyPath)}`);
+          setProgress(1);
+          setState("ready");
+          return;
+        }
+      }
+    } catch {
+      // Lookup is an optimization; fall through to the normal transcode path.
+    }
+
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("lastModified", String(file.lastModified));
 
     let res: Response;
     try {

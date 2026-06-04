@@ -6,11 +6,12 @@ import { existsSync, readdirSync, mkdirSync, writeFileSync, readFileSync, unlink
 import { tmpdir, homedir } from "node:os";
 import { streamFragmentedMp4, proxyDonePath } from "./lib/transcode";
 
-// Content hash of a file on disk, streamed so large ProRes inputs aren't held
-// in memory. Used to key the proxy cache: same bytes -> same proxy.
-async function hashFile(path: string): Promise<string> {
+// Cache key from cheap file metadata (name + size + mtime), so a cache hit can
+// be detected from a tiny lookup request without uploading or hashing the whole
+// multi-GB source. A different file sharing all three is vanishingly unlikely.
+function proxyKey(name: string, size: number, lastModified: number): string {
   const hasher = new Bun.CryptoHasher("sha256");
-  for await (const chunk of Bun.file(path).stream()) hasher.update(chunk);
+  hasher.update(`${name}:${size}:${lastModified}`);
   return hasher.digest("hex").slice(0, 16);
 }
 
@@ -293,6 +294,22 @@ export function createServer(port: number) {
         });
       }
 
+      // Cheap cache probe: the client sends only file metadata, so a hit costs
+      // no upload and no hashing. Miss falls through to the streaming POST.
+      if (url.pathname === "/api/proxy/lookup" && req.method === "POST") {
+        const { name, size, lastModified } = await req.json();
+        const proxyDir = join(tmpdir(), "hance-proxy");
+        const outputPath = join(proxyDir, `proxy_${proxyKey(name, size, lastModified)}.mp4`);
+        const donePath = proxyDonePath(outputPath);
+        const hit = existsSync(outputPath) && existsSync(donePath);
+        return Response.json({
+          cached: hit,
+          proxyPath: hit ? outputPath : null,
+          durationSec: hit ? Number(readFileSync(donePath, "utf8").trim()) || 0 : 0,
+          cacheBytes: proxyCacheBytes(proxyDir),
+        });
+      }
+
       if (url.pathname === "/api/proxy" && req.method === "POST") {
         const formData = await req.formData();
         const file = formData.get("file") as File | null;
@@ -304,11 +321,11 @@ export function createServer(port: number) {
         const inputPath = join(proxyDir, `input_${id}${safeExt(file.name)}`);
         await Bun.write(inputPath, file);
 
-        // Cache by content hash: the same source maps to the same proxy, so a
-        // re-upload skips ffmpeg entirely. The .done marker means the file is
-        // complete (a partial/interrupted proxy has none and gets rebuilt).
-        const hash = await hashFile(inputPath);
-        const outputPath = join(proxyDir, `proxy_${hash}.mp4`);
+        // Key the proxy by the same metadata the lookup uses, so a later upload
+        // of the same file is found without re-transcoding. The .done marker
+        // means the file is complete (a partial proxy has none and is rebuilt).
+        const lastModified = Number(formData.get("lastModified") ?? file.lastModified ?? 0);
+        const outputPath = join(proxyDir, `proxy_${proxyKey(file.name, file.size, lastModified)}.mp4`);
         const donePath = proxyDonePath(outputPath);
         if (existsSync(outputPath) && existsSync(donePath)) {
           try { unlinkSync(inputPath); } catch {}
