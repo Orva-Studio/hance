@@ -23,10 +23,10 @@ Drag and drop a video or image into the editor, or pass a file path when launchi
 The preview is rendered at a reduced resolution for smooth, real-time interaction. It does not limit the quality of what you export:
 
 - **Images** preview at up to **1920×1080** (1080p), preserving aspect ratio. Export re-renders at the full source resolution (see [Export](#export)).
-- **Videos** play back through the browser's native player. Formats the browser can't decode, notably **ProRes**, are transcoded to an H.264 proxy capped at **720p / 30fps** purely for preview. The proxy is never used for export; exporting always re-renders from your original file.
+- **Videos** play back through the browser's native player. Formats the browser cannot decode, notably **ProRes**, are transcoded to an H.264 proxy capped at **720p / 30fps** purely for preview. Playback begins within about a second and the rest of the clip streams in while transcoding continues. Seeking is limited to the portion loaded so far until the transcode finishes, after which the whole clip is seekable. The proxy is never used for export; exporting always re-renders from your original file.
 
 :::note
-ProRes (and similar professional/intermediate codecs) can't be played by web browsers, so hance generates a lightweight H.264 proxy on upload so you can scrub and preview. This only affects what you see in the editor, not your final render.
+ProRes (and similar professional or intermediate codecs) cannot be played by web browsers, so hance generates a lightweight H.264 proxy on upload. It streams in progressively so you can start previewing almost immediately. This only affects what you see in the editor, not your final render.
 :::
 
 *<!-- Screenshot: upload zone / main preview -->*
