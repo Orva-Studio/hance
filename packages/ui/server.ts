@@ -2,9 +2,17 @@ import { EFFECT_SCHEMA, seedDefaults, loadPreset, builtinPresetsDir, userPresets
 import type { PresetData, LicenseContext } from "@hance/core";
 import { runGpuExport } from "@hance/gpu";
 import { join, extname, basename, resolve } from "node:path";
-import { existsSync, readdirSync, mkdirSync, writeFileSync, unlinkSync, renameSync, rmSync } from "node:fs";
+import { existsSync, readdirSync, mkdirSync, writeFileSync, readFileSync, unlinkSync, renameSync, rmSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
-import { streamFragmentedMp4 } from "./lib/transcode";
+import { streamFragmentedMp4, proxyDonePath } from "./lib/transcode";
+
+// Content hash of a file on disk, streamed so large ProRes inputs aren't held
+// in memory. Used to key the proxy cache: same bytes -> same proxy.
+async function hashFile(path: string): Promise<string> {
+  const hasher = new Bun.CryptoHasher("sha256");
+  for await (const chunk of Bun.file(path).stream()) hasher.update(chunk);
+  return hasher.digest("hex").slice(0, 16);
+}
 
 function safeExt(name: string): string {
   const ext = extname(name).toLowerCase();
@@ -285,7 +293,26 @@ export function createServer(port: number) {
         const inputPath = join(proxyDir, `input_${id}${safeExt(file.name)}`);
         await Bun.write(inputPath, file);
 
-        const outputPath = join(proxyDir, `proxy_${id}.mp4`);
+        // Cache by content hash: the same source maps to the same proxy, so a
+        // re-upload skips ffmpeg entirely. The .done marker means the file is
+        // complete (a partial/interrupted proxy has none and gets rebuilt).
+        const hash = await hashFile(inputPath);
+        const outputPath = join(proxyDir, `proxy_${hash}.mp4`);
+        const donePath = proxyDonePath(outputPath);
+        if (existsSync(outputPath) && existsSync(donePath)) {
+          try { unlinkSync(inputPath); } catch {}
+          const cachedDuration = readFileSync(donePath, "utf8").trim();
+          return new Response(Bun.file(outputPath), {
+            headers: {
+              "Content-Type": "video/mp4",
+              "Cache-Control": "no-store",
+              "X-Proxy-Duration": cachedDuration || "0",
+              "X-Proxy-Path": outputPath,
+              "X-Proxy-Cached": "1",
+            },
+          });
+        }
+
         let proxy;
         try {
           proxy = await streamFragmentedMp4(inputPath, outputPath);

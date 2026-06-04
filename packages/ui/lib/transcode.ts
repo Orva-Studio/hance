@@ -1,6 +1,13 @@
 import { probe } from "@hance/core";
-import { createWriteStream } from "node:fs";
+import { createWriteStream, writeFileSync, unlinkSync } from "node:fs";
 import { cpus } from "node:os";
+
+// Written next to a proxy only after a successful, fully-flushed transcode.
+// Its presence means the .mp4 is complete and cacheable; it holds the source
+// duration so a cache hit can serve X-Proxy-Duration without re-probing.
+export function proxyDonePath(outputPath: string): string {
+  return `${outputPath}.done`;
+}
 
 // Software ProRes decode is the CPU cost (no HW decoder exists on macOS), and
 // it will pin every core. Cap it to ~half so the proxy stays well ahead of
@@ -101,16 +108,21 @@ export async function streamFragmentedMp4(
           controller.enqueue(value);
         }
         const exitCode = await proc.exited;
-        fileWriter.end();
+        // Wait for the disk tee to flush before declaring the proxy complete.
+        await new Promise<void>((res) => fileWriter.end(() => res()));
         if (exitCode !== 0) {
           const stderr = await new Response(proc.stderr).text();
+          try { unlinkSync(outputPath); } catch {}
           controller.error(new Error(`ffmpeg failed: ${stderr.trim()}`));
           return;
         }
+        // Mark the proxy cacheable now that the full file is on disk.
+        try { writeFileSync(proxyDonePath(outputPath), String(durationSec)); } catch {}
         controller.close();
       } catch (err) {
         fileWriter.end();
         try { proc.kill(); } catch {}
+        try { unlinkSync(outputPath); } catch {}
         controller.error(err);
       }
     },
