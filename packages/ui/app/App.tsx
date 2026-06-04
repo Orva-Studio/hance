@@ -59,6 +59,27 @@ export function App() {
     }
   }, [videoElement]);
 
+  // Show a spinner whenever the video stalls — at start while the streaming
+  // proxy fills, or mid-clip if playback catches up to the transcode head.
+  const [isBuffering, setIsBuffering] = useState(false);
+  useEffect(() => {
+    if (!videoElement) return;
+    const stall = () => setIsBuffering(true);
+    const resume = () => setIsBuffering(false);
+    videoElement.addEventListener("waiting", stall);
+    videoElement.addEventListener("stalled", stall);
+    videoElement.addEventListener("playing", resume);
+    videoElement.addEventListener("canplay", resume);
+    videoElement.addEventListener("pause", resume);
+    return () => {
+      videoElement.removeEventListener("waiting", stall);
+      videoElement.removeEventListener("stalled", stall);
+      videoElement.removeEventListener("playing", resume);
+      videoElement.removeEventListener("canplay", resume);
+      videoElement.removeEventListener("pause", resume);
+    };
+  }, [videoElement]);
+
   // When the proxy finishes and we swap to the file, restore the playhead.
   useEffect(() => {
     if (proxy.state === "ready" && videoElement) {
@@ -521,6 +542,14 @@ export function App() {
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-danger/90 text-xs text-white">
               {proxy.errorMsg ?? "Preview failed"}
               <button className="underline" onClick={() => file && proxy.start(file)}>Retry</button>
+            </div>
+          )}
+          {isBuffering && isVideo && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 backdrop-blur text-xs text-zinc-200">
+                <span className="w-3 h-3 rounded-full border-2 border-zinc-500 border-t-accent animate-spin" />
+                Buffering…
+              </div>
             </div>
           )}
           {previewError && !isVideo ? (
