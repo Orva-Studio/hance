@@ -599,6 +599,12 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
 
     const eHalfW = Math.max(1, Math.floor(width / 2));
     const eHalfH = Math.max(1, Math.floor(height / 2));
+
+    // A full-res export holds two source-sized rgba16float textures plus the
+    // halves live at once (~160 MB each at 5472×3648), which can exhaust VRAM
+    // on constrained GPUs. Catch the allocation failure and surface it instead
+    // of leaking an unhandled device error.
+    device.pushErrorScope("out-of-memory");
     const t: RenderTarget = {
       w: width, h: height, halfW: eHalfW, halfH: eHalfH,
       texA: createTexture(device, width, height, INTERMEDIATE_FORMAT),
@@ -616,6 +622,19 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
     const encoder = device.createCommandEncoder();
     encodeChain(encoder, t, false);
     device.queue.submit([encoder.finish()]);
+
+    const oom = await device.popErrorScope();
+    if (oom) {
+      t.texA.destroy();
+      t.texB.destroy();
+      t.halfA.destroy();
+      t.halfB.destroy();
+      t.coreTex.destroy();
+      t.outputTex.destroy();
+      throw new Error(
+        `Not enough GPU memory to export at ${width}×${height}. Try a smaller source image.`,
+      );
+    }
 
     try {
       const pixels = await readPixelsFrom(t.outputTex, width, height);

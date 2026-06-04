@@ -36,19 +36,23 @@ export function TopBar({
 
   async function downloadImage() {
     if (!renderer) return;
-    const { pixels: rgba, width: w, height: h } = await renderer.exportImage();
-    if (rgba.length === 0) return;
-    const offscreen = new OffscreenCanvas(w, h);
-    const ctx = offscreen.getContext("2d")!;
-    const imageData = new ImageData(new Uint8ClampedArray(rgba.buffer), w, h);
-    ctx.putImageData(imageData, 0, 0);
-    const blob = await offscreen.convertToBlob({ type: "image/png" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = file!.name.replace(/\.[^.]+$/, "_hanced.png");
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      const { pixels: rgba, width: w, height: h } = await renderer.exportImage();
+      if (rgba.length === 0) return;
+      const offscreen = new OffscreenCanvas(w, h);
+      const ctx = offscreen.getContext("2d")!;
+      const imageData = new ImageData(new Uint8ClampedArray(rgba.buffer), w, h);
+      ctx.putImageData(imageData, 0, 0);
+      const blob = await offscreen.convertToBlob({ type: "image/png" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file!.name.replace(/\.[^.]+$/, "_hanced.png");
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Image export failed.");
+    }
   }
 
   return (
