@@ -21,13 +21,19 @@ hance needs **FFmpeg** (and `ffprobe`) on your PATH: `brew install ffmpeg`, `apt
 
 ## With an AI agent
 
-If you drive hance from an AI agent, run the skill's setup command, which verifies FFmpeg and gets you ready in one step:
+Install the skill into your agent with [skills.sh](https://skills.sh):
+
+```bash
+npx skills add orva-studio/hance
+```
+
+This registers the `/hance` skill so your agent can drive hance in plain English. Then run the setup command, which verifies FFmpeg and gets you ready in one step:
 
 ```
 > /hance setup
 ```
 
-See [AI Agent Usage](/docs/agent/overview/) for installing the skill.
+Harnesses that don't use skills.sh can read the same instructions straight from the CLI at runtime — no install — via `bunx @orva-studio/hance skills`. See [AI Agent Usage](/docs/agent/overview/) for details.
 
 ## Install a persistent binary
 
