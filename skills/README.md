@@ -1,17 +1,17 @@
 # Skills
 
-Claude Code skills shipped with this repo.
+The Hance agent skill, shipped inside the CLI.
 
-| Skill | Description |
-| --- | --- |
-| [`match-look`](match-look/SKILL.md) | Iteratively dial in a Hance preset that matches a reference image. |
-
-## Install
-
-If you opened this repo in Claude Code, skills under `.claude/skills/` are auto-loaded — no install needed.
-
-To use these skills outside this repo, copy or symlink the skill directory into your Claude Code skills path:
+The skill content (`SKILL.md`, `subcommands/`, `references/`) is baked into the
+`hance` binary at build time via `scripts/gen-skills.ts`. Agents read it at
+runtime — no install or symlink needed:
 
 ```bash
-ln -s "$(pwd)/skills/match-look" ~/.claude/skills/match-look
+hance skills              # the router / entry doc
+hance skills list         # available subcommand + reference docs
+hance skills get refine   # one doc
+hance skills path         # extract docs to a local dir
 ```
+
+When this repo is opened in Claude Code, the skill at `skills/` is also
+auto-loaded for local development.

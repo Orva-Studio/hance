@@ -43,7 +43,3 @@ The compiled binary expects a `hance-gpu` sidecar alongside it; a bare `./hance`
 - `references/preset-index.md` — `presets/index.json` schema and rebuild contract.
 - `references/compare-page.md` — `/compare` route query params and Edit hand-off.
 - `references/grading.md` — how to judge and dial in a film look: the render→read→adjust loop, what makes a grade read as film, and common artifacts. Read before `refine`.
-
-## Replaces
-
-The old `/match-look` skill is gone — its purpose is now served by `/hance try` with a reference image.
