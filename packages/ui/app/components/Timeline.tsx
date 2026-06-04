@@ -55,7 +55,7 @@ export function Timeline({ videoRef, durationHint = 0, streaming = false }: Prop
     if (!videoRef) return;
 
     function onLoadedMetadata() {
-      if (videoRef!.duration) setDuration(Math.max(videoRef!.duration, durationHint));
+      if (Number.isFinite(videoRef!.duration)) setDuration(Math.max(videoRef!.duration, durationHint));
     }
     function onPlay() { setPlaying(true); }
     function onPause() { setPlaying(false); }
@@ -63,7 +63,7 @@ export function Timeline({ videoRef, durationHint = 0, streaming = false }: Prop
     videoRef.addEventListener("loadedmetadata", onLoadedMetadata);
     videoRef.addEventListener("play", onPlay);
     videoRef.addEventListener("pause", onPause);
-    if (videoRef.duration) setDuration(Math.max(videoRef.duration, durationHint));
+    if (Number.isFinite(videoRef.duration)) setDuration(Math.max(videoRef.duration, durationHint));
     setPlaying(!videoRef.paused);
 
     function updateTime() {

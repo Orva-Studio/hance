@@ -83,6 +83,11 @@ export function useProxyStream(): ProxyStreamApi {
 
     mediaSource.addEventListener("sourceopen", async () => {
       const sourceBuffer = mediaSource.addSourceBuffer(PROXY_MIME);
+      // Without this the streaming blob reports duration === Infinity until
+      // endOfStream, which breaks duration-based UI (e.g. timeline ticks).
+      if (durationSec > 0) {
+        try { mediaSource.duration = durationSec; } catch {}
+      }
       const reader = res.body!.getReader();
 
       const appendChunk = (chunk: Uint8Array) =>

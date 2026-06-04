@@ -35,6 +35,13 @@ test("zero/invalid duration returns empty", () => {
   expect(computeTicks(-1).majors).toEqual([]);
 });
 
+test("non-finite duration returns empty (streaming MSE reports Infinity)", () => {
+  // A streaming MediaSource blob reports duration === Infinity until
+  // endOfStream; the tick loop must not run away and overflow the array.
+  expect(computeTicks(Infinity).majors).toEqual([]);
+  expect(computeTicks(NaN).majors).toEqual([]);
+});
+
 test("major times are within duration", () => {
   const t = computeTicks(30);
   for (const m of t.majors) {
