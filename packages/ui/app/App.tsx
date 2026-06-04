@@ -84,16 +84,16 @@ export function App() {
     };
   }, [videoElement]);
 
-  // When the proxy finishes we swap the blob for the on-disk file, which makes
-  // Canvas re-init and seek the new element to 0 for its first frame. Capture
-  // the playhead now and let handleVideoReady reapply it *after* that seek-to-0,
-  // otherwise the reset wins and playback jumps to the start.
-  const pendingResumeRef = useRef<number | null>(null);
-  useEffect(() => {
-    if (proxy.state === "ready") {
-      pendingResumeRef.current = lastTimeRef.current;
-    }
-  }, [proxy.state]);
+  // When the proxy finishes we swap the blob for the on-disk file. The swap
+  // resets the <video>'s currentTime to 0 (firing timeupdate=0), so we must
+  // freeze the playhead at the "ready" transition — captured here during
+  // render, before the new src is committed and that reset fires. Canvas then
+  // seeks its first frame to this position instead of 0. Reset on new file.
+  const resumeRef = useRef<number | null>(null);
+  if (proxy.state === "ready" && resumeRef.current === null) {
+    resumeRef.current = lastTimeRef.current;
+  }
+  const getStartTime = useCallback(() => resumeRef.current ?? 0, []);
 
   const [animating, setAnimating] = useState(false);
   const [showSaveAsNew, setShowSaveAsNew] = useState(false);
@@ -131,6 +131,8 @@ export function App() {
   useEffect(() => {
     setPreviewError(null);
     setFirstFrameReady(false);
+    lastTimeRef.current = 0;
+    resumeRef.current = null;
     setReferenceImage(null);
     setViewMode("normal");
     setSplitPosition(0.5);
@@ -239,12 +241,6 @@ export function App() {
   const handleVideoReady = useCallback((v: HTMLVideoElement) => {
     setVideoElement(v);
     setFirstFrameReady(true);
-    // Reapply the pre-swap playhead now that Canvas has finished its seek-to-0.
-    const resume = pendingResumeRef.current;
-    if (resume != null && resume > 0) {
-      pendingResumeRef.current = null;
-      try { v.currentTime = resume; } catch {}
-    }
   }, []);
 
   const handleParamChange = useCallback((key: string, value: number | string | boolean) => {
@@ -543,14 +539,8 @@ export function App() {
               onPanModeChange={canvasTransform.setPanMode}
             />
           )}
-          {proxy.state === "streaming" && (
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 backdrop-blur text-xs text-zinc-200">
-              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-              Buffering preview {Math.round(proxy.progress * 100)}%
-            </div>
-          )}
           {proxy.state === "error" && (
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-danger/90 text-xs text-white">
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-danger/90 text-xs text-white">
               {proxy.errorMsg ?? "Preview failed"}
               <button className="underline" onClick={() => file && proxy.start(file)}>Retry</button>
             </div>
@@ -591,6 +581,7 @@ export function App() {
               onRendererReady={handleRendererReady}
               onCanvasReady={handleCanvasReady}
               onVideoReady={handleVideoReady}
+              getStartTime={getStartTime}
               onError={setPreviewError}
               zoom={canvasTransform.zoom}
               pan={canvasTransform.pan}
