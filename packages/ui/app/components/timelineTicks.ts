@@ -9,7 +9,9 @@ const NICE_INTERVALS = [
 ];
 
 export function computeTicks(duration: number, targetMajors = 10): TickSet {
-  if (!(duration > 0)) return { majorInterval: 0, minorsPerMajor: 4, majors: [] };
+  if (!(duration > 0) || !Number.isFinite(duration)) {
+    return { majorInterval: 0, minorsPerMajor: 4, majors: [] };
+  }
 
   const raw = duration / targetMajors;
   let majorInterval = NICE_INTERVALS[NICE_INTERVALS.length - 1];
