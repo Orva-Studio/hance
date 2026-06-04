@@ -23,7 +23,8 @@ Pro is **coming soon**. The features below outline what a pro license will inclu
 | ProRes codec | — | ✓ |
 | Batch processing (multiple inputs) | — | ✓ |
 | Premium looks | — | ✓ |
-| AI features (coming soon) | — | ✓ |
+| AI depth of field (coming soon) | — | ✓ |
+| DaVinci Resolve plugin (coming soon) | — | ✓ |
 | Mac app (coming soon) | — | ✓ |
 
 ## Pro codecs
@@ -72,3 +73,11 @@ On the free tier, process one file at a time.
 ## Premium looks
 
 Some looks in the `presets/premium/` directory require a pro license. These are marked with `"premium": true` in the `.hlook` file.
+
+## AI depth of field
+
+Pull focus after the shot. AI estimates scene depth from a flat clip so you can deepen or soften the background. Coming soon as part of Pro.
+
+## DaVinci Resolve plugin
+
+The hance look engine inside Resolve as an OFX plugin, so there's no round-trip through the CLI. Coming soon as part of Pro.
