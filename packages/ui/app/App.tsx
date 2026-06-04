@@ -559,7 +559,7 @@ export function App() {
                 </div>
                 <div className="text-xs text-zinc-500">
                   {proxy.state === "streaming"
-                    ? "Building a 720p preview proxy — it will start buffering shortly. Export stays full-res."
+                    ? "Building a 720p preview proxy. It will start buffering shortly. Export stays full-res."
                     : "Checking whether the browser can play this file."}
                 </div>
               </div>
