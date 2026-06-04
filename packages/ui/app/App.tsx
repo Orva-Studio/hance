@@ -23,13 +23,6 @@ import { consumeSSE } from "./lib/sse";
 import { fetchJson } from "./lib/fetchJson";
 import { useProxyStream } from "./hooks/useProxyStream";
 
-// Browsers cannot decode ProRes / many intermediate codecs. MIME is often
-// generic (video/quicktime) so also check the extension.
-function needsProxy(file: File): boolean {
-  const name = file.name.toLowerCase();
-  return /\.(mov|mxf|prores)$/.test(name) || file.type === "video/quicktime";
-}
-
 export function App() {
   const { file, objectUrl, isVideo, upload, error: uploadError, clearError } = useUpload();
   const proxy = useProxyStream();
@@ -39,14 +32,17 @@ export function App() {
 
   useInitialFile(upload);
 
+  // Only proxy when the browser actually can't decode the file. A .mov can
+  // hold H.264 (plays natively) or ProRes (doesn't); the extension/MIME can't
+  // tell them apart, so we let the native <video> try first and start the
+  // streaming proxy if Canvas reports a decode failure.
   useEffect(() => {
-    if (file && isVideo) {
-      // Start eagerly for known-undecodable types; decodable codecs play
-      // directly from objectUrl, so we skip the proxy for them.
-      if (needsProxy(file)) proxy.start(file);
+    if (file && isVideo && previewError && proxy.state === "idle") {
+      setPreviewError(null);
+      proxy.start(file);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [file]);
+  }, [previewError, file, isVideo]);
 
   const [params, setParams] = useState<PreviewParams>({});
   const [schema, setSchema] = useState<EffectGroup[]>([]);
