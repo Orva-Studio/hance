@@ -60,6 +60,18 @@ Generate a quick preview frame.
 
 Manage looks/presets.
 
+## `hance skills [subcommand]`
+
+Print the agent skill docs baked into the binary, so an AI harness gets
+version-matched instructions at runtime.
+
+```bash
+hance skills              # the router / entry doc (for AI harnesses)
+hance skills list         # available subcommand + reference docs
+hance skills get refine   # print one doc
+hance skills path         # extract the docs to a local dir
+```
+
 ## Batch processing
 
 Pass multiple inputs to process them in sequence:

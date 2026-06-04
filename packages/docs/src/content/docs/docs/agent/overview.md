@@ -15,6 +15,15 @@ npx skills add Orva-Studio/hance --skill hance
 
 Once installed, type `/hance` in your AI agent to get started.
 
+The skill is also baked into the `hance` binary itself. Any agent harness can pull the same instructions at runtime — version-matched to the installed CLI, no separate install — via `hance skills`:
+
+```bash
+hance skills              # the router / entry doc
+hance skills list         # available subcommand + reference docs
+hance skills get refine   # print one doc
+hance skills path         # extract the docs to a local dir
+```
+
 ## How it works
 
 The skill uses `bunx @orva-studio/hance` (or `npx` as fallback) under the hood, so no global install is needed. It automatically detects your runtime and picks the fastest available runner.
