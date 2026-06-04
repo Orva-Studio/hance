@@ -10,6 +10,7 @@ interface Props {
   onRendererReady: (renderer: Renderer) => void;
   onCanvasReady?: (canvas: HTMLCanvasElement) => void;
   onVideoReady?: (video: HTMLVideoElement) => void;
+  getStartTime?: () => number;   // where to land the first-frame seek (sec); default 0
   onError?: (err: Error) => void;
   zoom?: ZoomLevel;
   pan?: { x: number; y: number };
@@ -33,6 +34,8 @@ export function Canvas(props: Props) {
   const rafRef = useRef<number>(0);
   const paramsRef = useRef(params);
   paramsRef.current = params;
+  const getStartTimeRef = useRef(props.getStartTime);
+  getStartTimeRef.current = props.getStartTime;
 
   // WebGPU init — must be useEffect since it's an async external system
   useEffect(() => {
@@ -57,7 +60,11 @@ export function Canvas(props: Props) {
           };
           if (video.readyState >= 2) { clearTimeout(timeout); resolve(); }
         });
-        // Seek to start to ensure first frame is decoded and visible
+        // Seek to startTime (0 on first load, or the preserved playhead when
+        // swapping the streaming proxy for the finished file) to decode the
+        // first visible frame there.
+        const want = getStartTimeRef.current?.() ?? 0;
+        const seekTarget = Math.min(want, Math.max(0, (video.duration || 0) - 0.05)) || 0;
         await new Promise<void>((resolve, reject) => {
           const timeout = setTimeout(() => {
             reject(new Error("Video seek timed out after 5s"));
@@ -69,7 +76,7 @@ export function Canvas(props: Props) {
             const msg = video.error?.message || "unknown error";
             reject(new Error(`Video failed during seek (code ${code ?? "?"}): ${msg}`));
           };
-          video.currentTime = 0;
+          video.currentTime = seekTarget;
         });
         const sourceWidth = video.videoWidth;
         const sourceHeight = video.videoHeight;
