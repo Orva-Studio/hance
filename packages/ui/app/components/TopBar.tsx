@@ -14,7 +14,6 @@ interface Props {
   filename: string | null;
   file: File | null;
   params: Record<string, string | number | boolean>;
-  canvas: HTMLCanvasElement | null;
   renderer: Renderer | null;
   isVideo: boolean;
   hasChanges: boolean;
@@ -26,7 +25,7 @@ interface Props {
 }
 
 export function TopBar({
-  filename, file, canvas, renderer, isVideo,
+  filename, file, renderer, isVideo,
   hasChanges, onSave, onSaveAsNew, onExportClick,
   exportProgress, onExportDone,
 }: Props) {
