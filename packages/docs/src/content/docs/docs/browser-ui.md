@@ -5,6 +5,8 @@ description: "Full tour of the hance browser-based editor: panels, view modes, a
 
 The hance browser-based editor previews looks in real-time on your footage, rendering effects on the GPU via WebGPU. This page documents every panel and feature.
 
+![The hance browser editor with a split before/after preview, the looks panel on the left, and effect adjustments on the right.](/img/browser-ui.jpg)
+
 ## Launching
 
 ```bash

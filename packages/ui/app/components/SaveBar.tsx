@@ -17,13 +17,14 @@ export function SaveBar({ hasChanges, onSave, onSaveAsNew }: Props) {
             : "px-4 py-1.5 bg-zinc-800 text-zinc-400 text-xs font-medium rounded-sm cursor-default"
         }
       >
-        {hasChanges ? "Save" : "Saved ✓"}
+        {hasChanges ? "Save Look" : "Look Saved ✓"}
       </button>
       <button
         onClick={onSaveAsNew}
+        title="Save current settings as a new look"
         className="px-4 py-1.5 bg-zinc-700 text-zinc-200 text-xs font-medium rounded-sm hover:bg-zinc-600 transition-colors"
       >
-        Save As New
+        Save as New Look
       </button>
     </div>
   );
