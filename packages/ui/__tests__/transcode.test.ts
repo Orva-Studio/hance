@@ -31,11 +31,31 @@ describe("buildProxyArgs", () => {
     expect(args).not.toContain("-vf");
   });
 
-  test("includes the chosen encoder and the input/output paths", () => {
+  test("includes the chosen encoder and the input path", () => {
     const args = buildProxyArgs("in.mov", "out.mp4", "h264_videotoolbox");
     expect(args).toContain("h264_videotoolbox");
     expect(args[0]).toBe("ffmpeg");
-    expect(args.at(-1)).toBe("out.mp4");
     expect(args).toContain("in.mov");
+  });
+
+  test("outputs fragmented mp4 to stdout, not a faststart file", () => {
+    const args = buildProxyArgs("in.mov", "out.mp4", "libx264");
+    const i = args.indexOf("-movflags");
+    expect(args[i + 1]).toBe("+frag_keyframe+empty_moov+default_base_moof");
+    expect(args).not.toContain("+faststart");
+    expect(args.at(-1)).toBe("pipe:1");
+  });
+
+  test("pins H.264 profile and level for a deterministic codec string", () => {
+    const args = buildProxyArgs("in.mov", "out.mp4", "libx264");
+    expect(args).toContain("-profile:v");
+    expect(args[args.indexOf("-profile:v") + 1]).toBe("high");
+    expect(args).toContain("-level");
+    expect(args[args.indexOf("-level") + 1]).toBe("4.0");
+  });
+
+  test("does not request progress on stdout (stdout carries video)", () => {
+    const args = buildProxyArgs("in.mov", "out.mp4", "libx264");
+    expect(args).not.toContain("-progress");
   });
 });

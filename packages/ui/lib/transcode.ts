@@ -36,10 +36,13 @@ export function buildProxyArgs(
     "ffmpeg", "-y", "-i", inputPath,
     ...(filters.length ? ["-vf", filters.join(",")] : []),
     ...encoderArgs(encoder),
+    "-profile:v", "high", "-level", "4.0",
     "-pix_fmt", "yuv420p",
-    "-movflags", "+faststart", "-c:a", "aac", "-b:a", "128k",
-    "-progress", "pipe:1", "-nostats", "-v", "error",
-    outputPath,
+    "-movflags", "+frag_keyframe+empty_moov+default_base_moof",
+    "-c:a", "aac", "-b:a", "128k",
+    "-nostats", "-v", "error",
+    "-f", "mp4",
+    "pipe:1",
   ];
 }
 
