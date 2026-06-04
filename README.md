@@ -24,6 +24,17 @@ hance video.mp4 --preset my-look
 
 Looks saved from the UI live in `~/.hance/presets/` and are referenced by name. See the [Installation](https://hance.video/docs/getting-started/installation/) and [Quick Start](https://hance.video/docs/getting-started/quick-start/) guides for details.
 
+## Agent skill
+
+The `hance` binary carries its own agent skill so any AI harness gets version-matched instructions at runtime:
+
+```sh
+hance skills              # the router / entry doc (for AI harnesses)
+hance skills list         # available subcommand + reference docs
+hance skills get refine   # print one doc
+hance skills path         # extract the docs to a local dir
+```
+
 ## Documentation
 
 - [Introduction](https://hance.video/docs/getting-started/introduction/) — what hance is and who it's for
