@@ -84,17 +84,16 @@ export function App() {
     };
   }, [videoElement]);
 
-  // When the proxy finishes and we swap to the file, restore the playhead.
+  // When the proxy finishes we swap the blob for the on-disk file, which makes
+  // Canvas re-init and seek the new element to 0 for its first frame. Capture
+  // the playhead now and let handleVideoReady reapply it *after* that seek-to-0,
+  // otherwise the reset wins and playback jumps to the start.
+  const pendingResumeRef = useRef<number | null>(null);
   useEffect(() => {
-    if (proxy.state === "ready" && videoElement) {
-      const t = lastTimeRef.current;
-      const restore = () => {
-        try { videoElement.currentTime = t; } catch {}
-        videoElement.removeEventListener("loadedmetadata", restore);
-      };
-      videoElement.addEventListener("loadedmetadata", restore);
+    if (proxy.state === "ready") {
+      pendingResumeRef.current = lastTimeRef.current;
     }
-  }, [proxy.state, videoElement]);
+  }, [proxy.state]);
 
   const [animating, setAnimating] = useState(false);
   const [showSaveAsNew, setShowSaveAsNew] = useState(false);
@@ -240,6 +239,12 @@ export function App() {
   const handleVideoReady = useCallback((v: HTMLVideoElement) => {
     setVideoElement(v);
     setFirstFrameReady(true);
+    // Reapply the pre-swap playhead now that Canvas has finished its seek-to-0.
+    const resume = pendingResumeRef.current;
+    if (resume != null && resume > 0) {
+      pendingResumeRef.current = null;
+      try { v.currentTime = resume; } catch {}
+    }
   }, []);
 
   const handleParamChange = useCallback((key: string, value: number | string | boolean) => {
