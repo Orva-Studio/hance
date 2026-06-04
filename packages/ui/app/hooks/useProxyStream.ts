@@ -24,6 +24,7 @@ export interface ProxyStreamApi {
   progress: number;
   durationHint: number;
   errorMsg: string | null;
+  cacheBytes: number;   // total size of the on-disk proxy cache, from the server
   start: (file: File) => Promise<void>;
 }
 
@@ -33,6 +34,7 @@ export function useProxyStream(): ProxyStreamApi {
   const [progress, setProgress] = useState(0);
   const [durationHint, setDurationHint] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [cacheBytes, setCacheBytes] = useState(0);
   const blobUrlRef = useRef<string | null>(null);
 
   const start = useCallback(async (file: File) => {
@@ -60,6 +62,7 @@ export function useProxyStream(): ProxyStreamApi {
     const durationSec = Number(res.headers.get("X-Proxy-Duration") ?? "0");
     const proxyPath = res.headers.get("X-Proxy-Path") ?? "";
     setDurationHint(durationSec);
+    setCacheBytes(Number(res.headers.get("X-Proxy-Cache-Bytes") ?? "0"));
     const fileUrl = `/api/proxy-file?path=${encodeURIComponent(proxyPath)}`;
 
     // Fallback: drain the whole stream, then play the finished file.
@@ -125,5 +128,5 @@ export function useProxyStream(): ProxyStreamApi {
     }, { once: true });
   }, []);
 
-  return { previewSrc, state, progress, durationHint, errorMsg, start };
+  return { previewSrc, state, progress, durationHint, errorMsg, cacheBytes, start };
 }

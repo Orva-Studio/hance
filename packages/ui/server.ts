@@ -2,7 +2,7 @@ import { EFFECT_SCHEMA, seedDefaults, loadPreset, builtinPresetsDir, userPresets
 import type { PresetData, LicenseContext } from "@hance/core";
 import { runGpuExport } from "@hance/gpu";
 import { join, extname, basename, resolve } from "node:path";
-import { existsSync, readdirSync, mkdirSync, writeFileSync, readFileSync, unlinkSync, renameSync, rmSync } from "node:fs";
+import { existsSync, readdirSync, mkdirSync, writeFileSync, readFileSync, unlinkSync, renameSync, rmSync, statSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
 import { streamFragmentedMp4, proxyDonePath } from "./lib/transcode";
 
@@ -12,6 +12,17 @@ async function hashFile(path: string): Promise<string> {
   const hasher = new Bun.CryptoHasher("sha256");
   for await (const chunk of Bun.file(path).stream()) hasher.update(chunk);
   return hasher.digest("hex").slice(0, 16);
+}
+
+// Total bytes of the proxy cache dir, so the client can warn when it grows
+// large. Cheap stat walk over a flat directory.
+function proxyCacheBytes(dir: string): number {
+  if (!existsSync(dir)) return 0;
+  let total = 0;
+  for (const name of readdirSync(dir)) {
+    try { total += statSync(join(dir, name)).size; } catch {}
+  }
+  return total;
 }
 
 function safeExt(name: string): string {
@@ -309,6 +320,7 @@ export function createServer(port: number) {
               "X-Proxy-Duration": cachedDuration || "0",
               "X-Proxy-Path": outputPath,
               "X-Proxy-Cached": "1",
+              "X-Proxy-Cache-Bytes": String(proxyCacheBytes(proxyDir)),
             },
           });
         }
@@ -349,6 +361,7 @@ export function createServer(port: number) {
             "Cache-Control": "no-store",
             "X-Proxy-Duration": String(proxy.durationSec),
             "X-Proxy-Path": outputPath,
+            "X-Proxy-Cache-Bytes": String(proxyCacheBytes(proxyDir)),
           },
         });
       }
