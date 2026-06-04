@@ -14,6 +14,7 @@ Unified Astro site: a Tailwind marketing landing page at `/` plus the Starlight 
 - **Verify with `bun run build`** before committing; it surfaces broken slugs and links that dev mode can hide.
 
 ## Conventions
+- **NEVER use em dashes (`—`) in docs content.** Rewrite as separate sentences, a comma, a colon, or parentheses. This applies to all `.md(x)` pages and page copy.
 - Use Starlight asides (`:::note`, `:::tip`, `:::caution`) for callouts.
 - Screenshot placeholders are `*<!-- Screenshot: ... -->*` lines.
 - Pro-only features should link to the [Free vs Pro](src/content/docs/free-vs-pro.md) page.
