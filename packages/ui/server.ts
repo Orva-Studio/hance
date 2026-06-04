@@ -4,7 +4,7 @@ import { runGpuExport } from "@hance/gpu";
 import { join, extname, basename, resolve } from "node:path";
 import { existsSync, readdirSync, mkdirSync, writeFileSync, unlinkSync, renameSync, rmSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
-import { transcodeToH264Stream } from "./lib/transcode";
+import { streamFragmentedMp4 } from "./lib/transcode";
 
 function safeExt(name: string): string {
   const ext = extname(name).toLowerCase();
@@ -286,28 +286,42 @@ export function createServer(port: number) {
         await Bun.write(inputPath, file);
 
         const outputPath = join(proxyDir, `proxy_${id}.mp4`);
-        const source = transcodeToH264Stream(inputPath, outputPath);
-        const stream = new ReadableStream({
+        let proxy;
+        try {
+          proxy = await streamFragmentedMp4(inputPath, outputPath);
+        } catch (err) {
+          try { unlinkSync(inputPath); } catch {}
+          return new Response((err as Error).message, { status: 500 });
+        }
+
+        const reader = proxy.stream.getReader();
+        const body = new ReadableStream<Uint8Array>({
           async start(controller) {
-            const reader = source.getReader();
             try {
               while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
                 controller.enqueue(value);
               }
+              controller.close();
+            } catch (err) {
+              controller.error(err);
             } finally {
               try { unlinkSync(inputPath); } catch {}
-              try { controller.close(); } catch {}
             }
+          },
+          cancel() {
+            reader.cancel();
+            try { unlinkSync(inputPath); } catch {}
           },
         });
 
-        return new Response(stream, {
+        return new Response(body, {
           headers: {
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
+            "Content-Type": "video/mp4",
+            "Cache-Control": "no-store",
+            "X-Proxy-Duration": String(proxy.durationSec),
+            "X-Proxy-Path": outputPath,
           },
         });
       }
