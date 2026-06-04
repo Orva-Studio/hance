@@ -10,7 +10,7 @@ Hance ships with an [AI agent skill](https://www.skills.sh/) that lets you grade
 Install via [skills.sh](https://skills.sh):
 
 ```bash
-npx skills add Orva-Studio/hance --skill hance
+npx skills add orva-studio/hance
 ```
 
 Once installed, type `/hance` in your AI agent to get started.
