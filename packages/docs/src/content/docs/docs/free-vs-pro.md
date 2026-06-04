@@ -35,7 +35,7 @@ The free tier supports H.264 and H.265 output. Pro unlocks:
 Using a pro codec on the free tier will show an error:
 
 ```
-Codec "prores" requires a pro license — upgrade at hance.app/pro
+Codec "prores" requires a pro license — upgrade at hance.video/pro
 ```
 
 ## Export presets and codecs

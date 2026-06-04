@@ -320,9 +320,6 @@ const faqSchema = {
             Already rendering with Remotion, Manim, or raw FFmpeg? Send the output through hance to add film
             grain, halation, and bloom no LUT can fake.
           </p>
-          <div class="cb mt-5">
-            <div class="cb-row"><span class="cb-glyph">$</span><span class="cb-cmd">hance render.mp4 --preset cinestill-800t</span></div>
-          </div>
           <a href="/docs/recipes/animation-pipelines/" class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent hover:underline underline-offset-4">
             Animation pipeline recipes →
           </a>
@@ -680,7 +677,7 @@ const faqSchema = {
   }
   .cb-row {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
     column-gap: 14px;
     align-items: baseline;
     padding: 8px 0;

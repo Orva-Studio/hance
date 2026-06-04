@@ -1,0 +1,83 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+const title = 'Hance Pro: ProRes, batch processing, premium looks';
+const description =
+  'Hance Pro is coming soon. ProRes export, batch processing across folders, premium film looks, AI depth of field, and a DaVinci Resolve plugin, built on the same local, GPU-accelerated engine.';
+
+const features = [
+  {
+    title: 'ProRes export',
+    body: 'Near-lossless 4:2:2 10-bit output for professional editing and finishing workflows.',
+  },
+  {
+    title: 'Batch processing',
+    body: 'Apply one consistent look across hundreds of clips, headless. One render graph per clip, no GUI in the loop.',
+  },
+  {
+    title: 'Premium looks',
+    body: 'A curated library of film stocks beyond the 40+ already free, tuned for specific moods and eras.',
+  },
+  {
+    title: 'AI depth of field',
+    body: 'Pull focus after the shot. AI estimates scene depth from a flat clip so you can deepen or soften the background.',
+  },
+  {
+    title: 'DaVinci Resolve plugin',
+    body: 'The hance look engine inside Resolve as an OFX plugin, so there is no round-trip through the CLI.',
+  },
+];
+---
+<Base title={title} description={description}>
+  <Nav />
+
+  <!-- HERO -->
+  <section class="px-6 sm:px-10 lg:px-16 pt-16 sm:pt-24 lg:pt-28 pb-20 sm:pb-28">
+    <div class="max-w-[1280px] mx-auto">
+      <span class="inline-flex items-center rounded-full border border-accent/70 bg-accent/10 px-3 py-1 font-mono text-[11px] text-accent uppercase tracking-[0.14em]">
+        Coming soon
+      </span>
+      <h1 class="mt-6 font-sans font-medium tracking-tightest-2 leading-[1.05] text-ink text-balance"
+          style="font-size: clamp(1.95rem, 4.2vw, 3.85rem); max-width: 24ch">
+        Hance Pro.
+        <span class="text-ink-muted">Everything in the free tier, plus the finishing touches.</span>
+      </h1>
+      <p class="mt-8 max-w-[52ch] text-ink-muted leading-relaxed">
+        The whole hance look engine is free and source-available: every effect, all 40+ film looks, the
+        browser UI, and the agent skill. Pro adds the pieces built for scale and final delivery. It's not
+        yet available for purchase; pricing will be announced here.
+      </p>
+      <div class="mt-10 flex flex-wrap items-center gap-4">
+        <a href="/docs/free-vs-pro/" class="inline-flex items-center gap-2 rounded-full border border-accent/70 hover:border-accent px-5 py-2.5 font-mono text-[13px] text-ink transition-colors duration-300 ease-out-quart">See free vs Pro</a>
+        <a href="/" class="inline-flex items-center gap-1.5 font-mono text-[13px] text-accent hover:underline underline-offset-4">
+          ← Back to hance
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28 border-t border-surface-3/70" aria-labelledby="pro-features-heading">
+    <div class="max-w-[1280px] mx-auto">
+      <h2 id="pro-features-heading" class="font-sans font-medium text-ink tracking-tightest-2 leading-[0.95]" style="font-size: clamp(2.25rem, 5.5vw, 4.25rem)">
+        What Pro unlocks.
+      </h2>
+      <div class="mt-14 sm:mt-20 grid gap-5 sm:gap-6 sm:grid-cols-2">
+        {features.map((f) => (
+          <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8">
+            <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink">{f.title}</h3>
+            <p class="mt-3 max-w-[44ch] text-ink-muted leading-relaxed">{f.body}</p>
+          </div>
+        ))}
+      </div>
+      <p class="mt-12 text-ink-muted leading-relaxed">
+        Want the full breakdown of what stays free?
+        <a href="/docs/free-vs-pro/" class="text-accent hover:underline underline-offset-4">Read the comparison →</a>
+      </p>
+    </div>
+  </section>
+
+  <Footer />
+</Base>
