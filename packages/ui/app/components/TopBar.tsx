@@ -36,11 +36,9 @@ export function TopBar({
   const error = exportProgress?.error ?? null;
 
   async function downloadImage() {
-    if (!renderer || !canvas) return;
-    const rgba = await renderer.readPixels();
+    if (!renderer) return;
+    const { pixels: rgba, width: w, height: h } = await renderer.exportImage();
     if (rgba.length === 0) return;
-    const w = canvas.width;
-    const h = canvas.height;
     const offscreen = new OffscreenCanvas(w, h);
     const ctx = offscreen.getContext("2d")!;
     const imageData = new ImageData(new Uint8ClampedArray(rgba.buffer), w, h);

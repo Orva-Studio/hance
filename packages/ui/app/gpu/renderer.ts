@@ -8,6 +8,7 @@ import { createFullscreenPipeline, createTexture, runPass } from "./passes";
 import { getSplitToneTintValues } from "./splitToneMath";
 import { isLightGroupActive } from "./lightGroup";
 import { LUT_SIZE, generateLut, isInputLutActive, HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING } from "@hance/core";
+import { chooseExportSize } from "../mediaSizing";
 
 export interface PreviewParams {
   [key: string]: string | number | boolean;
@@ -19,6 +20,12 @@ export interface Renderer {
   setParams(params: PreviewParams): void;
   renderFrame(): void;
   readPixels(): Promise<Uint8Array>;
+  /**
+   * Render the full effect chain at the source's native resolution (clamped to
+   * the GPU texture limit) and read it back. Use for image export so the output
+   * isn't capped to the preview size.
+   */
+  exportImage(): Promise<{ pixels: Uint8Array; width: number; height: number }>;
   destroy(): void;
 }
 
@@ -317,14 +324,31 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
     return typeof v === "boolean" ? v : fallback;
   }
 
-  function renderFrame() {
-    if (!source && !bufferSource) return;
-    copySourceToTexture();
-    frameCount++;
+  // Bundles the size + ping-pong texture set the pass chain renders into, so the
+  // same chain can target the preview textures or a one-off full-res export set.
+  interface RenderTarget {
+    w: number;
+    h: number;
+    halfW: number;
+    halfH: number;
+    texA: GPUTexture;
+    texB: GPUTexture;
+    halfA: GPUTexture;
+    halfB: GPUTexture;
+    coreTex: GPUTexture;
+    outputTex: GPUTexture;
+  }
 
-    const encoder = device.createCommandEncoder();
-    let current = texA;
-    let other = texB;
+  const previewTarget: RenderTarget = {
+    w: previewWidth, h: previewHeight, halfW, halfH,
+    texA, texB, halfA, halfB, coreTex, outputTex,
+  };
+
+  function encodeChain(encoder: GPUCommandEncoder, t: RenderTarget, drawToCanvas: boolean) {
+    const halfW = t.halfW;
+    const halfH = t.halfH;
+    let current = t.texA;
+    let other = t.texB;
 
     function swap() {
       const tmp = current;
@@ -336,11 +360,11 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
     // Skipped entirely when identity/disabled so the frame passes through.
     let colorInput = srcTex;
     if (isInputLutActive(params)) {
-      runPass(encoder, lutPipeline, makeLutBindGroup(srcTex), texA.createView());
-      colorInput = texA;
+      runPass(encoder, lutPipeline, makeLutBindGroup(srcTex), t.texA.createView());
+      colorInput = t.texA;
       // Color must write somewhere other than its texA input.
-      current = texB;
-      other = texA;
+      current = t.texB;
+      other = t.texA;
     }
 
     if (params["no-color-settings"] !== true) {
@@ -384,10 +408,10 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
         // Threshold (or plain downsample) → coreTex
         if (highlightsOnly) {
           device.queue.writeBuffer(thresholdUB, 0, new Float32Array([HALATION_THRESHOLD[0], HALATION_THRESHOLD[1], 0, 0]));
-          runPass(encoder, thresholdPipeline, makeStdBindGroup(current, thresholdUB), coreTex.createView());
+          runPass(encoder, thresholdPipeline, makeStdBindGroup(current, thresholdUB), t.coreTex.createView());
         } else {
           device.queue.writeBuffer(blurUB1, 0, new Float32Array([0, 0, 0.001, 0]));
-          runPass(encoder, blurPipeline, makeStdBindGroup(current, blurUB1), coreTex.createView());
+          runPass(encoder, blurPipeline, makeStdBindGroup(current, blurUB1), t.coreTex.createView());
         }
 
         const baseSigma = radius * BLUR_SIGMA_FACTOR;
@@ -403,7 +427,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
           sigR, sigG, sigB, 0,
           p0[0], p0[1], p1[0], p1[1],
         ]));
-        runPass(encoder, scatterBlurPipeline, makeStdBindGroup(coreTex, scatterBlurUB1), halfB.createView());
+        runPass(encoder, scatterBlurPipeline, makeStdBindGroup(t.coreTex, scatterBlurUB1), t.halfB.createView());
 
         // Per-channel V scatter: halfB → halfA
         device.queue.writeBuffer(scatterBlurUB2, 0, new Float32Array([
@@ -411,11 +435,11 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
           sigR, sigG, sigB, 0,
           p0[0], p0[1], p1[0], p1[1],
         ]));
-        runPass(encoder, scatterBlurPipeline, makeStdBindGroup(halfB, scatterBlurUB2), halfA.createView());
+        runPass(encoder, scatterBlurPipeline, makeStdBindGroup(t.halfB, scatterBlurUB2), t.halfA.createView());
 
         // Ring extraction + additive recombine → other
         device.queue.writeBuffer(combineUB, 0, new Float32Array([amount, HALATION_RING, 0, 0]));
-        runPass(encoder, combinePipeline, makeCombineBindGroup(preHalation, halfA, coreTex, combineUB), other.createView());
+        runPass(encoder, combinePipeline, makeCombineBindGroup(preHalation, t.halfA, t.coreTex, combineUB), other.createView());
         swap();
       }
     }
@@ -441,22 +465,22 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
         // FFmpeg bloom blurs the full frame, so downsample without thresholding first.
         device.queue.writeBuffer(blurUB1, 0, new Float32Array([0, 0, 0.001, 0]));
         const downsampleBG = makeStdBindGroup(current, blurUB1);
-        runPass(encoder, blurPipeline, downsampleBG, halfA.createView());
+        runPass(encoder, blurPipeline, downsampleBG, t.halfA.createView());
 
         // H-blur → halfB
         const sigma = radius * BLUR_SIGMA_FACTOR;
         device.queue.writeBuffer(bloomBlurUB1, 0, new Float32Array([1.0 / halfW, 0, sigma, 0]));
-        const hBG = makeStdBindGroup(halfA, bloomBlurUB1);
-        runPass(encoder, blurPipeline, hBG, halfB.createView());
+        const hBG = makeStdBindGroup(t.halfA, bloomBlurUB1);
+        runPass(encoder, blurPipeline, hBG, t.halfB.createView());
 
         // V-blur → halfA
         device.queue.writeBuffer(bloomBlurUB2, 0, new Float32Array([0, 1.0 / halfH, sigma, 0]));
-        const vBG = makeStdBindGroup(halfB, bloomBlurUB2);
-        runPass(encoder, blurPipeline, vBG, halfA.createView());
+        const vBG = makeStdBindGroup(t.halfB, bloomBlurUB2);
+        runPass(encoder, blurPipeline, vBG, t.halfA.createView());
 
         // Screen blend → other
         device.queue.writeBuffer(bloomBlendUB, 0, new Float32Array([amount, 0, 0, 0]));
-        const blendBG = makeBlendBindGroup(preBloom, halfA, bloomBlendUB);
+        const blendBG = makeBlendBindGroup(preBloom, t.halfA, bloomBlendUB);
         runPass(encoder, blendPipeline, blendBG, other.createView());
         swap();
       }
@@ -473,8 +497,8 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
           num("grain-saturation"),
           num("grain-defocus"),
           frameCount,
-          1.0 / previewWidth,
-          1.0 / previewHeight,
+          1.0 / t.w,
+          1.0 / t.h,
         ]));
         const bg = makeStdBindGroup(current, grainUB);
         runPass(encoder, grainPipeline, bg, other.createView());
@@ -531,7 +555,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
       const amount = num("camera-shake-amount");
       if (amount > 0) {
         const rate = num("camera-shake-rate");
-        const amplitude = (amount * 3) / previewWidth; // normalize to UV space
+        const amplitude = (amount * 3) / t.w; // normalize to UV space
         const period1 = Math.max(1, 30 / (rate + 0.01));
         const period2 = period1 * 1.3;
         device.queue.writeBuffer(shakeUB, 0, new Float32Array([amplitude, period1, period2, frameCount]));
@@ -543,31 +567,88 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
 
     // Blit the 16float intermediate into an 8-bit output texture for readback.
     const outBG = makeStdBindGroup(current, blitUB);
-    runPass(encoder, blitPipeline, outBG, outputTex.createView());
-    lastOutputTex = outputTex;
+    runPass(encoder, blitPipeline, outBG, t.outputTex.createView());
 
-    // Canvas texture can't be used mid-chain, so blit via neutral passthrough
-    const finalBG = makeStdBindGroup(current, blitUB);
-    runPass(encoder, blitPipeline, finalBG, ctx.getCurrentTexture().createView());
+    if (drawToCanvas) {
+      // Canvas texture can't be used mid-chain, so blit via neutral passthrough
+      const finalBG = makeStdBindGroup(current, blitUB);
+      runPass(encoder, blitPipeline, finalBG, ctx.getCurrentTexture().createView());
+    }
+  }
 
+  function renderFrame() {
+    if (!source && !bufferSource) return;
+    copySourceToTexture();
+    frameCount++;
+
+    const encoder = device.createCommandEncoder();
+    encodeChain(encoder, previewTarget, true);
+    lastOutputTex = previewTarget.outputTex;
     device.queue.submit([encoder.finish()]);
+  }
+
+  async function exportImage(): Promise<{ pixels: Uint8Array; width: number; height: number }> {
+    const { width, height } = chooseExportSize(
+      sourceWidth,
+      sourceHeight,
+      device.limits.maxTextureDimension2D,
+    );
+
+    if (!source && !bufferSource) return { pixels: new Uint8Array(0), width, height };
+    copySourceToTexture();
+
+    const eHalfW = Math.max(1, Math.floor(width / 2));
+    const eHalfH = Math.max(1, Math.floor(height / 2));
+    const t: RenderTarget = {
+      w: width, h: height, halfW: eHalfW, halfH: eHalfH,
+      texA: createTexture(device, width, height, INTERMEDIATE_FORMAT),
+      texB: createTexture(device, width, height, INTERMEDIATE_FORMAT),
+      halfA: createTexture(device, eHalfW, eHalfH, INTERMEDIATE_FORMAT),
+      halfB: createTexture(device, eHalfW, eHalfH, INTERMEDIATE_FORMAT),
+      coreTex: createTexture(device, eHalfW, eHalfH, INTERMEDIATE_FORMAT),
+      outputTex: device.createTexture({
+        size: { width, height },
+        format,
+        usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC | GPUTextureUsage.TEXTURE_BINDING,
+      }),
+    };
+
+    const encoder = device.createCommandEncoder();
+    encodeChain(encoder, t, false);
+    device.queue.submit([encoder.finish()]);
+
+    try {
+      const pixels = await readPixelsFrom(t.outputTex, width, height);
+      return { pixels, width, height };
+    } finally {
+      t.texA.destroy();
+      t.texB.destroy();
+      t.halfA.destroy();
+      t.halfB.destroy();
+      t.coreTex.destroy();
+      t.outputTex.destroy();
+    }
   }
 
   let lastOutputTex: GPUTexture = outputTex;
 
   async function readPixels(): Promise<Uint8Array> {
+    return readPixelsFrom(lastOutputTex, previewWidth, previewHeight);
+  }
+
+  async function readPixelsFrom(tex: GPUTexture, width: number, height: number): Promise<Uint8Array> {
     const encoder = device.createCommandEncoder();
 
-    const bytesPerRow = Math.ceil(previewWidth * 4 / 256) * 256;
+    const bytesPerRow = Math.ceil(width * 4 / 256) * 256;
     const readBuf = device.createBuffer({
-      size: bytesPerRow * previewHeight,
+      size: bytesPerRow * height,
       usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
     });
 
     encoder.copyTextureToBuffer(
-      { texture: lastOutputTex },
-      { buffer: readBuf, bytesPerRow, rowsPerImage: previewHeight },
-      { width: previewWidth, height: previewHeight },
+      { texture: tex },
+      { buffer: readBuf, bytesPerRow, rowsPerImage: height },
+      { width, height },
     );
 
     device.queue.submit([encoder.finish()]);
@@ -576,12 +657,12 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
       await readBuf.mapAsync(GPUMapMode.READ);
       const mapped = new Uint8Array(readBuf.getMappedRange());
 
-      const result = new Uint8Array(previewWidth * previewHeight * 4);
+      const result = new Uint8Array(width * height * 4);
       const isBGRA = format === "bgra8unorm";
-      for (let y = 0; y < previewHeight; y++) {
+      for (let y = 0; y < height; y++) {
         const srcOffset = y * bytesPerRow;
-        const dstOffset = y * previewWidth * 4;
-        for (let x = 0; x < previewWidth; x++) {
+        const dstOffset = y * width * 4;
+        for (let x = 0; x < width; x++) {
           const s = srcOffset + x * 4;
           const d = dstOffset + x * 4;
           if (isBGRA) {
@@ -620,6 +701,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
     },
     renderFrame,
     readPixels,
+    exportImage,
     destroy() {
       if (imageBitmap) { imageBitmap.close(); imageBitmap = null; }
       texA.destroy();
