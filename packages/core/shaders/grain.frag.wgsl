@@ -4,12 +4,11 @@
 struct GrainParams {
   amount: f32,
   size: f32,
-  softness: f32,
   saturation: f32,
   imageDefocus: f32,
   time: f32,
-  texelSize: vec2f,
   iso: f32,
+  texelSize: vec2f,
 };
 @group(0) @binding(2) var<uniform> params: GrainParams;
 
@@ -36,7 +35,9 @@ fn octave(coord: vec2f) -> vec3f {
 // Multi-octave noise: sum three octaves at halving amplitude and doubling
 // frequency for a more organic, film-like clump than a single hash lookup.
 fn grain_noise(uv: vec2f, t: f32) -> vec3f {
-  let scale = max(1.0, params.size * 2.0 + 1.0);
+  // Larger size = coarser grain: shrink the lattice density so each noise cell
+  // covers more pixels. size 0 is the finest (per-pixel) grain.
+  let scale = 1.0 / (1.0 + params.size);
   var sum = vec3f(0.0);
   var amp = 1.0;
   var freq = 1.0;

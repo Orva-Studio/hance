@@ -213,7 +213,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const combineUB = createUniformBuffer(device, 16);
   const blendUB = createUniformBuffer(device, 16);
   const aberrationUB = createUniformBuffer(device, 16);
-  const grainUB = createUniformBuffer(device, 48); // 9 floats (+vec2f alignment)
+  const grainUB = createUniformBuffer(device, 32); // 8 floats
   const vignetteUB = createUniformBuffer(device, 16);
   const splitToneUB = createUniformBuffer(device, 48);
   const shakeUB = createUniformBuffer(device, 16);
@@ -498,13 +498,12 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
         device.queue.writeBuffer(grainUB, 0, new Float32Array([
           amount,
           num("grain-size"),
-          num("grain-softness"),
           num("grain-saturation"),
           num("grain-defocus"),
           frameCount,
+          num("grain-iso", 400),
           1.0 / t.w,
           1.0 / t.h,
-          num("grain-iso", 400),
         ]));
         const bg = makeStdBindGroup(current, grainUB);
         runPass(encoder, grainPipeline, bg, other.createView());

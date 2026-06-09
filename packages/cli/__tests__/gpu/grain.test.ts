@@ -20,7 +20,6 @@ const GRAIN_PARAMS = {
   ...GRAIN_ONLY,
   "grain-amount": 1.0,
   "grain-size": 0,
-  "grain-softness": 0,
   "grain-saturation": 0,
   "grain-defocus": 0,
 };
@@ -63,6 +62,20 @@ function bandVariance(out: Uint8Array, y0: number, y1: number): number {
   }
   const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
   return vals.reduce((a, b) => a + (b - mean) ** 2, 0) / vals.length;
+}
+
+// Mean absolute difference between horizontally adjacent pixels in a band —
+// low for coarse (spatially correlated) grain, high for fine per-pixel grain.
+function meanAdjacentDiff(out: Uint8Array, y0: number, y1: number): number {
+  let total = 0;
+  let n = 0;
+  for (let y = y0; y < y1; y++) {
+    for (let x = 0; x < W - 1; x++) {
+      total += Math.abs(out[(y * W + x) * 4] - out[(y * W + x + 1) * 4]);
+      n++;
+    }
+  }
+  return total / n;
 }
 
 const SHADOW_BAND: [number, number] = [2, Math.floor(H / 3) - 2];
@@ -109,6 +122,15 @@ describe("luminance-dependent, ISO-scaled grain (headless sidecar)", () => {
     await r.close();
     return out;
   }
+
+  it("renders coarser grain at larger size", async () => {
+    // Coarser grain spans multiple pixels per noise cell, so horizontally
+    // adjacent pixels are more similar (smaller mean adjacent difference) than
+    // fine, per-pixel grain.
+    const fine = await renderOnce({ ...GRAIN_PARAMS, "grain-size": 0 });
+    const coarse = await renderOnce({ ...GRAIN_PARAMS, "grain-size": 4 });
+    expect(meanAdjacentDiff(coarse, ...MID_BAND)).toBeLessThan(meanAdjacentDiff(fine, ...MID_BAND));
+  }, 30000);
 
   it("scales grain amplitude with virtual ISO", async () => {
     const lowOut = await renderOnce({ ...GRAIN_PARAMS, "grain-amount": 0.25, "grain-iso": 100 });
