@@ -24,7 +24,10 @@ read both, keep the winner.
 
 Presets applied raw often look punchy and digital. Classic film tends to want:
 
-- **Lifted blacks** — `--fade` ~0.04–0.1. Pure black reads digital.
+- **Lifted blacks** — `--fade` ~0.04–0.1. Pure black reads digital. To tint the
+  lift (e.g. teal/green blacks like a music-video grade) add `--fade-tint` ~0.5–0.9
+  and `--fade-hue` (degrees; ~190 teal, ~150 green, ~30 warm). `--fade-tint 0` keeps
+  the classic neutral lift.
 - **Highlight rolloff** — `--highlights` ~0.12–0.25. Gentle shoulder, not clipped.
 - **Restrained saturation** — `--subtractive-sat` ~0.92–1.05. Oversaturation is the
   most common "digital" tell. The before image often looks "better" only because
@@ -42,6 +45,13 @@ Start from the preset that owns the image's color identity, then layer these.
 `--split-tone-mode complementary --split-tone-hue 40` → **warm highlights, cool teal
 shadows** (the classic teal-orange). `--split-tone-hue 220` reverses it. Tune with
 `--split-tone-amount` (~0.3–0.4 is plenty; 0.6 is heavy) and `--split-tone-pivot`.
+
+For a richer **teal** (not just cyan) in the shadows, add `--split-tone-green`
+~0.4–0.7. The base hue only moves red/blue; green pushes shadows toward true teal
+(and, in complementary mode, pulls green out of the highlights for stronger warm/cool
+separation). Default 0 leaves the classic two-axis tone untouched. Pair with a tinted
+lift (`--fade-tint`/`--fade-hue`) to get the alternating cool-blacks / warm-highlights
+look from a music-video grade.
 
 - **Use it** for action, landscape, cityscape — anything that benefits from cool/warm
   separation. Match a reference's mood by reading where its highlights vs shadows sit.

@@ -82,6 +82,18 @@ function createLutLayout(device: GPUDevice): GPUBindGroupLayout {
 // JS has no native f16; convert a float to its IEEE-754 half-precision bits.
 // Inputs here are LUT values clamped to [0,1], so the Inf/NaN (e > 142) path is
 // unreachable and intentionally omitted — do not reuse this for arbitrary floats.
+// Fully-saturated RGB for a hue in degrees (HSV with s=v=1). Mirrors hue_to_rgb in params.rs.
+function hueToRgb(hDeg: number): [number, number, number] {
+  const h = (((hDeg % 360) + 360) % 360) / 60;
+  const x = 1 - Math.abs((h % 2) - 1);
+  if (h < 1) return [1, x, 0];
+  if (h < 2) return [x, 1, 0];
+  if (h < 3) return [0, 1, x];
+  if (h < 4) return [0, x, 1];
+  if (h < 5) return [x, 0, 1];
+  return [1, 0, x];
+}
+
 const f32buf = new Float32Array(1);
 const u32buf = new Uint32Array(f32buf.buffer);
 function floatToHalf(val: number): number {
@@ -202,9 +214,9 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const lutTex = createLutTexture(device);
   const lutView = lutTex.createView({ dimension: "3d" });
 
-  const colorUB = createUniformBuffer(device, 32); // 8 floats
-  const blitUB = createUniformBuffer(device, 32); // identity color pass for final blit
-  device.queue.writeBuffer(blitUB, 0, new Float32Array([1, 0, 1, 1, 6500, 0, 0, 0]));
+  const colorUB = createUniformBuffer(device, 48); // 12 floats
+  const blitUB = createUniformBuffer(device, 48); // identity color pass for final blit
+  device.queue.writeBuffer(blitUB, 0, new Float32Array([1, 0, 1, 1, 6500, 0, 0, 0, 0, 0, 0, 0]));
   const thresholdUB = createUniformBuffer(device, 16);
   const blurUB1 = createUniformBuffer(device, 16);
   const blurUB2 = createUniformBuffer(device, 16);
@@ -215,7 +227,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const aberrationUB = createUniformBuffer(device, 16);
   const grainUB = createUniformBuffer(device, 32); // 8 floats
   const vignetteUB = createUniformBuffer(device, 16);
-  const splitToneUB = createUniformBuffer(device, 32);
+  const splitToneUB = createUniformBuffer(device, 48);
   const shakeUB = createUniformBuffer(device, 16);
   const bloomBlurUB1 = createUniformBuffer(device, 16);
   const bloomBlurUB2 = createUniformBuffer(device, 16);
@@ -370,18 +382,23 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
     if (params["no-color-settings"] !== true) {
       const fade = num("fade");
       const contrast = num("contrast") * (1 - fade);
-      const brightness = num("exposure") * 0.1 + fade * 0.05;
+      const brightness = num("exposure") * 0.1;
       const saturation = num("subtractive-sat") * num("richness");
       const gamma = 1 - num("highlights") * 0.5;
       const wb = num("white-balance");
       const tint = num("tint") / 100;
       const bleach = num("bleach-bypass");
-      device.queue.writeBuffer(colorUB, 0, new Float32Array([contrast, brightness, saturation, gamma, wb, tint, bleach, 0]));
+      // Tintable black lift; neutral (white) tint reproduces the legacy fade.
+      const liftBase = fade * 0.05;
+      const fadeTint = num("fade-tint");
+      const hue = hueToRgb(num("fade-hue"));
+      const lift = hue.map((ch) => liftBase * (1 + fadeTint * (ch - 1)));
+      device.queue.writeBuffer(colorUB, 0, new Float32Array([contrast, brightness, saturation, gamma, wb, tint, bleach, 0, lift[0], lift[1], lift[2], 0]));
       const bg = makeStdBindGroup(colorInput, colorUB);
       runPass(encoder, colorPipeline, bg, current.createView());
     } else {
       const bg = makeStdBindGroup(colorInput, colorUB);
-      device.queue.writeBuffer(colorUB, 0, new Float32Array([1, 0, 1, 1, 6500, 0, 0, 0]));
+      device.queue.writeBuffer(colorUB, 0, new Float32Array([1, 0, 1, 1, 6500, 0, 0, 0, 0, 0, 0, 0]));
       runPass(encoder, colorPipeline, bg, current.createView());
     }
 
@@ -534,15 +551,16 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
         const pivot = num("split-tone-pivot");
         const mode = params["split-tone-mode"] || "natural";
         const protect = params["split-tone-protect-neutrals"] === true ? 1 : 0;
-        const { shadowR, shadowB, highlightR, highlightB, midR } = getSplitToneTintValues({
+        const { shadowR, shadowB, shadowG, highlightR, highlightB, highlightG, midR } = getSplitToneTintValues({
           amount,
           hueAngle: hue,
+          green: num("split-tone-green"),
           mode: typeof mode === "string" && mode === "complementary" ? "complementary" : "natural",
           pivot,
         });
 
         device.queue.writeBuffer(splitToneUB, 0, new Float32Array([
-          shadowR, shadowB, highlightR, highlightB, midR, amount, protect, 0,
+          shadowR, shadowB, shadowG, 0, highlightR, highlightB, highlightG, 0, midR, amount, protect, 0,
         ]));
         const bg = makeStdBindGroup(current, splitToneUB);
         runPass(encoder, splitTonePipeline, bg, other.createView());

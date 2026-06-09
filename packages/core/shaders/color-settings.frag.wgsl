@@ -10,6 +10,10 @@ struct ColorParams {
   tint: f32,
   bleachBypass: f32,
   _pad: f32,
+  liftR: f32,
+  liftG: f32,
+  liftB: f32,
+  _pad2: f32,
 };
 @group(0) @binding(2) var<uniform> params: ColorParams;
 
@@ -47,6 +51,7 @@ fn fs(@location(0) uv: vec2f) -> @location(0) vec4f {
   let color = textureSample(src, samp, uv).rgb;
   var c = pow(color, vec3f(params.gamma));
   c = (c - 0.5) * params.contrast + 0.5 + params.brightness;
+  c = c + vec3f(params.liftR, params.liftG, params.liftB);
   c = clamp(c, vec3f(0.0), vec3f(1.0));
   let luma = rgb2luma(c);
   c = mix(vec3f(luma), c, params.saturation);

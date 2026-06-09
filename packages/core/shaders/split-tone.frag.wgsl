@@ -4,12 +4,16 @@
 struct SplitToneParams {
   shadowR: f32,
   shadowB: f32,
+  shadowG: f32,
+  _pad0: f32,
   highlightR: f32,
   highlightB: f32,
+  highlightG: f32,
+  _pad1: f32,
   midR: f32,
   amount: f32,
   protectNeutrals: f32,
-  _pad: f32,
+  _pad2: f32,
 };
 @group(0) @binding(2) var<uniform> params: SplitToneParams;
 
@@ -34,6 +38,7 @@ fn fs(@location(0) uv: vec2f) -> @location(0) vec4f {
   let lightness = max(max(color.r, color.g), color.b) + min(min(color.r, color.g), color.b);
   var toned = color;
   toned.r = colorbalance_component(color.r, lightness, params.shadowR, params.midR, params.highlightR);
+  toned.g = colorbalance_component(color.g, lightness, params.shadowG, 0.0, params.highlightG);
   toned.b = colorbalance_component(color.b, lightness, params.shadowB, 0.0, params.highlightB);
   if (params.protectNeutrals > 0.5) {
     toned = mix(color, toned, params.amount);
