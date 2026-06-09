@@ -203,7 +203,7 @@ impl GpuRenderer {
         let scatter_blur_ub2 = passes::create_uniform_buffer(&device, 48);
         let combine_ub = passes::create_uniform_buffer(&device, 16);
         let aberration_ub = passes::create_uniform_buffer(&device, 16);
-        let grain_ub = passes::create_uniform_buffer(&device, 32);
+        let grain_ub = passes::create_uniform_buffer(&device, 48);
         let vignette_ub = passes::create_uniform_buffer(&device, 16);
         let split_tone_ub = passes::create_uniform_buffer(&device, 48);
         let shake_ub = passes::create_uniform_buffer(&device, 16);

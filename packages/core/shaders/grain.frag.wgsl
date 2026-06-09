@@ -9,8 +9,15 @@ struct GrainParams {
   imageDefocus: f32,
   time: f32,
   texelSize: vec2f,
+  iso: f32,
 };
 @group(0) @binding(2) var<uniform> params: GrainParams;
+
+// ISO that maps to a 1.0 amplitude multiplier — the neutral baseline.
+const ISO_BASELINE: f32 = 400.0;
+// Grain amplitude weighting at the tonal extremes (linear luma).
+const SHADOW_GAIN: f32 = 1.0;
+const HIGHLIGHT_GAIN: f32 = 0.35;
 
 fn hash(p: vec2f) -> f32 {
   var p3 = fract(vec3f(p.xyx) * 0.1031);
@@ -18,14 +25,36 @@ fn hash(p: vec2f) -> f32 {
   return fract((p3.x + p3.y) * p3.z);
 }
 
-fn grain_noise(uv: vec2f, t: f32) -> vec3f {
-  let scale = max(1.0, params.size * 2.0 + 1.0);
-  let coord = floor(uv * scale) + t;
+fn octave(coord: vec2f) -> vec3f {
   let r = hash(coord + vec2f(0.0, 0.0)) * 2.0 - 1.0;
   let g = hash(coord + vec2f(1.7, 3.1)) * 2.0 - 1.0;
   let b = hash(coord + vec2f(5.3, 2.9)) * 2.0 - 1.0;
   let mono = (r + g + b) / 3.0;
   return mix(vec3f(mono), vec3f(r, g, b), params.saturation);
+}
+
+// Multi-octave noise: sum three octaves at halving amplitude and doubling
+// frequency for a more organic, film-like clump than a single hash lookup.
+fn grain_noise(uv: vec2f, t: f32) -> vec3f {
+  let scale = max(1.0, params.size * 2.0 + 1.0);
+  var sum = vec3f(0.0);
+  var amp = 1.0;
+  var freq = 1.0;
+  var norm = 0.0;
+  for (var i = 0; i < 3; i++) {
+    let coord = floor(uv * scale * freq) + t + f32(i) * 19.0;
+    sum += octave(coord) * amp;
+    norm += amp;
+    amp *= 0.5;
+    freq *= 2.0;
+  }
+  return sum / norm;
+}
+
+// Linear-luma weighting: strong grain in shadows, fine grain in highlights.
+fn luminance_weight(color: vec3f) -> f32 {
+  let luma = clamp(dot(color, vec3f(0.2126, 0.7152, 0.0722)), 0.0, 1.0);
+  return mix(SHADOW_GAIN, HIGHLIGHT_GAIN, sqrt(luma));
 }
 
 @fragment
@@ -46,11 +75,15 @@ fn fs(@location(0) uv: vec2f) -> @location(0) vec4f {
     color = textureSample(src, samp, uv).rgb;
   }
   let dims = vec2f(textureDimensions(src));
-  let n = grain_noise(uv * dims, params.time);
+  // Weight grain by linear luminance so it clumps in shadows and stays fine in
+  // highlights, then scale the overall strength by the virtual ISO.
+  let n = grain_noise(uv * dims, params.time) * luminance_weight(color);
+  let isoScale = params.iso / ISO_BASELINE;
+  let effAmount = clamp(params.amount * isoScale, 0.0, 1.0);
   let overlay = select(
     2.0 * color * (0.5 + n * 0.5),
     1.0 - 2.0 * (1.0 - color) * (0.5 - n * 0.5),
     color > vec3f(0.5)
   );
-  return vec4f(mix(color, overlay, params.amount), 1.0);
+  return vec4f(mix(color, overlay, effAmount), 1.0);
 }

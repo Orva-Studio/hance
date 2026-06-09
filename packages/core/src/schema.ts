@@ -116,6 +116,7 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
       { key: "grain-softness", label: "Softness", type: "range", min: 0, max: 1, step: 0.01, default: 0.1, description: "Grain softness" },
       { key: "grain-saturation", label: "Saturation", type: "range", min: 0, max: 1, step: 0.01, default: 0.3, description: "Grain color saturation" },
       { key: "grain-defocus", label: "Image Defocus", type: "range", min: 0, max: 5, step: 0.1, default: 1, description: "Image defocus amount" },
+      { key: "grain-iso", label: "ISO", type: "range", min: 50, max: 3200, step: 50, default: 400, description: "Virtual ISO; scales grain amplitude (400 = neutral)" },
     ],
   },
   {

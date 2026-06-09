@@ -43,6 +43,7 @@ export interface GrainOptions {
   softness: number;
   saturation: number;
   imageDefocus: number;
+  iso: number;
 }
 
 export interface VignetteOptions {
