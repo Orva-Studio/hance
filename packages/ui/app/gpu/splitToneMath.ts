@@ -28,28 +28,32 @@ export function hueToRgb(hDeg: number): [number, number, number] {
   }
 }
 
+/** Centered hue wheel: a fully-saturated hue minus its own mean, so the tint is
+ *  mean-neutral — its channels sum to zero (a neutral gray gets no shift). Not
+ *  luma-weighted, so a pure hue still nudges perceived brightness slightly. */
+function centeredTint(hueAngle: number): [number, number, number] {
+  const rgb = hueToRgb(hueAngle);
+  const mean = (rgb[0] + rgb[1] + rgb[2]) / 3;
+  return [rgb[0] - mean, rgb[1] - mean, rgb[2] - mean];
+}
+
 export function getSplitToneTintValues(options: {
-  mode: string;
   amount: number;
-  hueAngle: number;
+  shadowHueAngle: number;
+  highlightHueAngle: number;
   pivot: number;
 }): SplitToneTintValues {
-  // Centered hue wheel: a fully-saturated hue minus its own mean, so the tint
-  // is mean-neutral — its channels sum to zero (a neutral gray gets no shift).
-  // Not luma-weighted, so a pure hue still nudges perceived brightness slightly.
-  const rgb = hueToRgb(options.hueAngle);
-  const mean = (rgb[0] + rgb[1] + rgb[2]) / 3;
-  const tint: [number, number, number] = [rgb[0] - mean, rgb[1] - mean, rgb[2] - mean];
-  const shadowR = tint[0] * options.amount * 0.3;
-  const shadowG = tint[1] * options.amount * 0.3;
-  const shadowB = tint[2] * options.amount * 0.3;
+  // Shadows and highlights tint independently from their own hues. Highlights
+  // use a subtler scale (0.15 vs 0.3) — film highlights carry less tint.
+  const shadowTint = centeredTint(options.shadowHueAngle);
+  const shadowR = shadowTint[0] * options.amount * 0.3;
+  const shadowG = shadowTint[1] * options.amount * 0.3;
+  const shadowB = shadowTint[2] * options.amount * 0.3;
 
-  const isComp = options.mode === "complementary";
-  const highlightScale = isComp ? 0.3 : 0.15;
-  const sign = isComp ? -1 : 1;
-  const highlightR = sign * tint[0] * options.amount * highlightScale;
-  const highlightG = sign * tint[1] * options.amount * highlightScale;
-  const highlightB = sign * tint[2] * options.amount * highlightScale;
+  const highlightTint = centeredTint(options.highlightHueAngle);
+  const highlightR = highlightTint[0] * options.amount * 0.15;
+  const highlightG = highlightTint[1] * options.amount * 0.15;
+  const highlightB = highlightTint[2] * options.amount * 0.15;
 
   const midR = options.pivot * -0.1;
 

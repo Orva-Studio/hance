@@ -26,9 +26,9 @@
     "grain-saturation": 0.22,
     "vignette-amount": 0.15,
     "vignette-size": 0.28,
-    "split-tone-mode": "natural",
     "split-tone-amount": 0.12,
-    "split-tone-hue": 28,
+    "split-tone-shadow-hue": 28,
+    "split-tone-highlight-hue": 28,
     "split-tone-pivot": 0.34,
     "camera-shake-amount": 0.08,
     "camera-shake-rate": 0.4

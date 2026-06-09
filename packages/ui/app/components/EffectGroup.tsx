@@ -3,6 +3,7 @@ import type { EffectGroup as EffectGroupType, OptionDef } from "@hance/core";
 import { RangeSlider } from "./RangeSlider";
 import { Toggle } from "./Toggle";
 import { SelectControl } from "./SelectControl";
+import { SplitToneControls } from "./SplitToneControls";
 
 interface Props {
   group: EffectGroupType;
@@ -47,17 +48,28 @@ export const EffectGroup = memo(function EffectGroup({ group, values, onChange, 
       </div>
       {!collapsed && (
         <div className={`flex flex-col pl-2 ${!enabled ? "opacity-40 pointer-events-none" : ""}`}>
-          {group.options.map(opt => (
-            <OptionControl
-              key={opt.key}
-              opt={opt}
-              value={values[opt.key] ?? opt.default}
-              onChange={v => onChange(opt.key, v)}
+          {group.key === "splitTone" ? (
+            <SplitToneControls
+              group={group}
+              values={values}
+              onChange={onChange}
               onCommit={onCommit}
               disabled={!enabled}
               animating={animating}
             />
-          ))}
+          ) : (
+            group.options.map(opt => (
+              <OptionControl
+                key={opt.key}
+                opt={opt}
+                value={values[opt.key] ?? opt.default}
+                onChange={v => onChange(opt.key, v)}
+                onCommit={onCommit}
+                disabled={!enabled}
+                animating={animating}
+              />
+            ))
+          )}
         </div>
       )}
     </div>
@@ -70,7 +82,7 @@ export const EffectGroup = memo(function EffectGroup({ group, values, onChange, 
   shallowEqualValues(prev.values, next.values)
 );
 
-function OptionControl({ opt, value, onChange, onCommit, disabled, animating }: {
+export function OptionControl({ opt, value, onChange, onCommit, disabled, animating }: {
   opt: OptionDef;
   value: string | number | boolean;
   onChange: (v: string | number | boolean) => void;

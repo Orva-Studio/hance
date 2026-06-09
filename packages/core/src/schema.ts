@@ -132,10 +132,10 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
     label: "Split Tone",
     enableKey: "no-split-tone",
     options: [
-      { key: "split-tone-mode", label: "Mode", type: "select", choices: ["natural", "complementary"], default: "natural", description: "Toning mode" },
       { key: "split-tone-protect-neutrals", label: "Protect Neutrals", type: "boolean", default: false, description: "Protect neutral colors" },
       { key: "split-tone-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0, description: "Toning amount" },
-      { key: "split-tone-hue", label: "Hue", type: "range", min: 0, max: 360, step: 1, default: 20, description: "Hue angle in degrees" },
+      { key: "split-tone-shadow-hue", label: "Shadow Hue", type: "range", min: 0, max: 360, step: 1, default: 30, description: "Shadow hue in degrees" },
+      { key: "split-tone-highlight-hue", label: "Highlight Hue", type: "range", min: 0, max: 360, step: 1, default: 210, description: "Highlight hue in degrees" },
       { key: "split-tone-pivot", label: "Pivot", type: "range", min: 0, max: 1, step: 0.01, default: 0.3, description: "Shadow/highlight pivot" },
     ],
   },

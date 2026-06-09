@@ -23,7 +23,8 @@ describe("EFFECT_SCHEMA", () => {
     const defaults = getDefaults();
     expect(defaults["exposure"]).toBe(0);
     expect(defaults["halation-amount"]).toBe(0.25);
-    expect(defaults["split-tone-mode"]).toBe("natural");
+    expect(defaults["split-tone-shadow-hue"]).toBe(30);
+    expect(defaults["split-tone-highlight-hue"]).toBe(210);
   });
 });
 
