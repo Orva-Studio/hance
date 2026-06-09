@@ -98,24 +98,67 @@ describe("luminance-dependent, ISO-scaled grain (headless sidecar)", () => {
     expect(highlight).toBeLessThan(mid);
   });
 
+  // The sidecar bakes params at init() — renderFrame() ignores its params arg —
+  // so each distinct param set needs its own renderer. A fresh renderer always
+  // starts at frame 1, so two of them produce the same noise field and differ
+  // only by the param under test.
+  async function renderOnce(params: Record<string, unknown>): Promise<Uint8Array> {
+    const r = await createHeadlessRenderer();
+    await r.init(W, H, params);
+    const out = await r.renderFrame(makeFrame(), W, H, params);
+    await r.close();
+    return out;
+  }
+
   it("scales grain amplitude with virtual ISO", async () => {
-    const lowIso = { ...GRAIN_PARAMS, "grain-iso": 100 };
-    const highIso = { ...GRAIN_PARAMS, "grain-iso": 1600 };
-    const lowOut = await renderer.renderFrame(makeFrame(), W, H, lowIso);
-    const highOut = await renderer.renderFrame(makeFrame(), W, H, highIso);
-    // Compare on the midtone band where soft-light response is constant, so the
-    // only variable is the ISO multiplier.
+    const lowOut = await renderOnce({ ...GRAIN_PARAMS, "grain-amount": 0.25, "grain-iso": 100 });
+    const highOut = await renderOnce({ ...GRAIN_PARAMS, "grain-amount": 0.25, "grain-iso": 800 });
+    // grain-amount 0.25 keeps effAmount (amount * iso/400) below the clamp at
+    // both ISOs, so the midtone variance reflects the ISO multiplier directly.
     const lowVar = bandVariance(lowOut, ...MID_BAND);
     const highVar = bandVariance(highOut, ...MID_BAND);
-    expect(highVar).toBeGreaterThan(lowVar);
-  });
+    expect(highVar).toBeGreaterThan(lowVar * 1.5);
+  }, 30000);
 
   it("ISO 400 is the neutral baseline (no amplitude change)", async () => {
-    const baseline = await renderer.renderFrame(makeFrame(), W, H, GRAIN_PARAMS);
-    const iso400 = await renderer.renderFrame(makeFrame(), W, H, { ...GRAIN_PARAMS, "grain-iso": 400 });
+    const baseline = await renderOnce(GRAIN_PARAMS);
+    const iso400 = await renderOnce({ ...GRAIN_PARAMS, "grain-iso": 400 });
     const a = bandVariance(baseline, ...MID_BAND);
     const b = bandVariance(iso400, ...MID_BAND);
-    // Same effective amplitude → comparable variance (allow noise sampling slack).
-    expect(Math.abs(a - b) / Math.max(a, b)).toBeLessThan(0.2);
+    // Identical effective amplitude and noise field → identical variance.
+    expect(Math.abs(a - b) / Math.max(a, b)).toBeLessThan(0.05);
+  }, 30000);
+
+  it("boils in place rather than sliding diagonally between frames", async () => {
+    // Two consecutive frames (the renderer increments its frame counter each
+    // call). Sliding grain would make frame N+1 a one-cell diagonal shift of
+    // frame N, i.e. frame1[x,y] ~= frame0[x+1,y+1]. Boiling grain decorrelates.
+    const f0 = await renderer.renderFrame(makeFrame(), W, H, GRAIN_PARAMS);
+    const f1 = await renderer.renderFrame(makeFrame(), W, H, GRAIN_PARAMS);
+    const [y0, y1] = MID_BAND;
+    const a: number[] = []; // frame1[x,y]
+    const b: number[] = []; // frame0[x+1,y+1]
+    for (let y = y0; y < y1 - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        a.push(f1[(y * W + x) * 4]);
+        b.push(f0[((y + 1) * W + (x + 1)) * 4]);
+      }
+    }
+    expect(Math.abs(pearson(a, b))).toBeLessThan(0.5);
   });
 });
+
+function pearson(a: number[], b: number[]): number {
+  const n = a.length;
+  const ma = a.reduce((s, v) => s + v, 0) / n;
+  const mb = b.reduce((s, v) => s + v, 0) / n;
+  let cov = 0, va = 0, vb = 0;
+  for (let i = 0; i < n; i++) {
+    const da = a[i] - ma;
+    const db = b[i] - mb;
+    cov += da * db;
+    va += da * da;
+    vb += db * db;
+  }
+  return cov / Math.sqrt(va * vb);
+}
