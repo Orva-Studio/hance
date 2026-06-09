@@ -42,22 +42,23 @@ Start from the preset that owns the image's color identity, then layer these.
 
 ## Split tone (teal-orange and when not to)
 
-`--split-tone-mode complementary --split-tone-hue 40` → **warm highlights, cool teal
-shadows** (the classic teal-orange). `--split-tone-hue 220` reverses it. Tune with
-`--split-tone-amount` (~0.3–0.4 is plenty; 0.6 is heavy) and `--split-tone-pivot`.
+`--split-tone-shadow-hue 200 --split-tone-highlight-hue 40` → **cool teal shadows,
+warm highlights** (the classic teal-orange). Swap the two values to reverse it. Tune
+with `--split-tone-amount` (~0.3–0.4 is plenty; 0.6 is heavy) and `--split-tone-pivot`.
 
-`--split-tone-hue` walks a full hue→RGB wheel, so a single value reaches any tone:
-~180 lands on **true teal** (not just cyan), ~120 green, ~30 amber, ~300 magenta. The
-shadows take the hue and, in complementary mode, the highlights take its opposite. Pair
-with a tinted lift (`--fade-tint`/`--fade-hue`) to get the alternating cool-blacks /
-warm-highlights look from a music-video grade.
+Each hue walks a full hue→RGB wheel, so any value reaches any tone: ~180 lands on
+**true teal** (not just cyan), ~120 green, ~30 amber, ~300 magenta. Shadows and
+highlights are independent, so non-complementary pairs (e.g. teal shadows + amber —
+not pure-complement — highlights) are easy. Highlights tint more subtly than shadows
+by design. Pair with a tinted lift (`--fade-tint`/`--fade-hue`) to get the alternating
+cool-blacks / warm-highlights look from a music-video grade.
 
 - **Use it** for action, landscape, cityscape — anything that benefits from cool/warm
   separation. Match a reference's mood by reading where its highlights vs shadows sit.
 - **Skip it** for warm, intimate, single-mood scenes (sunset portrait, golden hour
   embrace). Cool shadows fight the warmth — those want consistent warmth instead
   (`--no-split-tone`, nudge `--white-balance` warmer).
-- Always verify direction by rendering hue 40 vs 220 and reading both.
+- Always verify direction by swapping the shadow/highlight hues and reading both.
 
 ## Common artifacts and fixes
 

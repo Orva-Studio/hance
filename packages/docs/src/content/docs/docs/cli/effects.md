@@ -98,9 +98,9 @@ Applies color toning to shadows and highlights.
 
 | Flag | Range | Default | Description |
 |------|-------|---------|-------------|
-| `--split-tone-mode` | `natural`, `complementary` | `natural` | Toning mode |
 | `--split-tone-amount` | 0–1 | `0` | Toning amount |
-| `--split-tone-hue` | 0–360 | `20` | Hue angle in degrees |
+| `--split-tone-shadow-hue` | 0–360 | `30` | Shadow hue in degrees |
+| `--split-tone-highlight-hue` | 0–360 | `210` | Highlight hue in degrees |
 | `--split-tone-pivot` | 0–1 | `0.3` | Shadow/highlight pivot |
 | `--split-tone-protect-neutrals` | boolean | `false` | Protect neutral colors |
 

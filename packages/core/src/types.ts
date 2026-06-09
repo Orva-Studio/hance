@@ -53,10 +53,11 @@ export interface VignetteOptions {
 
 export interface SplitToneOptions {
   enabled: boolean;
-  mode: "natural" | "complementary";
   protectNeutrals: boolean;
   amount: number;
-  hueAngle: number;
+  /** Independent per-band hues in degrees. */
+  shadowHueAngle: number;
+  highlightHueAngle: number;
   pivot: number;
 }
 

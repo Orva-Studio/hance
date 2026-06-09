@@ -162,10 +162,10 @@ export function applyPreset(
 
   const splitTone: SplitToneOptions = {
     enabled: merged["no-split-tone"] ? false : true,
-    mode: merged["split-tone-mode"] as SplitToneOptions["mode"],
     protectNeutrals: Boolean(merged["split-tone-protect-neutrals"]),
     amount: Number(merged["split-tone-amount"]),
-    hueAngle: Number(merged["split-tone-hue"]),
+    shadowHueAngle: Number(merged["split-tone-shadow-hue"]),
+    highlightHueAngle: Number(merged["split-tone-highlight-hue"]),
     pivot: Number(merged["split-tone-pivot"]),
   };
 

@@ -535,14 +535,12 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
     if (params["no-split-tone"] !== true) {
       const amount = num("split-tone-amount");
       if (amount > 0) {
-        const hue = num("split-tone-hue");
         const pivot = num("split-tone-pivot");
-        const mode = params["split-tone-mode"] || "natural";
         const protect = params["split-tone-protect-neutrals"] === true ? 1 : 0;
         const { shadowR, shadowB, shadowG, highlightR, highlightB, highlightG, midR } = getSplitToneTintValues({
           amount,
-          hueAngle: hue,
-          mode: typeof mode === "string" && mode === "complementary" ? "complementary" : "natural",
+          shadowHueAngle: num("split-tone-shadow-hue", 30),
+          highlightHueAngle: num("split-tone-highlight-hue", 210),
           pivot,
         });
 
