@@ -131,8 +131,8 @@ impl Params {
         !self.bool("no-grain", false) && self.num("grain-amount", 0.125) > 0.0
     }
 
-    /// Grain uniform: [amount, size, softness, saturation, defocus, time, texelW, texelH]
-    pub fn grain_uniform(&self, frame_count: u32, width: u32, height: u32) -> [f32; 8] {
+    /// Grain uniform: [amount, size, softness, saturation, defocus, time, texelW, texelH, iso]
+    pub fn grain_uniform(&self, frame_count: u32, width: u32, height: u32) -> [f32; 9] {
         [
             self.num("grain-amount", 0.125),
             self.num("grain-size", 0.0),
@@ -142,6 +142,7 @@ impl Params {
             frame_count as f32,
             1.0 / width as f32,
             1.0 / height as f32,
+            self.num("grain-iso", 400.0),
         ]
     }
 
@@ -319,6 +320,21 @@ mod tests {
         let expected_period1 = 30.0 / 0.51;
         assert!((u[1] - expected_period1).abs() < 0.1);
         assert_eq!(u[3], 10.0);
+    }
+
+    #[test]
+    fn grain_uniform_iso_default_baseline() {
+        let p = make_params(&[]);
+        let u = p.grain_uniform(0, 1920, 1080);
+        assert_eq!(u.len(), 9);
+        assert_eq!(u[8], 400.0); // ISO defaults to the neutral baseline
+    }
+
+    #[test]
+    fn grain_uniform_iso_override() {
+        let p = make_params(&[("grain-iso", serde_json::json!(1600))]);
+        let u = p.grain_uniform(0, 1920, 1080);
+        assert_eq!(u[8], 1600.0);
     }
 
     #[test]

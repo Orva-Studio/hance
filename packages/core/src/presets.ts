@@ -152,6 +152,7 @@ export function applyPreset(
     softness: Number(merged["grain-softness"]),
     saturation: Number(merged["grain-saturation"]),
     imageDefocus: Number(merged["grain-defocus"]),
+    iso: Number(merged["grain-iso"]),
   };
 
   const vignette: VignetteOptions = {

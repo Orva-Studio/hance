@@ -38,3 +38,6 @@ packages/cli/src/skills.generated.ts
 
 # Local Claude Code config
 .claude/
+
+# Compiled GPU sidecar binary
+hance-gpu
