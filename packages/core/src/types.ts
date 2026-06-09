@@ -40,7 +40,6 @@ export interface GrainOptions {
   enabled: boolean;
   amount: number;
   size: number;
-  softness: number;
   saturation: number;
   imageDefocus: number;
   iso: number;

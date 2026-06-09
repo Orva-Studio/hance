@@ -149,7 +149,6 @@ export function applyPreset(
     enabled: merged["no-grain"] ? false : true,
     amount: Number(merged["grain-amount"]),
     size: Number(merged["grain-size"]),
-    softness: Number(merged["grain-softness"]),
     saturation: Number(merged["grain-saturation"]),
     imageDefocus: Number(merged["grain-defocus"]),
     iso: Number(merged["grain-iso"]),
