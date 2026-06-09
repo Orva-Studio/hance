@@ -118,6 +118,8 @@ export function applyPreset(
     contrast: Number(merged["contrast"]),
     highlights: Number(merged["highlights"]),
     fade: Number(merged["fade"]),
+    fadeTint: Number(merged["fade-tint"]),
+    fadeHue: Number(merged["fade-hue"]),
     whiteBalance: Number(merged["white-balance"]),
     tint: Number(merged["tint"]),
     subtractiveSat: Number(merged["subtractive-sat"]),
@@ -164,6 +166,7 @@ export function applyPreset(
     protectNeutrals: Boolean(merged["split-tone-protect-neutrals"]),
     amount: Number(merged["split-tone-amount"]),
     hueAngle: Number(merged["split-tone-hue"]),
+    green: Number(merged["split-tone-green"]),
     pivot: Number(merged["split-tone-pivot"]),
   };
 

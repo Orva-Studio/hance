@@ -196,7 +196,7 @@ impl GpuRenderer {
             tex
         });
 
-        let color_ub = passes::create_uniform_buffer(&device, 32);
+        let color_ub = passes::create_uniform_buffer(&device, 48);
         let threshold_ub = passes::create_uniform_buffer(&device, 16);
         let blur_ub1 = passes::create_uniform_buffer(&device, 16);
         let scatter_blur_ub1 = passes::create_uniform_buffer(&device, 48);
@@ -205,7 +205,7 @@ impl GpuRenderer {
         let aberration_ub = passes::create_uniform_buffer(&device, 16);
         let grain_ub = passes::create_uniform_buffer(&device, 32);
         let vignette_ub = passes::create_uniform_buffer(&device, 16);
-        let split_tone_ub = passes::create_uniform_buffer(&device, 32);
+        let split_tone_ub = passes::create_uniform_buffer(&device, 48);
         let shake_ub = passes::create_uniform_buffer(&device, 16);
         let bloom_blur_ub1 = passes::create_uniform_buffer(&device, 16);
         let bloom_blur_ub2 = passes::create_uniform_buffer(&device, 16);
@@ -214,8 +214,8 @@ impl GpuRenderer {
         queue.write_buffer(&decode_ub, 0, bytemuck_cast(&[0.0f32, 0.0, 0.0, 0.0])); // 0 = sRGB->linear
         let encode_ub = passes::create_uniform_buffer(&device, 16);
         queue.write_buffer(&encode_ub, 0, bytemuck_cast(&[1.0f32, 0.0, 0.0, 0.0])); // 1 = linear->sRGB
-        let color_ub_identity = passes::create_uniform_buffer(&device, 32);
-        queue.write_buffer(&color_ub_identity, 0, bytemuck_cast(&[1.0f32, 0.0, 1.0, 1.0, 6500.0, 0.0, 0.0, 0.0]));
+        let color_ub_identity = passes::create_uniform_buffer(&device, 48);
+        queue.write_buffer(&color_ub_identity, 0, bytemuck_cast(&Params::color_settings_identity()));
 
         let bytes_per_row = ((width * 4 + 255) / 256) * 256;
         let staging_buf = device.create_buffer(&BufferDescriptor {

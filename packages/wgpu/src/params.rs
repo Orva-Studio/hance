@@ -12,6 +12,20 @@ pub struct InitMessage {
     pub lut: Option<Vec<f32>>,
 }
 
+/// Fully-saturated RGB for a hue in degrees (HSV with s=v=1).
+pub fn hue_to_rgb(h_deg: f32) -> [f32; 3] {
+    let h = h_deg.rem_euclid(360.0) / 60.0;
+    let x = 1.0 - (h % 2.0 - 1.0).abs();
+    match h as i32 {
+        0 => [1.0, x, 0.0],
+        1 => [x, 1.0, 0.0],
+        2 => [0.0, 1.0, x],
+        3 => [0.0, x, 1.0],
+        4 => [x, 0.0, 1.0],
+        _ => [1.0, 0.0, x],
+    }
+}
+
 pub struct Params {
     map: HashMap<String, serde_json::Value>,
 }
@@ -44,22 +58,37 @@ impl Params {
             .unwrap_or_else(|| fallback.to_string())
     }
 
-    /// Color settings uniform: [contrast, brightness, saturation, gamma, whiteBalance, tint, bleachBypass, 0]
-    pub fn color_settings_uniform(&self) -> [f32; 8] {
+    /// Color settings uniform:
+    /// [contrast, brightness, saturation, gamma, whiteBalance, tint, bleachBypass, _pad,
+    ///  liftR, liftG, liftB, _pad]
+    pub fn color_settings_uniform(&self) -> [f32; 12] {
         let fade = self.num("fade", 0.0);
         let contrast = self.num("contrast", 1.0) * (1.0 - fade);
-        let brightness = self.num("exposure", 0.0) * 0.1 + fade * 0.05;
+        let brightness = self.num("exposure", 0.0) * 0.1;
         let saturation = self.num("subtractive-sat", 1.0) * self.num("richness", 1.0);
         let gamma = 1.0 - self.num("highlights", 0.0) * 0.5;
         let wb = self.num("white-balance", 6500.0);
         let tint = self.num("tint", 0.0) / 100.0;
         let bleach = self.num("bleach-bypass", 0.0);
-        [contrast, brightness, saturation, gamma, wb, tint, bleach, 0.0]
+
+        // Tintable black lift. Neutral (white) tint reproduces the legacy fade.
+        let lift_base = fade * 0.05;
+        let fade_tint = self.num("fade-tint", 0.0);
+        let hue = hue_to_rgb(self.num("fade-hue", 0.0));
+        let lift = [
+            lift_base * (1.0 + fade_tint * (hue[0] - 1.0)),
+            lift_base * (1.0 + fade_tint * (hue[1] - 1.0)),
+            lift_base * (1.0 + fade_tint * (hue[2] - 1.0)),
+        ];
+        [
+            contrast, brightness, saturation, gamma, wb, tint, bleach, 0.0,
+            lift[0], lift[1], lift[2], 0.0,
+        ]
     }
 
     /// Identity color settings (passthrough)
-    pub fn color_settings_identity() -> [f32; 8] {
-        [1.0, 0.0, 1.0, 1.0, 6500.0, 0.0, 0.0, 0.0]
+    pub fn color_settings_identity() -> [f32; 12] {
+        [1.0, 0.0, 1.0, 1.0, 6500.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     }
 
     pub fn halation_enabled(&self) -> bool {
@@ -132,10 +161,13 @@ impl Params {
         !self.bool("no-split-tone", false) && self.num("split-tone-amount", 0.0) > 0.0
     }
 
-    /// Split tone uniform: [shadowR, shadowB, highlightR, highlightB, midR, amount, protect, 0]
-    pub fn split_tone_uniform(&self) -> [f32; 8] {
+    /// Split tone uniform:
+    /// [shadowR, shadowB, shadowG, _pad, highlightR, highlightB, highlightG, _pad,
+    ///  midR, amount, protect, _pad]
+    pub fn split_tone_uniform(&self) -> [f32; 12] {
         let amount = self.num("split-tone-amount", 0.0);
         let hue = self.num("split-tone-hue", 20.0);
+        let green = self.num("split-tone-green", 0.0);
         let pivot = self.num("split-tone-pivot", 0.3);
         let mode = self.str("split-tone-mode", "natural");
         let protect = if self.bool("split-tone-protect-neutrals", false) { 1.0 } else { 0.0 };
@@ -145,18 +177,24 @@ impl Params {
         let sin_hue = hue_rad.sin();
         let shadow_r = cos_hue * amount * 0.3;
         let shadow_b = sin_hue * amount * 0.3;
+        let shadow_g = green * amount * 0.3;
 
         let highlight_scale = if mode == "complementary" { 0.3 } else { 0.15 };
-        let (cos_hl, sin_hl) = if mode == "complementary" {
-            (-cos_hue, -sin_hue)
+        let (cos_hl, sin_hl, green_hl) = if mode == "complementary" {
+            (-cos_hue, -sin_hue, -green)
         } else {
-            (cos_hue, sin_hue)
+            (cos_hue, sin_hue, green)
         };
         let highlight_r = cos_hl * amount * highlight_scale;
         let highlight_b = sin_hl * amount * highlight_scale;
+        let highlight_g = green_hl * amount * highlight_scale;
         let mid_r = pivot * -0.1;
 
-        [shadow_r, shadow_b, highlight_r, highlight_b, mid_r, amount, protect, 0.0]
+        [
+            shadow_r, shadow_b, shadow_g, 0.0,
+            highlight_r, highlight_b, highlight_g, 0.0,
+            mid_r, amount, protect, 0.0,
+        ]
     }
 
     pub fn camera_shake_enabled(&self) -> bool {
@@ -199,10 +237,28 @@ mod tests {
 
     #[test]
     fn color_settings_with_fade() {
+        // Fade lifts blacks via the lift vector (neutral by default), not brightness.
         let p = make_params(&[("fade", serde_json::json!(0.5))]);
         let u = p.color_settings_uniform();
-        assert!((u[0] - 0.5).abs() < 0.001);
-        assert!((u[1] - 0.025).abs() < 0.001);
+        assert!((u[0] - 0.5).abs() < 0.001); // contrast = 1 * (1 - 0.5)
+        assert!((u[1] - 0.0).abs() < 0.001); // brightness no longer carries fade
+        assert!((u[8] - 0.025).abs() < 0.001); // liftR = 0.5 * 0.05
+        assert!((u[9] - 0.025).abs() < 0.001); // liftG
+        assert!((u[10] - 0.025).abs() < 0.001); // liftB
+    }
+
+    #[test]
+    fn color_settings_fade_tint_teal() {
+        // A teal fade hue tints the lift toward green/blue, leaving red untouched.
+        let p = make_params(&[
+            ("fade", serde_json::json!(1.0)),
+            ("fade-tint", serde_json::json!(1.0)),
+            ("fade-hue", serde_json::json!(180.0)),
+        ]);
+        let u = p.color_settings_uniform();
+        assert!((u[8] - 0.0).abs() < 0.001); // liftR: hue 180 has no red
+        assert!((u[9] - 0.05).abs() < 0.001); // liftG: full
+        assert!((u[10] - 0.05).abs() < 0.001); // liftB: full
     }
 
     #[test]
@@ -213,9 +269,10 @@ mod tests {
             ("split-tone-pivot", serde_json::json!(0.3)),
         ]);
         let u = p.split_tone_uniform();
-        assert!((u[0] - 0.3).abs() < 0.001);
-        assert!((u[1] - 0.0).abs() < 0.001);
-        assert!((u[2] - 0.15).abs() < 0.001);
+        assert!((u[0] - 0.3).abs() < 0.001); // shadowR
+        assert!((u[1] - 0.0).abs() < 0.001); // shadowB
+        assert!((u[2] - 0.0).abs() < 0.001); // shadowG (green off by default)
+        assert!((u[4] - 0.15).abs() < 0.001); // highlightR
     }
 
     #[test]
@@ -227,7 +284,20 @@ mod tests {
             ("split-tone-pivot", serde_json::json!(0.3)),
         ]);
         let u = p.split_tone_uniform();
-        assert!((u[2] - (-0.3)).abs() < 0.001);
+        assert!((u[4] - (-0.3)).abs() < 0.001); // highlightR flips in complementary
+    }
+
+    #[test]
+    fn split_tone_green_teal_shadows() {
+        // split-tone-green pushes green into shadows (and pulls it in complementary highlights).
+        let p = make_params(&[
+            ("split-tone-amount", serde_json::json!(1.0)),
+            ("split-tone-green", serde_json::json!(1.0)),
+            ("split-tone-mode", serde_json::json!("complementary")),
+        ]);
+        let u = p.split_tone_uniform();
+        assert!((u[2] - 0.3).abs() < 0.001); // shadowG
+        assert!((u[6] - (-0.3)).abs() < 0.001); // highlightG mirrors in complementary
     }
 
     #[test]

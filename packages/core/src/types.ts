@@ -9,6 +9,8 @@ export interface ColorSettingsOptions {
   contrast: number;
   highlights: number;
   fade: number;
+  fadeTint: number;
+  fadeHue: number;
   whiteBalance: number;
   tint: number;
   subtractiveSat: number;
@@ -55,6 +57,7 @@ export interface SplitToneOptions {
   protectNeutrals: boolean;
   amount: number;
   hueAngle: number;
+  green: number;
   pivot: number;
 }
 
