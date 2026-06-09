@@ -35,7 +35,8 @@ export function getSplitToneTintValues(options: {
   pivot: number;
 }): SplitToneTintValues {
   // Centered hue wheel: a fully-saturated hue minus its own mean, so the tint
-  // is luminance-neutral (a neutral gray would produce no shift).
+  // is mean-neutral — its channels sum to zero (a neutral gray gets no shift).
+  // Not luma-weighted, so a pure hue still nudges perceived brightness slightly.
   const rgb = hueToRgb(options.hueAngle);
   const mean = (rgb[0] + rgb[1] + rgb[2]) / 3;
   const tint: [number, number, number] = [rgb[0] - mean, rgb[1] - mean, rgb[2] - mean];

@@ -5,7 +5,7 @@ import {
   SCATTER_BLUR_FRAG, HALATION_COMBINE_FRAG,
 } from "./shaders";
 import { createFullscreenPipeline, createTexture, runPass } from "./passes";
-import { getSplitToneTintValues } from "./splitToneMath";
+import { getSplitToneTintValues, hueToRgb } from "./splitToneMath";
 import { isLightGroupActive } from "./lightGroup";
 import { LUT_SIZE, generateLut, isInputLutActive, HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING } from "@hance/core";
 import { chooseExportSize } from "../mediaSizing";
@@ -82,18 +82,6 @@ function createLutLayout(device: GPUDevice): GPUBindGroupLayout {
 // JS has no native f16; convert a float to its IEEE-754 half-precision bits.
 // Inputs here are LUT values clamped to [0,1], so the Inf/NaN (e > 142) path is
 // unreachable and intentionally omitted — do not reuse this for arbitrary floats.
-// Fully-saturated RGB for a hue in degrees (HSV with s=v=1). Mirrors hue_to_rgb in params.rs.
-function hueToRgb(hDeg: number): [number, number, number] {
-  const h = (((hDeg % 360) + 360) % 360) / 60;
-  const x = 1 - Math.abs((h % 2) - 1);
-  if (h < 1) return [1, x, 0];
-  if (h < 2) return [x, 1, 0];
-  if (h < 3) return [0, 1, x];
-  if (h < 4) return [0, x, 1];
-  if (h < 5) return [x, 0, 1];
-  return [1, 0, x];
-}
-
 const f32buf = new Float32Array(1);
 const u32buf = new Uint32Array(f32buf.buffer);
 function floatToHalf(val: number): number {

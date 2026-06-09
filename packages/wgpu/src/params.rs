@@ -172,7 +172,8 @@ impl Params {
         let protect = if self.bool("split-tone-protect-neutrals", false) { 1.0 } else { 0.0 };
 
         // Centered hue wheel: a fully-saturated hue minus its own mean, so the
-        // tint is luminance-neutral (a neutral gray would produce no shift).
+        // tint is mean-neutral — its channels sum to zero (a neutral gray gets no
+        // shift). Not luma-weighted, so a pure hue still nudges brightness slightly.
         let rgb = hue_to_rgb(hue);
         let mean = (rgb[0] + rgb[1] + rgb[2]) / 3.0;
         let tint = [rgb[0] - mean, rgb[1] - mean, rgb[2] - mean];
@@ -272,7 +273,7 @@ mod tests {
         assert!((u[1] - (-0.1)).abs() < 0.001); // shadowB
         assert!((u[2] - (-0.1)).abs() < 0.001); // shadowG
         assert!((u[4] - 0.1).abs() < 0.001); // highlightR (scale 0.15)
-        // Tint is luminance-neutral: channels sum to zero.
+        // Tint is mean-neutral: channels sum to zero.
         assert!((u[0] + u[1] + u[2]).abs() < 0.001);
     }
 
