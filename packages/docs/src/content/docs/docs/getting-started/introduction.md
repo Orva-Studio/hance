@@ -40,7 +40,7 @@ Every file passes through these stages:
 2. **Halation**: soft glow around highlights (a real film optical artifact)
 3. **Chromatic aberration**: subtle color fringing at edges
 4. **Bloom**: soft light diffusion
-5. **Film grain**: organic noise with controllable size and softness
+5. **Film grain**: luminance-dependent, ISO-scaled noise with controllable size
 6. **Vignette**: darkened edges
 7. **Split toning**: color shifts in shadows and highlights
 8. **Camera shake**: subtle motion for a handheld feel
