@@ -167,27 +167,24 @@ impl Params {
     pub fn split_tone_uniform(&self) -> [f32; 12] {
         let amount = self.num("split-tone-amount", 0.0);
         let hue = self.num("split-tone-hue", 20.0);
-        let green = self.num("split-tone-green", 0.0);
         let pivot = self.num("split-tone-pivot", 0.3);
         let mode = self.str("split-tone-mode", "natural");
         let protect = if self.bool("split-tone-protect-neutrals", false) { 1.0 } else { 0.0 };
 
-        let hue_rad = hue.to_radians();
-        let cos_hue = hue_rad.cos();
-        let sin_hue = hue_rad.sin();
-        let shadow_r = cos_hue * amount * 0.3;
-        let shadow_b = sin_hue * amount * 0.3;
-        let shadow_g = green * amount * 0.3;
+        // Centered hue wheel: a fully-saturated hue minus its own mean, so the
+        // tint is luminance-neutral (a neutral gray would produce no shift).
+        let rgb = hue_to_rgb(hue);
+        let mean = (rgb[0] + rgb[1] + rgb[2]) / 3.0;
+        let tint = [rgb[0] - mean, rgb[1] - mean, rgb[2] - mean];
+        let shadow_r = tint[0] * amount * 0.3;
+        let shadow_g = tint[1] * amount * 0.3;
+        let shadow_b = tint[2] * amount * 0.3;
 
         let highlight_scale = if mode == "complementary" { 0.3 } else { 0.15 };
-        let (cos_hl, sin_hl, green_hl) = if mode == "complementary" {
-            (-cos_hue, -sin_hue, -green)
-        } else {
-            (cos_hue, sin_hue, green)
-        };
-        let highlight_r = cos_hl * amount * highlight_scale;
-        let highlight_b = sin_hl * amount * highlight_scale;
-        let highlight_g = green_hl * amount * highlight_scale;
+        let sign = if mode == "complementary" { -1.0 } else { 1.0 };
+        let highlight_r = sign * tint[0] * amount * highlight_scale;
+        let highlight_g = sign * tint[1] * amount * highlight_scale;
+        let highlight_b = sign * tint[2] * amount * highlight_scale;
         let mid_r = pivot * -0.1;
 
         [
@@ -263,20 +260,25 @@ mod tests {
 
     #[test]
     fn split_tone_natural_mode() {
+        // Hue 0 (red) on the centered wheel: shadows warm (R up, G/B down).
+        // hue_to_rgb(0) = [1,0,0], mean 1/3, centered [2/3,-1/3,-1/3] * 0.3.
         let p = make_params(&[
             ("split-tone-amount", serde_json::json!(1.0)),
             ("split-tone-hue", serde_json::json!(0.0)),
             ("split-tone-pivot", serde_json::json!(0.3)),
         ]);
         let u = p.split_tone_uniform();
-        assert!((u[0] - 0.3).abs() < 0.001); // shadowR
-        assert!((u[1] - 0.0).abs() < 0.001); // shadowB
-        assert!((u[2] - 0.0).abs() < 0.001); // shadowG (green off by default)
-        assert!((u[4] - 0.15).abs() < 0.001); // highlightR
+        assert!((u[0] - 0.2).abs() < 0.001); // shadowR
+        assert!((u[1] - (-0.1)).abs() < 0.001); // shadowB
+        assert!((u[2] - (-0.1)).abs() < 0.001); // shadowG
+        assert!((u[4] - 0.1).abs() < 0.001); // highlightR (scale 0.15)
+        // Tint is luminance-neutral: channels sum to zero.
+        assert!((u[0] + u[1] + u[2]).abs() < 0.001);
     }
 
     #[test]
     fn split_tone_complementary_mode() {
+        // Complementary mirrors the shadow tint into highlights at scale 0.3.
         let p = make_params(&[
             ("split-tone-amount", serde_json::json!(1.0)),
             ("split-tone-hue", serde_json::json!(0.0)),
@@ -284,20 +286,24 @@ mod tests {
             ("split-tone-pivot", serde_json::json!(0.3)),
         ]);
         let u = p.split_tone_uniform();
-        assert!((u[4] - (-0.3)).abs() < 0.001); // highlightR flips in complementary
+        assert!((u[4] - (-0.2)).abs() < 0.001); // highlightR flips: -2/3 * 0.3
+        assert!((u[5] - 0.1).abs() < 0.001); // highlightB
+        assert!((u[6] - 0.1).abs() < 0.001); // highlightG
     }
 
     #[test]
-    fn split_tone_green_teal_shadows() {
-        // split-tone-green pushes green into shadows (and pulls it in complementary highlights).
+    fn split_tone_teal_hue() {
+        // Teal hue 180 = hue_to_rgb [0,1,1], centered [-2/3,1/3,1/3] * 0.3:
+        // shadows get low R, high G+B.
         let p = make_params(&[
             ("split-tone-amount", serde_json::json!(1.0)),
-            ("split-tone-green", serde_json::json!(1.0)),
-            ("split-tone-mode", serde_json::json!("complementary")),
+            ("split-tone-hue", serde_json::json!(180.0)),
         ]);
         let u = p.split_tone_uniform();
-        assert!((u[2] - 0.3).abs() < 0.001); // shadowG
-        assert!((u[6] - (-0.3)).abs() < 0.001); // highlightG mirrors in complementary
+        assert!((u[0] - (-0.2)).abs() < 0.001); // shadowR low
+        assert!((u[1] - 0.1).abs() < 0.001); // shadowB high
+        assert!((u[2] - 0.1).abs() < 0.001); // shadowG high
+        assert!(u[2] > u[0]); // green clearly above red
     }
 
     #[test]

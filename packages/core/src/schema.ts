@@ -136,7 +136,6 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
       { key: "split-tone-protect-neutrals", label: "Protect Neutrals", type: "boolean", default: false, description: "Protect neutral colors" },
       { key: "split-tone-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0, description: "Toning amount" },
       { key: "split-tone-hue", label: "Hue", type: "range", min: 0, max: 360, step: 1, default: 20, description: "Hue angle in degrees" },
-      { key: "split-tone-green", label: "Green", type: "range", min: 0, max: 1, step: 0.01, default: 0, description: "Push green into shadows (teal); pulls it from highlights in complementary mode" },
       { key: "split-tone-pivot", label: "Pivot", type: "range", min: 0, max: 1, step: 0.01, default: 0.3, description: "Shadow/highlight pivot" },
     ],
   },
