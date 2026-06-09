@@ -74,10 +74,10 @@ Adds organic film grain.
 | Flag | Range | Default | Description |
 |------|-------|---------|-------------|
 | `--grain-amount` | 0–1 | `0.125` | Grain intensity |
-| `--grain-size` | 0–5 | `0` | Particle size |
-| `--grain-softness` | 0–1 | `0.1` | Grain softness |
+| `--grain-size` | 0–5 | `0` | Particle size (0 = finest, higher = coarser) |
 | `--grain-saturation` | 0–1 | `0.3` | Color saturation of grain |
 | `--grain-defocus` | 0–5 | `1` | Image defocus amount |
+| `--grain-iso` | 50–3200 | `400` | Virtual ISO; scales grain amplitude (400 = neutral) |
 
 Disable with `--no-grain`.
 
