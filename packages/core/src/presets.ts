@@ -166,7 +166,6 @@ export function applyPreset(
     protectNeutrals: Boolean(merged["split-tone-protect-neutrals"]),
     amount: Number(merged["split-tone-amount"]),
     hueAngle: Number(merged["split-tone-hue"]),
-    green: Number(merged["split-tone-green"]),
     pivot: Number(merged["split-tone-pivot"]),
   };
 

@@ -46,12 +46,11 @@ Start from the preset that owns the image's color identity, then layer these.
 shadows** (the classic teal-orange). `--split-tone-hue 220` reverses it. Tune with
 `--split-tone-amount` (~0.3–0.4 is plenty; 0.6 is heavy) and `--split-tone-pivot`.
 
-For a richer **teal** (not just cyan) in the shadows, add `--split-tone-green`
-~0.4–0.7. The base hue only moves red/blue; green pushes shadows toward true teal
-(and, in complementary mode, pulls green out of the highlights for stronger warm/cool
-separation). Default 0 leaves the classic two-axis tone untouched. Pair with a tinted
-lift (`--fade-tint`/`--fade-hue`) to get the alternating cool-blacks / warm-highlights
-look from a music-video grade.
+`--split-tone-hue` walks a full hue→RGB wheel, so a single value reaches any tone:
+~180 lands on **true teal** (not just cyan), ~120 green, ~30 amber, ~300 magenta. The
+shadows take the hue and, in complementary mode, the highlights take its opposite. Pair
+with a tinted lift (`--fade-tint`/`--fade-hue`) to get the alternating cool-blacks /
+warm-highlights look from a music-video grade.
 
 - **Use it** for action, landscape, cityscape — anything that benefits from cool/warm
   separation. Match a reference's mood by reading where its highlights vs shadows sit.

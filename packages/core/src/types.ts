@@ -57,7 +57,6 @@ export interface SplitToneOptions {
   protectNeutrals: boolean;
   amount: number;
   hueAngle: number;
-  green: number;
   pivot: number;
 }
 

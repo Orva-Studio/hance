@@ -554,7 +554,6 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
         const { shadowR, shadowB, shadowG, highlightR, highlightB, highlightG, midR } = getSplitToneTintValues({
           amount,
           hueAngle: hue,
-          green: num("split-tone-green"),
           mode: typeof mode === "string" && mode === "complementary" ? "complementary" : "natural",
           pivot,
         });
