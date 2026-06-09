@@ -42,7 +42,11 @@ fn grain_noise(uv: vec2f, t: f32) -> vec3f {
   var freq = 1.0;
   var norm = 0.0;
   for (var i = 0; i < 3; i++) {
-    let coord = floor(uv * scale * freq) + t + f32(i) * 19.0;
+    // Reseed the noise field each frame instead of translating it: large,
+    // mismatched per-axis multipliers on time make consecutive frames
+    // independent, so grain boils in place rather than sliding diagonally.
+    let jitter = vec2f(t * 71.7, t * 47.3);
+    let coord = floor(uv * scale * freq) + jitter + f32(i) * 19.0;
     sum += octave(coord) * amp;
     norm += amp;
     amp *= 0.5;
