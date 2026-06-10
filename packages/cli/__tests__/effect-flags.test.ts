@@ -122,3 +122,23 @@ describe("schema-derived CLI flags", () => {
     }
   });
 });
+
+describe("color wheel flags", () => {
+  it("parses lift/gamma/gain flags into overrides", () => {
+    const { overrides } = parseEffectFlags([
+      "in.mp4", "--lift-r", "0.1", "--gamma-g", "1.2", "--gain-b", "0.8",
+    ]);
+    expect(overrides["lift-r"]).toBe(0.1);
+    expect(overrides["gamma-g"]).toBe(1.2);
+    expect(overrides["gain-b"]).toBe(0.8);
+  });
+
+  it("rejects out-of-range lift", () => {
+    expect(() => parseEffectFlags(["in.mp4", "--lift-r", "2"])).toThrow();
+  });
+
+  it("--no-color-wheels sets the enable key", () => {
+    const { overrides } = parseEffectFlags(["in.mp4", "--no-color-wheels"]);
+    expect(overrides["no-color-wheels"]).toBe(true);
+  });
+});
