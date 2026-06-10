@@ -4,6 +4,7 @@ import { RangeSlider } from "./RangeSlider";
 import { Toggle } from "./Toggle";
 import { SelectControl } from "./SelectControl";
 import { SplitToneControls } from "./SplitToneControls";
+import { ColorWheelsControls } from "./ColorWheelsControls";
 
 interface Props {
   group: EffectGroupType;
@@ -23,7 +24,7 @@ function shallowEqualValues(a: Record<string, string | number | boolean>, b: Rec
 }
 
 export const EffectGroup = memo(function EffectGroup({ group, values, onChange, onCommit, animating }: Props) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(group.key === "colorWheels");
   const enabled = values[group.enableKey] !== true;
 
   return (
@@ -50,6 +51,15 @@ export const EffectGroup = memo(function EffectGroup({ group, values, onChange, 
         <div className={`flex flex-col pl-2 ${!enabled ? "opacity-40 pointer-events-none" : ""}`}>
           {group.key === "splitTone" ? (
             <SplitToneControls
+              group={group}
+              values={values}
+              onChange={onChange}
+              onCommit={onCommit}
+              disabled={!enabled}
+              animating={animating}
+            />
+          ) : group.key === "colorWheels" ? (
+            <ColorWheelsControls
               group={group}
               values={values}
               onChange={onChange}
