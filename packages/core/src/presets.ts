@@ -3,7 +3,7 @@ import { join } from "path";
 import { homedir } from "os";
 import type {
   ColorSettingsOptions, HalationOptions, AberrationOptions,
-  BloomOptions, GrainOptions, VignetteOptions, SplitToneOptions, CameraShakeOptions,
+  BloomOptions, GrainOptions, VignetteOptions, SplitToneOptions, ColorWheelsOptions, CameraShakeOptions,
   FilmOptions, OutputCodec, LicenseContext, InputLutOptions,
 } from "./types";
 import { seedDefaults } from "./schema";
@@ -170,6 +170,19 @@ export function applyPreset(
     pivot: Number(merged["split-tone-pivot"]),
   };
 
+  const colorWheels: ColorWheelsOptions = {
+    enabled: merged["no-color-wheels"] ? false : true,
+    liftR: Number(merged["lift-r"]),
+    liftG: Number(merged["lift-g"]),
+    liftB: Number(merged["lift-b"]),
+    gammaR: Number(merged["gamma-r"]),
+    gammaG: Number(merged["gamma-g"]),
+    gammaB: Number(merged["gamma-b"]),
+    gainR: Number(merged["gain-r"]),
+    gainG: Number(merged["gain-g"]),
+    gainB: Number(merged["gain-b"]),
+  };
+
   const cameraShake: CameraShakeOptions = {
     enabled: merged["no-camera-shake"] ? false : true,
     amount: Number(merged["camera-shake-amount"]),
@@ -182,5 +195,5 @@ export function applyPreset(
   const blend = Number(merged["blend"] ?? 1);
   const pixelFormat = "yuv420p";
 
-  return { encodePreset, codec, crf, blend, pixelFormat, inputLut, colorSettings, halation, aberration, bloom, grain, vignette, splitTone, cameraShake, mergedParams: merged };
+  return { encodePreset, codec, crf, blend, pixelFormat, inputLut, colorSettings, halation, aberration, bloom, grain, vignette, splitTone, colorWheels, cameraShake, mergedParams: merged };
 }
