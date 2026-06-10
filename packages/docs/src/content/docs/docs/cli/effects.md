@@ -74,7 +74,7 @@ Adds organic film grain.
 
 | Flag | Range | Default | Description |
 |------|-------|---------|-------------|
-| `--grain-iso` | 50–3200 | `400` | Grain intensity as virtual film speed (50 = subtle, 3200 = heavy) |
+| `--grain-iso` | 0–3200 | `400` | Grain intensity as virtual film speed (0 = off, 3200 = heavy) |
 | `--grain-size` | 0–5 | `0` | Particle size (0 = finest, higher = coarser) |
 | `--grain-saturation` | 0–1 | `0.3` | Color saturation of grain |
 
