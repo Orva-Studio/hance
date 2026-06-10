@@ -33,6 +33,7 @@
     "split-tone-amount": 0,
     "split-tone-shadow-hue": 20,
     "split-tone-highlight-hue": 20,
+    "split-tone-highlight-strength": 0.5,
     "split-tone-pivot": 0.3,
     "camera-shake-amount": 0.25,
     "camera-shake-rate": 0.5

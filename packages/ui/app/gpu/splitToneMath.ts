@@ -41,19 +41,21 @@ export function getSplitToneTintValues(options: {
   amount: number;
   shadowHueAngle: number;
   highlightHueAngle: number;
+  /** Fraction of the shadow scale (0–1); default 0.5 — film highlights carry less tint. */
+  highlightStrength?: number;
   pivot: number;
 }): SplitToneTintValues {
-  // Shadows and highlights tint independently from their own hues. Highlights
-  // use a subtler scale (0.15 vs 0.3) — film highlights carry less tint.
+  // Shadows and highlights tint independently from their own hues.
   const shadowTint = centeredTint(options.shadowHueAngle);
   const shadowR = shadowTint[0] * options.amount * 0.3;
   const shadowG = shadowTint[1] * options.amount * 0.3;
   const shadowB = shadowTint[2] * options.amount * 0.3;
 
+  const highlightScale = 0.3 * (options.highlightStrength ?? 0.5);
   const highlightTint = centeredTint(options.highlightHueAngle);
-  const highlightR = highlightTint[0] * options.amount * 0.15;
-  const highlightG = highlightTint[1] * options.amount * 0.15;
-  const highlightB = highlightTint[2] * options.amount * 0.15;
+  const highlightR = highlightTint[0] * options.amount * highlightScale;
+  const highlightG = highlightTint[1] * options.amount * highlightScale;
+  const highlightB = highlightTint[2] * options.amount * highlightScale;
 
   const midR = options.pivot * -0.1;
 

@@ -541,6 +541,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
           amount,
           shadowHueAngle: num("split-tone-shadow-hue", 30),
           highlightHueAngle: num("split-tone-highlight-hue", 210),
+          highlightStrength: num("split-tone-highlight-strength", 0.5),
           pivot,
         });
 

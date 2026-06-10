@@ -166,6 +166,7 @@ export function applyPreset(
     amount: Number(merged["split-tone-amount"]),
     shadowHueAngle: Number(merged["split-tone-shadow-hue"]),
     highlightHueAngle: Number(merged["split-tone-highlight-hue"]),
+    highlightStrength: Number(merged["split-tone-highlight-strength"]),
     pivot: Number(merged["split-tone-pivot"]),
   };
 

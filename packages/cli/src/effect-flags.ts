@@ -45,10 +45,24 @@ for (const group of EFFECT_SCHEMA) {
   }
 }
 
+// Removed flags still accepted for compatibility. Their values pass through as
+// legacy params and are rewritten by core's migrateLegacyParams (seedDefaults).
+const LEGACY_FLAGS = new Map<string, { hint: string; parse: (val: string, flag: string) => string | number }>([
+  ["--split-tone-hue", {
+    hint: "use --split-tone-shadow-hue / --split-tone-highlight-hue",
+    parse: (val, flag) => parseNum(val, flag, 0, 360),
+  }],
+  ["--split-tone-mode", {
+    hint: "use --split-tone-shadow-hue / --split-tone-highlight-hue",
+    parse: (val, flag) => oneOf(val, flag, ["natural", "complementary"] as const),
+  }],
+]);
+
 const KNOWN_FLAGS = new Set<string>([
   ...NON_EFFECT_FLAGS,
   ...ENABLE_FLAGS.keys(),
   ...FLAG_BINDINGS.keys(),
+  ...LEGACY_FLAGS.keys(),
 ]);
 
 /** Flags that take no value. */
@@ -176,6 +190,14 @@ export function parseEffectFlags(argv: string[]): ParsedEffectFlags {
         overrideCrf = parseNum(val, "--crf", 0, 51); overrides["crf"] = overrideCrf; i += 2; continue;
       case "--blend":
         overrides["blend"] = parseNum(val, "--blend", 0, 1); i += 2; continue;
+    }
+
+    // Legacy value flags — accepted with a warning, migrated in seedDefaults.
+    const legacy = LEGACY_FLAGS.get(arg);
+    if (legacy) {
+      console.error(`Warning: ${arg} is deprecated; ${legacy.hint}`);
+      overrides[arg.slice(2)] = legacy.parse(val, arg);
+      i += 2; continue;
     }
 
     // Schema-derived value flags (range + select).

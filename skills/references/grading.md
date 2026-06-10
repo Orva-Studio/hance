@@ -50,7 +50,8 @@ Each hue walks a full hue→RGB wheel, so any value reaches any tone: ~180 lands
 **true teal** (not just cyan), ~120 green, ~30 amber, ~300 magenta. Shadows and
 highlights are independent, so non-complementary pairs (e.g. teal shadows + amber —
 not pure-complement — highlights) are easy. Highlights tint more subtly than shadows
-by design. Pair with a tinted lift (`--fade-tint`/`--fade-hue`) to get the alternating
+by default; raise `--split-tone-highlight-strength` (0–1, default 0.5) toward 1 for
+equal-strength highlight toning. Pair with a tinted lift (`--fade-tint`/`--fade-hue`) to get the alternating
 cool-blacks / warm-highlights look from a music-video grade.
 
 - **Use it** for action, landscape, cityscape — anything that benefits from cool/warm
