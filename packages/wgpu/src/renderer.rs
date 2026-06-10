@@ -13,6 +13,7 @@ const ABERRATION_FRAG: &str = include_str!("../../core/shaders/aberration.frag.w
 const GRAIN_FRAG: &str = include_str!("../../core/shaders/grain.frag.wgsl");
 const VIGNETTE_FRAG: &str = include_str!("../../core/shaders/vignette.frag.wgsl");
 const SPLIT_TONE_FRAG: &str = include_str!("../../core/shaders/split-tone.frag.wgsl");
+const COLOR_WHEELS_FRAG: &str = include_str!("../../core/shaders/color-wheels.frag.wgsl");
 const SHAKE_FRAG: &str = include_str!("../../core/shaders/camera-shake.frag.wgsl");
 const SCATTER_BLUR_FRAG: &str = include_str!("../../core/shaders/scatter-blur.frag.wgsl");
 const COMBINE_FRAG: &str = include_str!("../../core/shaders/halation-combine.frag.wgsl");
@@ -64,6 +65,7 @@ pub struct GpuRenderer {
     grain_pipeline: RenderPipeline,
     vignette_pipeline: RenderPipeline,
     split_tone_pipeline: RenderPipeline,
+    color_wheels_pipeline: RenderPipeline,
     shake_pipeline: RenderPipeline,
     colorspace_pipeline: RenderPipeline,
     blit_pipeline: RenderPipeline,
@@ -79,6 +81,7 @@ pub struct GpuRenderer {
     grain_ub: Buffer,
     vignette_ub: Buffer,
     split_tone_ub: Buffer,
+    color_wheels_ub: Buffer,
     shake_ub: Buffer,
     bloom_blur_ub1: Buffer,
     bloom_blur_ub2: Buffer,
@@ -152,6 +155,7 @@ impl GpuRenderer {
         let grain_pipeline = passes::create_pipeline(&device, VERT, GRAIN_FRAG, &std_layout, INTERMEDIATE_FORMAT);
         let vignette_pipeline = passes::create_pipeline(&device, VERT, VIGNETTE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
         let split_tone_pipeline = passes::create_pipeline(&device, VERT, SPLIT_TONE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+        let color_wheels_pipeline = passes::create_pipeline(&device, VERT, COLOR_WHEELS_FRAG, &std_layout, INTERMEDIATE_FORMAT);
         let shake_pipeline = passes::create_pipeline(&device, VERT, SHAKE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
         let colorspace_pipeline = passes::create_pipeline(&device, VERT, COLORSPACE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
         let blit_pipeline = passes::create_pipeline(&device, VERT, COLOR_FRAG, &std_layout, OUTPUT_FORMAT);
@@ -206,6 +210,7 @@ impl GpuRenderer {
         let grain_ub = passes::create_uniform_buffer(&device, 32);
         let vignette_ub = passes::create_uniform_buffer(&device, 16);
         let split_tone_ub = passes::create_uniform_buffer(&device, 48);
+        let color_wheels_ub = passes::create_uniform_buffer(&device, 48);
         let shake_ub = passes::create_uniform_buffer(&device, 16);
         let bloom_blur_ub1 = passes::create_uniform_buffer(&device, 16);
         let bloom_blur_ub2 = passes::create_uniform_buffer(&device, 16);
@@ -256,6 +261,7 @@ impl GpuRenderer {
             grain_pipeline,
             vignette_pipeline,
             split_tone_pipeline,
+            color_wheels_pipeline,
             shake_pipeline,
             colorspace_pipeline,
             blit_pipeline,
@@ -269,6 +275,7 @@ impl GpuRenderer {
             grain_ub,
             vignette_ub,
             split_tone_ub,
+            color_wheels_ub,
             shake_ub,
             bloom_blur_ub1,
             bloom_blur_ub2,
@@ -540,6 +547,19 @@ impl GpuRenderer {
                 &self.sampler, &self.encode_ub,
             );
             passes::run_pass(&mut encoder, &self.colorspace_pipeline, &bg,
+                &other_tex!().create_view(&TextureViewDescriptor::default()));
+            swap!();
+        }
+
+        // --- Color Wheels (lift/gamma/gain) ---
+        if self.params.color_wheels_enabled() {
+            self.write_uniform(&self.color_wheels_ub, &self.params.color_wheels_uniform());
+            let bg = passes::make_std_bind_group(
+                &self.device, &self.std_layout,
+                &current_tex!().create_view(&TextureViewDescriptor::default()),
+                &self.sampler, &self.color_wheels_ub,
+            );
+            passes::run_pass(&mut encoder, &self.color_wheels_pipeline, &bg,
                 &other_tex!().create_view(&TextureViewDescriptor::default()));
             swap!();
         }

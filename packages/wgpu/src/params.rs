@@ -35,6 +35,12 @@ fn centered_tint(hue_deg: f32) -> [f32; 3] {
     [rgb[0] - mean, rgb[1] - mean, rgb[2] - mean]
 }
 
+const COLOR_WHEEL_KEYS: [(&str, f32); 9] = [
+    ("lift-r", 0.0), ("lift-g", 0.0), ("lift-b", 0.0),
+    ("gamma-r", 1.0), ("gamma-g", 1.0), ("gamma-b", 1.0),
+    ("gain-r", 1.0), ("gain-g", 1.0), ("gain-b", 1.0),
+];
+
 pub struct Params {
     map: HashMap<String, serde_json::Value>,
 }
@@ -189,6 +195,22 @@ impl Params {
             shadow_r, shadow_b, shadow_g, 0.0,
             highlight_r, highlight_b, highlight_g, 0.0,
             mid_r, amount, protect, 0.0,
+        ]
+    }
+
+    pub fn color_wheels_enabled(&self) -> bool {
+        !self.bool("no-color-wheels", false)
+            && COLOR_WHEEL_KEYS.iter().any(|(k, neutral)| self.num(k, *neutral) != *neutral)
+    }
+
+    /// Color wheels uniform:
+    /// [liftR, liftG, liftB, _pad, gammaR, gammaG, gammaB, _pad, gainR, gainG, gainB, _pad]
+    pub fn color_wheels_uniform(&self) -> [f32; 12] {
+        let v = |k: &str, n: f32| self.num(k, n);
+        [
+            v("lift-r", 0.0), v("lift-g", 0.0), v("lift-b", 0.0), 0.0,
+            v("gamma-r", 1.0), v("gamma-g", 1.0), v("gamma-b", 1.0), 0.0,
+            v("gain-r", 1.0), v("gain-g", 1.0), v("gain-b", 1.0), 0.0,
         ]
     }
 
@@ -358,5 +380,42 @@ mod tests {
         assert_eq!(msg.width, 1920);
         assert_eq!(msg.height, 1080);
         assert_eq!(msg.params.get("contrast").unwrap().as_f64().unwrap(), 1.2);
+    }
+
+    #[test]
+    fn color_wheels_neutral_is_disabled() {
+        let p = make_params(&[]);
+        assert!(!p.color_wheels_enabled());
+    }
+
+    #[test]
+    fn color_wheels_any_non_neutral_enables() {
+        let p = make_params(&[("lift-b", serde_json::json!(0.05))]);
+        assert!(p.color_wheels_enabled());
+        let p = make_params(&[("gamma-r", serde_json::json!(1.2))]);
+        assert!(p.color_wheels_enabled());
+    }
+
+    #[test]
+    fn color_wheels_disabled_flag_wins() {
+        let p = make_params(&[
+            ("lift-r", serde_json::json!(0.5)),
+            ("no-color-wheels", serde_json::json!(true)),
+        ]);
+        assert!(!p.color_wheels_enabled());
+    }
+
+    #[test]
+    fn color_wheels_uniform_layout() {
+        let p = make_params(&[
+            ("lift-r", serde_json::json!(0.1)),
+            ("gamma-g", serde_json::json!(1.5)),
+            ("gain-b", serde_json::json!(2.0)),
+        ]);
+        let u = p.color_wheels_uniform();
+        assert!((u[0] - 0.1).abs() < 1e-6);
+        assert_eq!(u[3], 0.0);
+        assert!((u[5] - 1.5).abs() < 1e-6);
+        assert!((u[10] - 2.0).abs() < 1e-6);
     }
 }
