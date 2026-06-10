@@ -14,7 +14,7 @@ export function isLightGroupActive(params: PreviewParams): boolean {
     (params["no-halation"] !== true && num(params, "halation-amount", 0.25) > 0) ||
     (params["no-aberration"] !== true && num(params, "aberration", 0.3) > 0) ||
     (params["no-bloom"] !== true && num(params, "bloom-amount", 0.25) > 0) ||
-    (params["no-grain"] !== true && num(params, "grain-amount", 0.125) > 0) ||
+    (params["no-grain"] !== true && num(params, "grain-iso", 400) > 0) ||
     (params["no-vignette"] !== true && num(params, "vignette-amount", 0.25) > 0)
   );
 }

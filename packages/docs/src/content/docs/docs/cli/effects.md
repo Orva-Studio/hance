@@ -26,6 +26,7 @@ Control the base color grade applied before any optical effects.
 | `--contrast` | 0–3 | `1` | Contrast multiplier |
 | `--highlights` | -1 to 1 | `0` | Highlight compression |
 | `--fade` | 0–1 | `0` | Fade / lift blacks |
+| `--fade-color` | neutral/warm/green/teal/magenta | `neutral` | Tint of the lifted blacks |
 | `--white-balance` | 1000–15000 | `6500` | Color temperature in Kelvin |
 | `--tint` | -100 to 100 | `0` | Green-magenta tint |
 | `--subtractive-sat` | 0–3 | `1` | Subtractive saturation |
@@ -73,11 +74,9 @@ Adds organic film grain.
 
 | Flag | Range | Default | Description |
 |------|-------|---------|-------------|
-| `--grain-amount` | 0–1 | `0.125` | Grain intensity |
+| `--grain-iso` | 50–3200 | `400` | Grain intensity as virtual film speed (50 = subtle, 3200 = heavy) |
 | `--grain-size` | 0–5 | `0` | Particle size (0 = finest, higher = coarser) |
 | `--grain-saturation` | 0–1 | `0.3` | Color saturation of grain |
-| `--grain-defocus` | 0–5 | `1` | Image defocus amount |
-| `--grain-iso` | 50–3200 | `400` | Virtual ISO; scales grain amplitude (400 = neutral) |
 
 Disable with `--no-grain`.
 

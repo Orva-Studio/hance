@@ -4,7 +4,7 @@ import { homedir } from "os";
 import type {
   ColorSettingsOptions, HalationOptions, AberrationOptions,
   BloomOptions, GrainOptions, VignetteOptions, SplitToneOptions, ColorWheelsOptions, CameraShakeOptions,
-  FilmOptions, OutputCodec, LicenseContext, InputLutOptions,
+  FilmOptions, OutputCodec, LicenseContext, InputLutOptions, FadeColor,
 } from "./types";
 import { seedDefaults } from "./schema";
 
@@ -79,6 +79,12 @@ interface ApplyPresetResult extends EffectOptions {
   mergedParams: PresetData;
 }
 
+const FADE_COLORS: FadeColor[] = ["neutral", "warm", "green", "teal", "magenta"];
+
+function parseFadeColor(value: string | number | boolean | undefined): FadeColor {
+  return FADE_COLORS.includes(value as FadeColor) ? (value as FadeColor) : "neutral";
+}
+
 function unwrapLookParams(data: PresetData): PresetData {
   if (data.params && typeof data.params === "object") {
     return data.params as PresetData;
@@ -118,8 +124,7 @@ export function applyPreset(
     contrast: Number(merged["contrast"]),
     highlights: Number(merged["highlights"]),
     fade: Number(merged["fade"]),
-    fadeTint: Number(merged["fade-tint"]),
-    fadeHue: Number(merged["fade-hue"]),
+    fadeColor: parseFadeColor(merged["fade-color"]),
     whiteBalance: Number(merged["white-balance"]),
     tint: Number(merged["tint"]),
     subtractiveSat: Number(merged["subtractive-sat"]),
@@ -147,10 +152,8 @@ export function applyPreset(
 
   const grain: GrainOptions = {
     enabled: merged["no-grain"] ? false : true,
-    amount: Number(merged["grain-amount"]),
     size: Number(merged["grain-size"]),
     saturation: Number(merged["grain-saturation"]),
-    imageDefocus: Number(merged["grain-defocus"]),
     iso: Number(merged["grain-iso"]),
   };
 

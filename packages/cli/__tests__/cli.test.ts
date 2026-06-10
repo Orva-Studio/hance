@@ -76,11 +76,11 @@ describe("parseArgs", () => {
     const result = await parse([
       "input.mp4",
       "--bloom-amount", "0.3",
-      "--grain-amount", "0.2",
+      "--grain-iso", "800",
       "--vignette-amount", "0.4",
     ]);
     expect(result.bloom.amount).toBe(0.3);
-    expect(result.grain.amount).toBe(0.2);
+    expect(result.grain.iso).toBe(800);
     expect(result.vignette.amount).toBe(0.4);
   });
 

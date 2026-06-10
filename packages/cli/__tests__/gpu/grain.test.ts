@@ -14,14 +14,14 @@ const GRAIN_ONLY = {
   "no-camera-shake": true,
 };
 
-// Per-pixel monochrome grain, no defocus blur — keeps each pixel an independent
-// sample so band variance reflects grain amplitude directly.
+// Per-pixel monochrome grain at full strength (ISO 3200 = effAmount 1.0) —
+// keeps each pixel an independent sample so band variance reflects grain
+// amplitude directly.
 const GRAIN_PARAMS = {
   ...GRAIN_ONLY,
-  "grain-amount": 1.0,
+  "grain-iso": 3200,
   "grain-size": 0,
   "grain-saturation": 0,
-  "grain-defocus": 0,
 };
 
 const W = 64;
@@ -133,22 +133,13 @@ describe("luminance-dependent, ISO-scaled grain (headless sidecar)", () => {
   }, 30000);
 
   it("scales grain amplitude with virtual ISO", async () => {
-    const lowOut = await renderOnce({ ...GRAIN_PARAMS, "grain-amount": 0.25, "grain-iso": 100 });
-    const highOut = await renderOnce({ ...GRAIN_PARAMS, "grain-amount": 0.25, "grain-iso": 800 });
-    // grain-amount 0.25 keeps effAmount (amount * iso/400) below the clamp at
-    // both ISOs, so the midtone variance reflects the ISO multiplier directly.
+    const lowOut = await renderOnce({ ...GRAIN_PARAMS, "grain-iso": 200 });
+    const highOut = await renderOnce({ ...GRAIN_PARAMS, "grain-iso": 1600 });
+    // effAmount = iso/3200 stays below the clamp at both ISOs, so the midtone
+    // variance reflects the ISO ratio directly.
     const lowVar = bandVariance(lowOut, ...MID_BAND);
     const highVar = bandVariance(highOut, ...MID_BAND);
     expect(highVar).toBeGreaterThan(lowVar * 1.5);
-  }, 30000);
-
-  it("ISO 400 is the neutral baseline (no amplitude change)", async () => {
-    const baseline = await renderOnce(GRAIN_PARAMS);
-    const iso400 = await renderOnce({ ...GRAIN_PARAMS, "grain-iso": 400 });
-    const a = bandVariance(baseline, ...MID_BAND);
-    const b = bandVariance(iso400, ...MID_BAND);
-    // Identical effective amplitude and noise field → identical variance.
-    expect(Math.abs(a - b) / Math.max(a, b)).toBeLessThan(0.05);
   }, 30000);
 
   it("boils in place rather than sliding diagonally between frames", async () => {

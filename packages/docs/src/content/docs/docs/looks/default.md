@@ -32,5 +32,5 @@ Any preset you choose replaces the default as the base. CLI flags then override 
 
 ```bash
 # portra-400 as base, with extra grain
-hance video.mp4 --preset portra-400 --grain-amount 0.3
+hance video.mp4 --preset portra-400 --grain-iso 1000
 ```

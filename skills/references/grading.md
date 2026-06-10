@@ -25,14 +25,14 @@ read both, keep the winner.
 Presets applied raw often look punchy and digital. Classic film tends to want:
 
 - **Lifted blacks** — `--fade` ~0.04–0.1. Pure black reads digital. To tint the
-  lift (e.g. teal/green blacks like a music-video grade) add `--fade-tint` ~0.5–0.9
-  and `--fade-hue` (degrees; ~190 teal, ~150 green, ~30 warm). `--fade-tint 0` keeps
-  the classic neutral lift.
+  lift (e.g. teal/green blacks like a music-video grade) add `--fade-color`
+  (`warm`, `green`, `teal`, `magenta`). The default `neutral` keeps the classic
+  uncolored lift.
 - **Highlight rolloff** — `--highlights` ~0.12–0.25. Gentle shoulder, not clipped.
 - **Restrained saturation** — `--subtractive-sat` ~0.92–1.05. Oversaturation is the
   most common "digital" tell. The before image often looks "better" only because
   the after was pushed too hard.
-- **Grain** — `--grain-amount` ~0.26–0.34, `--grain-size 1`. Texture sells film.
+- **Grain** — `--grain-iso` ~800–1100, `--grain-size 1`. Texture sells film.
 - **Halation** — `--halation-amount` ~0.18–0.3 on highlights for a soft glow.
 - **Vignette** — `--vignette-amount` ~0.16–0.34 to frame the subject.
 - Drop **chromatic aberration** (`--no-aberration`) unless you want an obvious lens
@@ -51,7 +51,7 @@ Each hue walks a full hue→RGB wheel, so any value reaches any tone: ~180 lands
 highlights are independent, so non-complementary pairs (e.g. teal shadows + amber —
 not pure-complement — highlights) are easy. Highlights tint more subtly than shadows
 by default; raise `--split-tone-highlight-strength` (0–1, default 0.5) toward 1 for
-equal-strength highlight toning. Pair with a tinted lift (`--fade-tint`/`--fade-hue`) to get the alternating
+equal-strength highlight toning. Pair with a tinted lift (`--fade-color teal`) to get the alternating
 cool-blacks / warm-highlights look from a music-video grade.
 
 - **Use it** for action, landscape, cityscape — anything that benefits from cool/warm

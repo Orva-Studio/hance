@@ -27,6 +27,15 @@ describe("parseEffectFlags", () => {
     expect(() => parseEffectFlags(["--split-tone-hue", "400"])).toThrow(/between 0 and 360/);
   });
 
+  it("accepts deprecated grain and fade flags as legacy params for migration", () => {
+    const r = parseEffectFlags(["--grain-amount", "0.2", "--grain-defocus", "1", "--fade-tint", "0.7", "--fade-hue", "190"]);
+    expect(r.overrides["grain-amount"]).toBe(0.2);
+    expect(r.overrides["grain-defocus"]).toBe(1);
+    expect(r.overrides["fade-tint"]).toBe(0.7);
+    expect(r.overrides["fade-hue"]).toBe(190);
+    expect(() => parseEffectFlags(["--grain-amount", "2"])).toThrow(/between 0 and 1/);
+  });
+
   it("validates ranges", () => {
     expect(() => parseEffectFlags(["--exposure", "9"])).toThrow(/between -2 and 2/);
   });

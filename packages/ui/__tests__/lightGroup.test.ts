@@ -28,7 +28,7 @@ describe("isLightGroupActive", () => {
         "halation-amount": 0,
         "aberration": 0,
         "bloom-amount": 0,
-        "grain-amount": 0,
+        "grain-iso": 0,
         "vignette-amount": 0,
       }),
     ).toBe(false);

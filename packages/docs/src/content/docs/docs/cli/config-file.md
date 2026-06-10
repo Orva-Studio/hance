@@ -21,7 +21,7 @@ The config file is a JSON object where keys are flag names (without `--`):
 ```json
 {
   "preset": "portra-400",
-  "grain-amount": 0.2,
+  "grain-iso": 650,
   "no-camera-shake": true,
   "codec": "h264",
   "crf": 20

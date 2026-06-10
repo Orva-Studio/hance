@@ -13,3 +13,7 @@ export const HALATION_CHANNEL_SIGMA: readonly [number, number, number] =
 export const HALATION_PSF: readonly (readonly [number, number])[] =
   renderConstants.halationPsf as [number, number][];
 export const HALATION_RING: number = renderConstants.halationRing;
+/** Hue (degrees) of each named fade color; neutral has no entry (no tint). */
+export const FADE_COLOR_HUES: Record<string, number> = renderConstants.fadeColorHues;
+/** Tint strength applied to the black lift for any non-neutral fade color. */
+export const FADE_TINT_STRENGTH: number = renderConstants.fadeTintStrength;

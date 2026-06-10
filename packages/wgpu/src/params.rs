@@ -78,10 +78,17 @@ impl Params {
         let tint = self.num("tint", 0.0) / 100.0;
         let bleach = self.num("bleach-bypass", 0.0);
 
-        // Tintable black lift. Neutral (white) tint reproduces the legacy fade.
+        // Tintable black lift. The neutral fade color reproduces the legacy fade.
         let lift_base = fade * 0.05;
-        let fade_tint = self.num("fade-tint", 0.0);
-        let hue = hue_to_rgb(self.num("fade-hue", 0.0));
+        let consts = crate::render_constants::render_constants();
+        let fade_color = self
+            .map
+            .get("fade-color")
+            .and_then(|v| v.as_str())
+            .unwrap_or("neutral");
+        let fade_hue = consts.fade_color_hues.get(fade_color).copied();
+        let fade_tint = if fade_hue.is_some() { consts.fade_tint_strength } else { 0.0 };
+        let hue = hue_to_rgb(fade_hue.unwrap_or(0.0));
         let lift = [
             lift_base * (1.0 + fade_tint * (hue[0] - 1.0)),
             lift_base * (1.0 + fade_tint * (hue[1] - 1.0)),
@@ -135,20 +142,16 @@ impl Params {
     }
 
     pub fn grain_enabled(&self) -> bool {
-        !self.bool("no-grain", false) && self.num("grain-amount", 0.125) > 0.0
+        !self.bool("no-grain", false) && self.num("grain-iso", 400.0) > 0.0
     }
 
-    /// Grain uniform: [amount, size, saturation, defocus, time, iso, texelW, texelH]
-    pub fn grain_uniform(&self, frame_count: u32, width: u32, height: u32) -> [f32; 8] {
+    /// Grain uniform: [size, saturation, time, iso]
+    pub fn grain_uniform(&self, frame_count: u32) -> [f32; 4] {
         [
-            self.num("grain-amount", 0.125),
             self.num("grain-size", 0.0),
             self.num("grain-saturation", 0.3),
-            self.num("grain-defocus", 1.0),
             frame_count as f32,
             self.num("grain-iso", 400.0),
-            1.0 / width as f32,
-            1.0 / height as f32,
         ]
     }
 
@@ -265,17 +268,27 @@ mod tests {
     }
 
     #[test]
-    fn color_settings_fade_tint_teal() {
-        // A teal fade hue tints the lift toward green/blue, leaving red untouched.
+    fn color_settings_fade_color_teal() {
+        // A teal fade color tints the lift toward green/blue, away from red.
         let p = make_params(&[
             ("fade", serde_json::json!(1.0)),
-            ("fade-tint", serde_json::json!(1.0)),
-            ("fade-hue", serde_json::json!(180.0)),
+            ("fade-color", serde_json::json!("teal")),
         ]);
         let u = p.color_settings_uniform();
-        assert!((u[8] - 0.0).abs() < 0.001); // liftR: hue 180 has no red
-        assert!((u[9] - 0.05).abs() < 0.001); // liftG: full
-        assert!((u[10] - 0.05).abs() < 0.001); // liftB: full
+        assert!(u[8] < u[9] && u[8] < u[10]); // liftR suppressed vs green/blue
+        assert!((u[10] - 0.05).abs() < 0.001); // liftB: full (teal hue has full blue)
+    }
+
+    #[test]
+    fn color_settings_fade_color_neutral_matches_legacy_fade() {
+        let p = make_params(&[
+            ("fade", serde_json::json!(1.0)),
+            ("fade-color", serde_json::json!("neutral")),
+        ]);
+        let u = p.color_settings_uniform();
+        assert!((u[8] - 0.05).abs() < 0.001);
+        assert!((u[9] - 0.05).abs() < 0.001);
+        assert!((u[10] - 0.05).abs() < 0.001);
     }
 
     #[test]
@@ -361,16 +374,16 @@ mod tests {
     #[test]
     fn grain_uniform_iso_default_baseline() {
         let p = make_params(&[]);
-        let u = p.grain_uniform(0, 1920, 1080);
-        assert_eq!(u.len(), 8);
-        assert_eq!(u[5], 400.0); // ISO defaults to the neutral baseline
+        let u = p.grain_uniform(0);
+        assert_eq!(u.len(), 4);
+        assert_eq!(u[3], 400.0); // ISO defaults to the neutral baseline
     }
 
     #[test]
     fn grain_uniform_iso_override() {
         let p = make_params(&[("grain-iso", serde_json::json!(1600))]);
-        let u = p.grain_uniform(0, 1920, 1080);
-        assert_eq!(u[5], 1600.0);
+        let u = p.grain_uniform(0);
+        assert_eq!(u[3], 1600.0);
     }
 
     #[test]

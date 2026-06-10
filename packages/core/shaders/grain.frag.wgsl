@@ -2,18 +2,17 @@
 @group(0) @binding(1) var samp: sampler;
 
 struct GrainParams {
-  amount: f32,
   size: f32,
   saturation: f32,
-  imageDefocus: f32,
   time: f32,
   iso: f32,
-  texelSize: vec2f,
 };
 @group(0) @binding(2) var<uniform> params: GrainParams;
 
-// ISO that maps to a 1.0 amplitude multiplier — the neutral baseline.
-const ISO_BASELINE: f32 = 400.0;
+// ISO that maps to full (1.0) overlay strength. ISO is the single intensity
+// control: the legacy default (amount 0.125 at ISO 400) lands at the same
+// effective strength, 400/3200 = 0.125.
+const ISO_MAX: f32 = 3200.0;
 // Grain amplitude weighting at the tonal extremes (linear luma).
 const SHADOW_GAIN: f32 = 1.0;
 const HIGHLIGHT_GAIN: f32 = 0.35;
@@ -64,27 +63,12 @@ fn luminance_weight(color: vec3f) -> f32 {
 
 @fragment
 fn fs(@location(0) uv: vec2f) -> @location(0) vec4f {
-  var color = vec3f(0.0);
-  if (params.imageDefocus > 0.0) {
-    let r = params.imageDefocus * 0.5;
-    var total = 0.0;
-    for (var x = -1; x <= 1; x++) {
-      for (var y = -1; y <= 1; y++) {
-        let off = vec2f(f32(x), f32(y)) * params.texelSize * r;
-        color += textureSample(src, samp, uv + off).rgb;
-        total += 1.0;
-      }
-    }
-    color /= total;
-  } else {
-    color = textureSample(src, samp, uv).rgb;
-  }
+  let color = textureSample(src, samp, uv).rgb;
   let dims = vec2f(textureDimensions(src));
   // Weight grain by linear luminance so it clumps in shadows and stays fine in
-  // highlights, then scale the overall strength by the virtual ISO.
+  // highlights; overall strength comes straight from the virtual ISO.
   let n = grain_noise(uv * dims, params.time) * luminance_weight(color);
-  let isoScale = params.iso / ISO_BASELINE;
-  let effAmount = clamp(params.amount * isoScale, 0.0, 1.0);
+  let effAmount = clamp(params.iso / ISO_MAX, 0.0, 1.0);
   let overlay = select(
     2.0 * color * (0.5 + n * 0.5),
     1.0 - 2.0 * (1.0 - color) * (0.5 - n * 0.5),

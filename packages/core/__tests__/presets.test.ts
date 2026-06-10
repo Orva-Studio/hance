@@ -31,7 +31,7 @@ describe("applyPreset", () => {
     expect(opts.halation.amount).toBe(0.25);
     expect(opts.aberration.amount).toBe(0.3);
     expect(opts.bloom.amount).toBe(0.25);
-    expect(opts.grain.amount).toBe(0.125);
+    expect(opts.grain.iso).toBe(400);
     expect(opts.vignette.amount).toBe(0.25);
     expect(opts.cameraShake.amount).toBe(0.25);
     expect(opts.encodePreset).toBe("medium");

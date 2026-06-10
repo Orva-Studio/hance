@@ -70,6 +70,52 @@ describe("migrateLegacyParams", () => {
     expect(merged["split-tone-hue"]).toBeUndefined();
     expect(merged["split-tone-mode"]).toBeUndefined();
   });
+
+  test("legacy grain-amount maps to the equivalent intensity ISO", () => {
+    // Old shader: amount * iso/400. New: iso/3200. Default amount 0.125 at
+    // the old default ISO 400 must land back on ISO 400.
+    const out = migrateLegacyParams({ "grain-amount": 0.125 });
+    expect(out["grain-iso"]).toBe(400);
+    expect(out["grain-amount"]).toBeUndefined();
+  });
+
+  test("legacy grain-amount combines with an old multiplier-style ISO", () => {
+    const out = migrateLegacyParams({ "grain-amount": 0.25, "grain-iso": 800 });
+    expect(out["grain-iso"]).toBe(1600); // 8 * 0.25 * 800
+  });
+
+  test("migrated grain ISO snaps to the 50 grid and clamps to range", () => {
+    expect(migrateLegacyParams({ "grain-amount": 0.03 })["grain-iso"]).toBe(100);
+    expect(migrateLegacyParams({ "grain-amount": 0.005 })["grain-iso"]).toBe(50);
+    expect(migrateLegacyParams({ "grain-amount": 1, "grain-iso": 3200 })["grain-iso"]).toBe(3200);
+  });
+
+  test("grain-defocus is dropped", () => {
+    const out = migrateLegacyParams({ "grain-defocus": 1 });
+    expect(out["grain-defocus"]).toBeUndefined();
+    expect(out["grain-iso"]).toBeUndefined(); // no amount → ISO untouched
+  });
+
+  test("weak or absent legacy fade-tint maps to neutral fade color", () => {
+    expect(migrateLegacyParams({ "fade-tint": 0, "fade-hue": 190 })["fade-color"]).toBe("neutral");
+    expect(migrateLegacyParams({ "fade-hue": 190 })["fade-color"]).toBe("neutral");
+  });
+
+  test("strong legacy fade tint maps to the nearest named fade color", () => {
+    expect(migrateLegacyParams({ "fade-tint": 0.7, "fade-hue": 190 })["fade-color"]).toBe("teal");
+    expect(migrateLegacyParams({ "fade-tint": 0.7, "fade-hue": 150 })["fade-color"]).toBe("green");
+    expect(migrateLegacyParams({ "fade-tint": 0.7, "fade-hue": 20 })["fade-color"]).toBe("warm");
+    expect(migrateLegacyParams({ "fade-tint": 0.7, "fade-hue": 350 })["fade-color"]).toBe("warm"); // wraps
+    const out = migrateLegacyParams({ "fade-tint": 0.7, "fade-hue": 300 });
+    expect(out["fade-color"]).toBe("magenta");
+    expect(out["fade-tint"]).toBeUndefined();
+    expect(out["fade-hue"]).toBeUndefined();
+  });
+
+  test("explicit fade-color in the same layer wins over migrated value", () => {
+    const out = migrateLegacyParams({ "fade-tint": 0.7, "fade-hue": 190, "fade-color": "warm" });
+    expect(out["fade-color"]).toBe("warm");
+  });
 });
 
 describe("seedDefaults", () => {

@@ -74,7 +74,7 @@ Hance ships with looks modeled after real film stocks. Apply any with `--preset 
 
 ```bash
 hance video.mp4 --preset cinestill-800t
-hance video.mp4 --preset portra-400 --grain-amount 0.3
+hance video.mp4 --preset portra-400 --grain-iso 1000
 ```
 
 List all available looks:

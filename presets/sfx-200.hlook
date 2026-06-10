@@ -20,7 +20,7 @@
     "aberration": 0,
     "bloom-amount": 0.35,
     "bloom-radius": 14,
-    "grain-amount": 0.12,
+    "grain-iso": 400,
     "grain-size": 0.8,
     "grain-softness": 0.16,
     "grain-saturation": 0,

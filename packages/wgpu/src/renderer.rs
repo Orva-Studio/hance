@@ -207,7 +207,7 @@ impl GpuRenderer {
         let scatter_blur_ub2 = passes::create_uniform_buffer(&device, 48);
         let combine_ub = passes::create_uniform_buffer(&device, 16);
         let aberration_ub = passes::create_uniform_buffer(&device, 16);
-        let grain_ub = passes::create_uniform_buffer(&device, 32);
+        let grain_ub = passes::create_uniform_buffer(&device, 16);
         let vignette_ub = passes::create_uniform_buffer(&device, 16);
         let split_tone_ub = passes::create_uniform_buffer(&device, 48);
         let color_wheels_ub = passes::create_uniform_buffer(&device, 48);
@@ -515,7 +515,7 @@ impl GpuRenderer {
 
         // --- Grain ---
         if self.params.grain_enabled() {
-            self.write_uniform(&self.grain_ub, &self.params.grain_uniform(self.frame_count, self.width, self.height));
+            self.write_uniform(&self.grain_ub, &self.params.grain_uniform(self.frame_count));
             let bg = passes::make_std_bind_group(
                 &self.device, &self.std_layout,
                 &current_tex!().create_view(&TextureViewDescriptor::default()),

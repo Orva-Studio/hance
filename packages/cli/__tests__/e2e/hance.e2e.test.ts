@@ -54,7 +54,7 @@ describe("e2e: hance", () => {
     expect(stdout).toContain("hance <input>");
     expect(stdout).toContain("--output");
     expect(stdout).toContain("--bloom-amount");
-    expect(stdout).toContain("--grain-amount");
+    expect(stdout).toContain("--grain-iso");
   });
 
   it("exits with error on no input", async () => {
