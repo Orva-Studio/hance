@@ -61,6 +61,22 @@ cool-blacks / warm-highlights look from a music-video grade.
   (`--no-split-tone`, nudge `--white-balance` warmer).
 - Always verify direction by swapping the shadow/highlight hues and reading both.
 
+## Color wheels (lift/gamma/gain)
+
+Per-channel control over shadows (`--lift-r/g/b`, offset), midtones (`--gamma-r/g/b`,
+power, >1 brightens), and highlights (`--gain-r/g/b`, multiply). Neutral by default;
+disable with `--no-color-wheels`.
+
+- **Reach for wheels, not split tone, for corrective work**: neutralizing a cast in
+  one tonal zone, matching shot-to-shot balance, or cooling/warming only the
+  highlights. Split tone is the stylized hue-toning tool; wheels are surgical.
+- **Stay subtle**: lift ±0.02–0.06, gain 0.92–1.10, gamma 0.9–1.15. The flag ranges
+  go far beyond what reads as film.
+- Teal-orange via wheels: `--lift-b 0.04 --lift-r -0.02 --gain-r 1.08 --gain-b 0.94`.
+- **One owner per zone**: a tinted fade, split-tone shadows, and a blue lift all
+  push the blacks at once and triple-tint them. Pick which tool owns each zone and
+  zero the others before judging the result.
+
 ## Common artifacts and fixes
 
 | Symptom | Cause | Fix |
