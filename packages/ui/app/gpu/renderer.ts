@@ -8,7 +8,7 @@ import { createFullscreenPipeline, createTexture, runPass } from "./passes";
 import { getSplitToneTintValues, hueToRgb } from "./splitToneMath";
 import { isColorWheelsActive, colorWheelsUniform } from "./colorWheels";
 import { isLightGroupActive } from "./lightGroup";
-import { LUT_SIZE, generateLut, isInputLutActive, HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING } from "@hance/core";
+import { LUT_SIZE, generateLut, isInputLutActive, HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING, FADE_COLOR_HUES, FADE_TINT_STRENGTH } from "@hance/core";
 import { chooseExportSize } from "../mediaSizing";
 
 export interface PreviewParams {
@@ -215,7 +215,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const combineUB = createUniformBuffer(device, 16);
   const blendUB = createUniformBuffer(device, 16);
   const aberrationUB = createUniformBuffer(device, 16);
-  const grainUB = createUniformBuffer(device, 32); // 8 floats
+  const grainUB = createUniformBuffer(device, 16); // 4 floats
   const vignetteUB = createUniformBuffer(device, 16);
   const splitToneUB = createUniformBuffer(device, 48);
   const colorWheelsUB = createUniformBuffer(device, 48);
@@ -379,10 +379,11 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
       const wb = num("white-balance");
       const tint = num("tint") / 100;
       const bleach = num("bleach-bypass");
-      // Tintable black lift; neutral (white) tint reproduces the legacy fade.
+      // Tintable black lift; the neutral fade color reproduces the legacy fade.
       const liftBase = fade * 0.05;
-      const fadeTint = num("fade-tint");
-      const hue = hueToRgb(num("fade-hue"));
+      const fadeHue = FADE_COLOR_HUES[String(params["fade-color"])];
+      const fadeTint = fadeHue === undefined ? 0 : FADE_TINT_STRENGTH;
+      const hue = hueToRgb(fadeHue ?? 0);
       const lift = hue.map((ch) => liftBase * (1 + fadeTint * (ch - 1)));
       device.queue.writeBuffer(colorUB, 0, new Float32Array([contrast, brightness, saturation, gamma, wb, tint, bleach, 0, lift[0], lift[1], lift[2], 0]));
       const bg = makeStdBindGroup(colorInput, colorUB);
@@ -496,17 +497,13 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
 
     // --- Grain ---
     if (params["no-grain"] !== true) {
-      const amount = num("grain-amount");
-      if (amount > 0) {
+      const iso = num("grain-iso", 400);
+      if (iso > 0) {
         device.queue.writeBuffer(grainUB, 0, new Float32Array([
-          amount,
           num("grain-size"),
           num("grain-saturation"),
-          num("grain-defocus"),
           frameCount,
-          num("grain-iso", 400),
-          1.0 / t.w,
-          1.0 / t.h,
+          iso,
         ]));
         const bg = makeStdBindGroup(current, grainUB);
         runPass(encoder, grainPipeline, bg, other.createView());

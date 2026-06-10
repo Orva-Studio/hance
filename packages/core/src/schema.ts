@@ -1,3 +1,5 @@
+import { FADE_COLOR_HUES } from "./render-constants";
+
 /** Sugar flag that maps to a fixed value of another option, e.g. `--vlog`. */
 export interface OptionAlias {
   flag: string;
@@ -70,8 +72,7 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
       { key: "contrast", label: "Contrast", type: "range", min: 0, max: 3, step: 0.01, default: 1, description: "Contrast multiplier" },
       { key: "highlights", label: "Highlights", type: "range", min: -1, max: 1, step: 0.01, default: 0, description: "Highlight compression" },
       { key: "fade", label: "Fade", type: "range", min: 0, max: 1, step: 0.01, default: 0, description: "Fade / lift blacks" },
-      { key: "fade-tint", label: "Fade Tint", type: "range", min: 0, max: 1, step: 0.01, default: 0, description: "Tint the lifted blacks toward the fade hue" },
-      { key: "fade-hue", label: "Fade Hue", type: "range", min: 0, max: 360, step: 1, default: 0, description: "Hue of the black lift in degrees (e.g. ~190 for teal)" },
+      { key: "fade-color", label: "Fade Color", type: "select", choices: ["neutral", "warm", "green", "teal", "magenta"], default: "neutral", description: "Tint of the lifted blacks" },
       { key: "white-balance", label: "White Balance", type: "range", min: 1000, max: 15000, step: 100, default: 6500, description: "Color temperature in Kelvin" },
       { key: "tint", label: "Tint", type: "range", min: -100, max: 100, step: 1, default: 0, description: "Green-magenta tint" },
       { key: "subtractive-sat", label: "Subtractive Saturation", type: "range", min: 0, max: 3, step: 0.01, default: 1, description: "Subtractive saturation" },
@@ -111,11 +112,9 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
     label: "Grain",
     enableKey: "no-grain",
     options: [
-      { key: "grain-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.001, default: 0.125, description: "Grain intensity" },
       { key: "grain-size", label: "Size", type: "range", min: 0, max: 5, step: 0.1, default: 0, description: "Grain particle size (0 = finest, higher = coarser)" },
       { key: "grain-saturation", label: "Saturation", type: "range", min: 0, max: 1, step: 0.01, default: 0.3, description: "Grain color saturation" },
-      { key: "grain-defocus", label: "Image Defocus", type: "range", min: 0, max: 5, step: 0.1, default: 1, description: "Image defocus amount" },
-      { key: "grain-iso", label: "ISO", type: "range", min: 50, max: 3200, step: 50, default: 400, description: "Virtual ISO; scales grain amplitude (400 = neutral)" },
+      { key: "grain-iso", label: "ISO", type: "range", min: 50, max: 3200, step: 50, default: 400, description: "Grain intensity as virtual film speed (50 = subtle, 3200 = heavy)" },
     ],
   },
   {
@@ -210,8 +209,23 @@ type ParamLayer = Record<string, string | number | boolean | undefined>;
  * highlights take the same hue (natural) or its opposite (complementary).
  * Legacy complementary tinted highlights at the full shadow scale, so it also
  * sets `split-tone-highlight-strength` to 1 (vs the 0.5 default).
+ *
+ * `grain-amount` (+ old multiplier-style `grain-iso`) → intensity-driving
+ * `grain-iso`. The old shader applied amount * iso/400; the new one applies
+ * iso/3200, so the equivalent ISO is 8 * amount * oldIso, snapped to the
+ * 50-step grid. `grain-defocus` is dropped (the defocus pre-blur is gone).
+ *
+ * `fade-tint` + `fade-hue` → named `fade-color`: neutral when the tint was
+ * weak (< 0.25), else the named color whose hue is circularly nearest.
  */
 export function migrateLegacyParams(layer: ParamLayer): ParamLayer {
+  layer = migrateSplitTone(layer);
+  layer = migrateGrain(layer);
+  layer = migrateFade(layer);
+  return layer;
+}
+
+function migrateSplitTone(layer: ParamLayer): ParamLayer {
   const hue = layer["split-tone-hue"];
   const mode = layer["split-tone-mode"];
   if (hue === undefined && mode === undefined) return layer;
@@ -222,5 +236,40 @@ export function migrateLegacyParams(layer: ParamLayer): ParamLayer {
   out["split-tone-shadow-hue"] ??= shadowHue;
   out["split-tone-highlight-hue"] ??= complementary ? (shadowHue + 180) % 360 : shadowHue;
   if (complementary) out["split-tone-highlight-strength"] ??= 1;
+  return out;
+}
+
+function migrateGrain(layer: ParamLayer): ParamLayer {
+  const amount = layer["grain-amount"];
+  if (amount === undefined && layer["grain-defocus"] === undefined) return layer;
+
+  const { "grain-amount": _amount, "grain-defocus": _defocus, ...out } = layer;
+  if (typeof amount === "number") {
+    const oldIso = typeof out["grain-iso"] === "number" ? (out["grain-iso"] as number) : 400;
+    const iso = Math.round((8 * amount * oldIso) / 50) * 50;
+    out["grain-iso"] = Math.min(3200, Math.max(50, iso));
+  }
+  return out;
+}
+
+function migrateFade(layer: ParamLayer): ParamLayer {
+  const tint = layer["fade-tint"];
+  const hue = layer["fade-hue"];
+  if (tint === undefined && hue === undefined) return layer;
+
+  const { "fade-tint": _tint, "fade-hue": _hue, ...out } = layer;
+  const strength = typeof tint === "number" ? tint : 0;
+  if (strength < 0.25) {
+    out["fade-color"] ??= "neutral";
+    return out;
+  }
+  const hueDeg = typeof hue === "number" ? hue : 0;
+  let best = "warm";
+  let bestDist = Infinity;
+  for (const [name, h] of Object.entries(FADE_COLOR_HUES)) {
+    const d = Math.abs(((hueDeg - h + 540) % 360) - 180);
+    if (d < bestDist) { bestDist = d; best = name; }
+  }
+  out["fade-color"] ??= best;
   return out;
 }

@@ -56,6 +56,22 @@ const LEGACY_FLAGS = new Map<string, { hint: string; parse: (val: string, flag: 
     hint: "use --split-tone-shadow-hue / --split-tone-highlight-hue",
     parse: (val, flag) => oneOf(val, flag, ["natural", "complementary"] as const),
   }],
+  ["--grain-amount", {
+    hint: "use --grain-iso",
+    parse: (val, flag) => parseNum(val, flag, 0, 1),
+  }],
+  ["--grain-defocus", {
+    hint: "use --grain-iso",
+    parse: (val, flag) => parseNum(val, flag, 0, 5),
+  }],
+  ["--fade-tint", {
+    hint: "use --fade-color",
+    parse: (val, flag) => parseNum(val, flag, 0, 1),
+  }],
+  ["--fade-hue", {
+    hint: "use --fade-color",
+    parse: (val, flag) => parseNum(val, flag, 0, 360),
+  }],
 ]);
 
 const KNOWN_FLAGS = new Set<string>([

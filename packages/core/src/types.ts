@@ -3,14 +3,15 @@ export interface InputLutOptions {
   profile: "rec709" | "vlog";
 }
 
+export type FadeColor = "neutral" | "warm" | "green" | "teal" | "magenta";
+
 export interface ColorSettingsOptions {
   enabled: boolean;
   exposure: number;
   contrast: number;
   highlights: number;
   fade: number;
-  fadeTint: number;
-  fadeHue: number;
+  fadeColor: FadeColor;
   whiteBalance: number;
   tint: number;
   subtractiveSat: number;
@@ -38,10 +39,8 @@ export interface CameraShakeOptions {
 
 export interface GrainOptions {
   enabled: boolean;
-  amount: number;
   size: number;
   saturation: number;
-  imageDefocus: number;
   iso: number;
 }
 

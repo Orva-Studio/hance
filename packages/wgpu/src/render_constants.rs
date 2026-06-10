@@ -17,6 +17,10 @@ pub struct RenderConstants {
     pub halation_psf: [[f32; 2]; 2],
     #[serde(rename = "halationRing")]
     pub halation_ring: f32,
+    #[serde(rename = "fadeColorHues")]
+    pub fade_color_hues: std::collections::HashMap<String, f32>,
+    #[serde(rename = "fadeTintStrength")]
+    pub fade_tint_strength: f32,
 }
 
 const RENDER_CONSTANTS_JSON: &str = include_str!("../../core/constants/render.json");

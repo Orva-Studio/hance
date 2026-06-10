@@ -32,7 +32,7 @@ hance video.mp4 -o output.mp4
 Override any parameter on top of a preset:
 
 ```bash
-hance video.mp4 --preset portra-400 --grain-amount 0.3 --vignette-amount 0.5
+hance video.mp4 --preset portra-400 --grain-iso 1000 --vignette-amount 0.5
 ```
 
 ## Disable an effect

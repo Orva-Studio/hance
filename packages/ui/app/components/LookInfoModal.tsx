@@ -17,7 +17,7 @@ const PRIMARY_KEY: Record<string, string> = {
   halation: "halation-amount",
   aberration: "aberration",
   bloom: "bloom-amount",
-  grain: "grain-amount",
+  grain: "grain-iso",
   vignette: "vignette-amount",
   splitTone: "split-tone-amount",
   cameraShake: "camera-shake-amount",

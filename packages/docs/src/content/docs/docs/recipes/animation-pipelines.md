@@ -44,7 +44,7 @@ hance <output-from-custom_config>/MyScene.mp4 --preset portra-400 -o MyScene_fil
 Animation renders are often crisp and high-contrast. A subtle look reads better than a heavy one: start with a low grain amount and a gentle halation, then build up:
 
 ```bash
-hance render.mp4 --preset portra-400 --grain-amount 0.2 --halation-amount 0.3
+hance render.mp4 --preset portra-400 --grain-iso 650 --halation-amount 0.3
 ```
 :::
 

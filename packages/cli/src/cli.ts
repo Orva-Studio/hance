@@ -58,7 +58,7 @@ Examples:
   hance clip.mov                                  default look, writes clip_hanced.mov
   hance clip.mov -o out.mp4 --preset portra-400   apply a named preset to a chosen output
   hance *.jpg -o ./graded/ --export high          batch images into a directory, high-quality export
-  hance shot.mov --grain-amount 0.3 --no-halation tweak one effect, disable another
+  hance shot.mov --grain-iso 800 --no-halation   tweak one effect, disable another
   hance shot.mov --exposure 0.5 --contrast 1.2    quick color grade
   hance preset save mylook --bleach-bypass 0.4    save current flags as a reusable preset
 
