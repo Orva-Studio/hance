@@ -57,7 +57,7 @@ Browse and apply any of the 40+ built-in film stock looks. Click a look to previ
 
 ## Adjustments panel
 
-Fine-tune every effect parameter with sliders. All the same controls available on the CLI (colour, halation, bloom, grain, vignette, split tone, aberration, and camera shake), grouped into collapsible sections.
+Fine-tune every effect parameter with sliders. All the same controls available on the CLI (colour, halation, bloom, grain, vignette, split tone, aberration, and camera shake), grouped into collapsible sections. Color wheels get a dedicated lift/gamma/gain wheel control: pick a tonal zone tab, drag the puck to set the hue and strength, and use the master slider for overall level. A per-tab reset button clears any zone you have moved off neutral.
 
 *<!-- Screenshot: adjustments panel with sliders -->*
 

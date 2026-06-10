@@ -69,9 +69,10 @@ Every file passes through the same effect chain:
 5. Bloom (soft light diffusion)
 6. Film grain
 7. Vignette
-8. Split toning
-9. Camera shake
+8. Color wheels (lift/gamma/gain)
+9. Split toning
+10. Camera shake
 
-The optical effects (halation, chromatic aberration, bloom, grain, and vignette) run in **linear light** (the chain is bracketed by sRGB↔linear conversions, with 16-bit float intermediates) so glows and blurs spread physically correct energy. Color grading, split toning, and camera shake stay in perceptual (gamma) space.
+The optical effects (halation, chromatic aberration, bloom, grain, and vignette) run in **linear light** (the chain is bracketed by sRGB↔linear conversions, with 16-bit float intermediates) so glows and blurs spread physically correct energy. Color grading, color wheels, split toning, and camera shake stay in perceptual (gamma) space.
 
 All effects compose into a single GPU render graph, with no intermediate files and no re-encoding chains.
