@@ -111,6 +111,25 @@ Disable with `--no-split-tone`. Note: split tone amount defaults to `0`, so it's
 The removed `--split-tone-hue` and `--split-tone-mode` flags (and the matching keys in older `.hlook` files) are still accepted and migrate automatically: shadows take the hue, highlights take the same hue (natural) or its opposite (complementary), and complementary sets highlight strength to `1` to keep the original look.
 :::
 
+## Color wheels
+
+Three-way color grading with independent RGB control per tonal zone, in the
+style of a colorist's lift/gamma/gain wheels. All values default to neutral,
+so the effect is a no-op until you move something.
+
+| Flag | Range | Default | Description |
+|------|-------|---------|-------------|
+| `--lift-r` / `--lift-g` / `--lift-b` | -1–1 | `0` | Shadow offset per channel, falling off toward highlights |
+| `--gamma-r` / `--gamma-g` / `--gamma-b` | 0.2–5 | `1` | Midtone power per channel; values above 1 brighten midtones |
+| `--gain-r` / `--gain-g` / `--gain-b` | 0–4 | `1` | Highlight multiply per channel |
+
+Disable with `--no-color-wheels`.
+
+```bash
+# Classic teal-orange: cool shadows, warm highlights
+hance input.mp4 --lift-b 0.04 --lift-r -0.02 --gain-r 1.08 --gain-b 0.94
+```
+
 ## Camera shake
 
 Adds subtle motion for a handheld feel.
