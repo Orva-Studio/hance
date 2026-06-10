@@ -63,6 +63,19 @@ export interface SplitToneOptions {
   pivot: number;
 }
 
+export interface ColorWheelsOptions {
+  enabled: boolean;
+  liftR: number;
+  liftG: number;
+  liftB: number;
+  gammaR: number;
+  gammaG: number;
+  gammaB: number;
+  gainR: number;
+  gainG: number;
+  gainB: number;
+}
+
 export interface BloomOptions {
   enabled: boolean;
   amount: number;
@@ -85,6 +98,7 @@ export interface FilmOptions {
   grain: GrainOptions;
   vignette: VignetteOptions;
   splitTone: SplitToneOptions;
+  colorWheels: ColorWheelsOptions;
   cameraShake: CameraShakeOptions;
 }
 

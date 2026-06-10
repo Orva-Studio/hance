@@ -141,6 +141,23 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
     ],
   },
   {
+    key: "colorWheels",
+    label: "Color Wheels",
+    enableKey: "no-color-wheels",
+    enableHelp: "Disable color wheels (lift/gamma/gain)",
+    options: [
+      { key: "lift-r", label: "Lift R", type: "range", min: -1, max: 1, step: 0.01, default: 0, description: "Shadow offset, red channel" },
+      { key: "lift-g", label: "Lift G", type: "range", min: -1, max: 1, step: 0.01, default: 0, description: "Shadow offset, green channel" },
+      { key: "lift-b", label: "Lift B", type: "range", min: -1, max: 1, step: 0.01, default: 0, description: "Shadow offset, blue channel" },
+      { key: "gamma-r", label: "Gamma R", type: "range", min: 0.2, max: 5, step: 0.01, default: 1, description: "Midtone power, red channel" },
+      { key: "gamma-g", label: "Gamma G", type: "range", min: 0.2, max: 5, step: 0.01, default: 1, description: "Midtone power, green channel" },
+      { key: "gamma-b", label: "Gamma B", type: "range", min: 0.2, max: 5, step: 0.01, default: 1, description: "Midtone power, blue channel" },
+      { key: "gain-r", label: "Gain R", type: "range", min: 0, max: 4, step: 0.01, default: 1, description: "Highlight multiply, red channel" },
+      { key: "gain-g", label: "Gain G", type: "range", min: 0, max: 4, step: 0.01, default: 1, description: "Highlight multiply, green channel" },
+      { key: "gain-b", label: "Gain B", type: "range", min: 0, max: 4, step: 0.01, default: 1, description: "Highlight multiply, blue channel" },
+    ],
+  },
+  {
     key: "cameraShake",
     label: "Camera Shake",
     enableKey: "no-camera-shake",

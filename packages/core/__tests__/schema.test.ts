@@ -98,3 +98,33 @@ describe("seedDefaults", () => {
     }
   });
 });
+
+describe("colorWheels schema", () => {
+  const group = EFFECT_SCHEMA.find(g => g.key === "colorWheels")!;
+
+  test("group exists with enable key", () => {
+    expect(group).toBeDefined();
+    expect(group.enableKey).toBe("no-color-wheels");
+    expect(group.options.length).toBe(9);
+  });
+
+  test("all nine options are ranges with neutral defaults", () => {
+    const expectNeutral = (key: string, def: number) => {
+      const opt = group.options.find(o => o.key === key)!;
+      expect(opt.type).toBe("range");
+      expect(opt.default).toBe(def);
+    };
+    for (const ch of ["r", "g", "b"]) {
+      expectNeutral(`lift-${ch}`, 0);
+      expectNeutral(`gamma-${ch}`, 1);
+      expectNeutral(`gain-${ch}`, 1);
+    }
+  });
+
+  test("getDefaults seeds neutral color wheel values", () => {
+    const d = getDefaults();
+    expect(d["lift-r"]).toBe(0);
+    expect(d["gamma-g"]).toBe(1);
+    expect(d["gain-b"]).toBe(1);
+  });
+});
