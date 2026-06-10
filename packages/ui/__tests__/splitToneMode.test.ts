@@ -18,3 +18,11 @@ test("inferMode classifies the current hue pair", () => {
   expect(inferMode(200, 20)).toBe("complementary"); // wrapped
   expect(inferMode(180, 40)).toBe("custom");
 });
+
+test("inferMode is wrap-aware and tolerant of float hues", () => {
+  expect(inferMode(0, 360)).toBe("natural"); // same hue across the wrap
+  expect(inferMode(360, 180)).toBe("complementary");
+  expect(inferMode(180, 360)).toBe("complementary");
+  expect(inferMode(20.0001, 20)).toBe("natural"); // hand-edited float look
+  expect(inferMode(20, 201)).toBe("custom"); // a whole degree off is custom
+});

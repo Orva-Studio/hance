@@ -101,10 +101,15 @@ Applies color toning to shadows and highlights.
 | `--split-tone-amount` | 0–1 | `0` | Toning amount |
 | `--split-tone-shadow-hue` | 0–360 | `30` | Shadow hue in degrees |
 | `--split-tone-highlight-hue` | 0–360 | `210` | Highlight hue in degrees |
+| `--split-tone-highlight-strength` | 0–1 | `0.5` | Highlight tint strength relative to shadows |
 | `--split-tone-pivot` | 0–1 | `0.3` | Shadow/highlight pivot |
 | `--split-tone-protect-neutrals` | boolean | `false` | Protect neutral colors |
 
 Disable with `--no-split-tone`. Note: split tone amount defaults to `0`, so it's effectively off unless you set it.
+
+:::note
+The removed `--split-tone-hue` and `--split-tone-mode` flags (and the matching keys in older `.hlook` files) are still accepted and migrate automatically: shadows take the hue, highlights take the same hue (natural) or its opposite (complementary), and complementary sets highlight strength to `1` to keep the original look.
+:::
 
 ## Camera shake
 

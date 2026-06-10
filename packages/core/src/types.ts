@@ -58,6 +58,8 @@ export interface SplitToneOptions {
   /** Independent per-band hues in degrees. */
   shadowHueAngle: number;
   highlightHueAngle: number;
+  /** Highlight tint strength as a fraction of the shadow scale (0–1). */
+  highlightStrength: number;
   pivot: number;
 }
 

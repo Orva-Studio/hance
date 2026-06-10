@@ -28,6 +28,16 @@ test("highlight hue tints highlights from its own hue at the subtler 0.15 scale"
   expect(v.highlightB).toBeCloseTo(-0.05, 5);
 });
 
+test("highlightStrength scales the highlight tint relative to shadows", () => {
+  // Strength 1 = full shadow scale (0.3) — the legacy complementary look.
+  const full = getSplitToneTintValues({ amount: 1, shadowHueAngle: 180, highlightHueAngle: 0, highlightStrength: 1, pivot: 0.3 });
+  expect(full.highlightR).toBeCloseTo(0.2, 5); // 2/3 * 0.3
+  // Strength 0 removes the highlight tint entirely; shadows unaffected.
+  const zero = getSplitToneTintValues({ amount: 1, shadowHueAngle: 180, highlightHueAngle: 0, highlightStrength: 0, pivot: 0.3 });
+  expect(zero.highlightR).toBeCloseTo(0, 5);
+  expect(zero.shadowR).toBeCloseTo(-0.2, 5);
+});
+
 test("shadow and highlight hues are fully independent", () => {
   // Teal shadows (180) + amber highlights (40): a non-complementary pair.
   const v = getSplitToneTintValues({ amount: 1, shadowHueAngle: 180, highlightHueAngle: 40, pivot: 0.3 });

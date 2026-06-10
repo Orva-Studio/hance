@@ -171,16 +171,18 @@ impl Params {
         let protect = if self.bool("split-tone-protect-neutrals", false) { 1.0 } else { 0.0 };
 
         // Shadows and highlights tint independently from their own hues.
-        // Highlights use a subtler scale (0.15 vs 0.3) — film highlights tint less.
+        // Highlight strength is a fraction of the shadow scale; the 0.5 default
+        // gives the subtler tint film highlights carry.
         let shadow_tint = centered_tint(self.num("split-tone-shadow-hue", 30.0));
         let shadow_r = shadow_tint[0] * amount * 0.3;
         let shadow_g = shadow_tint[1] * amount * 0.3;
         let shadow_b = shadow_tint[2] * amount * 0.3;
 
+        let highlight_scale = 0.3 * self.num("split-tone-highlight-strength", 0.5);
         let highlight_tint = centered_tint(self.num("split-tone-highlight-hue", 210.0));
-        let highlight_r = highlight_tint[0] * amount * 0.15;
-        let highlight_g = highlight_tint[1] * amount * 0.15;
-        let highlight_b = highlight_tint[2] * amount * 0.15;
+        let highlight_r = highlight_tint[0] * amount * highlight_scale;
+        let highlight_g = highlight_tint[1] * amount * highlight_scale;
+        let highlight_b = highlight_tint[2] * amount * highlight_scale;
         let mid_r = pivot * -0.1;
 
         [
@@ -303,6 +305,21 @@ mod tests {
         assert!((u[4] - 0.1).abs() < 0.001); // red highlight: 2/3 * 0.15
         assert!((u[5] - (-0.05)).abs() < 0.001); // highlightB
         assert!((u[6] - (-0.05)).abs() < 0.001); // highlightG
+    }
+
+    #[test]
+    fn split_tone_highlight_strength_full_matches_legacy_complementary() {
+        // Strength 1 = the full shadow scale (0.3), preserving the look of
+        // legacy complementary presets.
+        let p = make_params(&[
+            ("split-tone-amount", serde_json::json!(1.0)),
+            ("split-tone-shadow-hue", serde_json::json!(180.0)),
+            ("split-tone-highlight-hue", serde_json::json!(0.0)),
+            ("split-tone-highlight-strength", serde_json::json!(1.0)),
+        ]);
+        let u = p.split_tone_uniform();
+        assert!((u[4] - 0.2).abs() < 0.001); // red highlight: 2/3 * 0.3
+        assert!((u[0] - (-0.2)).abs() < 0.001); // shadows unchanged
     }
 
     #[test]

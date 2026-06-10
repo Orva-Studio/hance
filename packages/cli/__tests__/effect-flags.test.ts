@@ -19,6 +19,14 @@ describe("parseEffectFlags", () => {
     expect(() => parseEffectFlags(["--bogus", "1"])).toThrow(/Unknown flag/);
   });
 
+  it("accepts deprecated split-tone flags as legacy params for migration", () => {
+    const r = parseEffectFlags(["--split-tone-hue", "200", "--split-tone-mode", "complementary"]);
+    expect(r.overrides["split-tone-hue"]).toBe(200);
+    expect(r.overrides["split-tone-mode"]).toBe("complementary");
+    expect(() => parseEffectFlags(["--split-tone-mode", "weird"])).toThrow(/natural, complementary/);
+    expect(() => parseEffectFlags(["--split-tone-hue", "400"])).toThrow(/between 0 and 360/);
+  });
+
   it("validates ranges", () => {
     expect(() => parseEffectFlags(["--exposure", "9"])).toThrow(/between -2 and 2/);
   });

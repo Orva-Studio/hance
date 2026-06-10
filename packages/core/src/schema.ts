@@ -136,6 +136,7 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
       { key: "split-tone-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0, description: "Toning amount" },
       { key: "split-tone-shadow-hue", label: "Shadow Hue", type: "range", min: 0, max: 360, step: 1, default: 30, description: "Shadow hue in degrees" },
       { key: "split-tone-highlight-hue", label: "Highlight Hue", type: "range", min: 0, max: 360, step: 1, default: 210, description: "Highlight hue in degrees" },
+      { key: "split-tone-highlight-strength", label: "Highlight Strength", type: "range", min: 0, max: 1, step: 0.01, default: 0.5, description: "Highlight tint strength relative to shadows" },
       { key: "split-tone-pivot", label: "Pivot", type: "range", min: 0, max: 1, step: 0.01, default: 0.3, description: "Shadow/highlight pivot" },
     ],
   },
@@ -174,9 +175,35 @@ export function seedDefaults(
   const result = getDefaults();
   for (const layer of layers) {
     if (!layer) continue;
-    for (const [key, value] of Object.entries(layer)) {
+    for (const [key, value] of Object.entries(migrateLegacyParams(layer))) {
       if (value !== undefined) result[key] = value;
     }
   }
   return result;
+}
+
+type ParamLayer = Record<string, string | number | boolean | undefined>;
+
+/**
+ * Rewrite removed params to their current equivalents so old looks and flags
+ * keep rendering the same. Applied per layer in seedDefaults, the single
+ * funnel every param source passes through.
+ *
+ * `split-tone-hue` + `split-tone-mode` → per-band hues: shadows take the hue;
+ * highlights take the same hue (natural) or its opposite (complementary).
+ * Legacy complementary tinted highlights at the full shadow scale, so it also
+ * sets `split-tone-highlight-strength` to 1 (vs the 0.5 default).
+ */
+export function migrateLegacyParams(layer: ParamLayer): ParamLayer {
+  const hue = layer["split-tone-hue"];
+  const mode = layer["split-tone-mode"];
+  if (hue === undefined && mode === undefined) return layer;
+
+  const { "split-tone-hue": _hue, "split-tone-mode": _mode, ...out } = layer;
+  const shadowHue = typeof hue === "number" ? hue : 20;
+  const complementary = mode === "complementary";
+  out["split-tone-shadow-hue"] ??= shadowHue;
+  out["split-tone-highlight-hue"] ??= complementary ? (shadowHue + 180) % 360 : shadowHue;
+  if (complementary) out["split-tone-highlight-strength"] ??= 1;
+  return out;
 }
