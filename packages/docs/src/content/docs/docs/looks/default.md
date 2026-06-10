@@ -16,6 +16,7 @@ When you run `hance video.mp4` without `--preset`, hance loads the built-in `def
 | **Grain** | 0.125 amount | Light organic noise |
 | **Vignette** | 0.25 amount, 0.25 size | Mild edge darkening |
 | **Split tone** | 0 amount | Disabled (amount is zero) |
+| **Color wheels** | neutral | No-op until a lift/gamma/gain value is moved |
 | **Camera shake** | 0.25 amount, 0.5 rate | Subtle handheld motion |
 
 ## The default look is not "no effect"
