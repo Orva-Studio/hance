@@ -114,7 +114,7 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
     options: [
       { key: "grain-size", label: "Size", type: "range", min: 0, max: 5, step: 0.1, default: 0, description: "Grain particle size (0 = finest, higher = coarser)" },
       { key: "grain-saturation", label: "Saturation", type: "range", min: 0, max: 1, step: 0.01, default: 0.3, description: "Grain color saturation" },
-      { key: "grain-iso", label: "ISO", type: "range", min: 50, max: 3200, step: 50, default: 400, description: "Grain intensity as virtual film speed (50 = subtle, 3200 = heavy)" },
+      { key: "grain-iso", label: "ISO", type: "range", min: 0, max: 3200, step: 50, default: 400, description: "Grain intensity as virtual film speed (0 = off, 3200 = heavy)" },
     ],
   },
   {
@@ -247,7 +247,9 @@ function migrateGrain(layer: ParamLayer): ParamLayer {
   if (typeof amount === "number") {
     const oldIso = typeof out["grain-iso"] === "number" ? (out["grain-iso"] as number) : 400;
     const iso = Math.round((8 * amount * oldIso) / 50) * 50;
-    out["grain-iso"] = Math.min(3200, Math.max(50, iso));
+    // Snapping can land on 0 for near-zero amounts — that's correct: the old
+    // amount 0 meant "no grain", and ISO 0 keeps grain off.
+    out["grain-iso"] = Math.min(3200, Math.max(0, iso));
   }
   return out;
 }

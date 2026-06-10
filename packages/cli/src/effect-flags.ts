@@ -61,7 +61,7 @@ const LEGACY_FLAGS = new Map<string, { hint: string; parse: (val: string, flag: 
     parse: (val, flag) => parseNum(val, flag, 0, 1),
   }],
   ["--grain-defocus", {
-    hint: "use --grain-iso",
+    hint: "the defocus pre-blur was removed and this value is ignored",
     parse: (val, flag) => parseNum(val, flag, 0, 5),
   }],
   ["--fade-tint", {

@@ -86,8 +86,12 @@ describe("migrateLegacyParams", () => {
 
   test("migrated grain ISO snaps to the 50 grid and clamps to range", () => {
     expect(migrateLegacyParams({ "grain-amount": 0.03 })["grain-iso"]).toBe(100);
-    expect(migrateLegacyParams({ "grain-amount": 0.005 })["grain-iso"]).toBe(50);
     expect(migrateLegacyParams({ "grain-amount": 1, "grain-iso": 3200 })["grain-iso"]).toBe(3200);
+  });
+
+  test("zero or near-zero legacy grain-amount keeps grain off (ISO 0)", () => {
+    expect(migrateLegacyParams({ "grain-amount": 0 })["grain-iso"]).toBe(0);
+    expect(migrateLegacyParams({ "grain-amount": 0.005 })["grain-iso"]).toBe(0);
   });
 
   test("grain-defocus is dropped", () => {
