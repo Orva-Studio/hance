@@ -64,9 +64,12 @@ export function ColorWheelsControls({ group, values, onChange, onCommit, disable
     if (!disabled) onCommit();
   }
 
-  function resetZone() {
+  function resetZone(z: Zone = zone) {
     if (disabled) return;
-    setRgb([def.neutral, def.neutral, def.neutral]);
+    const n = ZONES[z].neutral;
+    onChange(`${z}-r`, n);
+    onChange(`${z}-g`, n);
+    onChange(`${z}-b`, n);
     onCommit();
   }
 
@@ -85,16 +88,28 @@ export function ColorWheelsControls({ group, values, onChange, onCommit, disable
             num(values, `${z}-b`, zd.neutral),
           );
           return (
-            <button
+            <div
               key={z}
+              role="button"
+              tabIndex={0}
               onClick={() => setZone(z)}
-              className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+              onKeyDown={e => { if (e.key === "Enter" || e.key === " ") setZone(z); }}
+              className={`flex items-center gap-1 px-2 py-1 rounded text-xs cursor-pointer transition-colors ${
                 z === zone ? "bg-zinc-700 text-zinc-100" : "bg-zinc-800/60 text-zinc-400 hover:text-zinc-200"
               }`}
             >
               {zd.label}
-              {nonNeutral && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
-            </button>
+              {nonNeutral && (
+                <span
+                  role="button"
+                  title={`Reset ${zd.label}`}
+                  onClick={e => { e.stopPropagation(); resetZone(z); }}
+                  className="leading-none text-amber-400 hover:text-amber-200"
+                >
+                  ↺
+                </span>
+              )}
+            </div>
           );
         })}
       </div>
@@ -105,7 +120,7 @@ export function ColorWheelsControls({ group, values, onChange, onCommit, disable
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          onDoubleClick={resetZone}
+          onDoubleClick={() => resetZone()}
           title="Drag to balance; double-click to reset"
           className="relative rounded-full cursor-crosshair touch-none select-none"
           style={{
