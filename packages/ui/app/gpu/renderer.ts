@@ -1,11 +1,12 @@
 import {
   FULLSCREEN_VERT, COLOR_SETTINGS_FRAG, THRESHOLD_FRAG, BLUR_FRAG,
   SCREEN_BLEND_FRAG, ABERRATION_FRAG, GRAIN_FRAG, VIGNETTE_FRAG,
-  SPLIT_TONE_FRAG, CAMERA_SHAKE_FRAG, COLORSPACE_FRAG, LUT_FRAG,
+  SPLIT_TONE_FRAG, COLOR_WHEELS_FRAG, CAMERA_SHAKE_FRAG, COLORSPACE_FRAG, LUT_FRAG,
   SCATTER_BLUR_FRAG, HALATION_COMBINE_FRAG,
 } from "./shaders";
 import { createFullscreenPipeline, createTexture, runPass } from "./passes";
 import { getSplitToneTintValues, hueToRgb } from "./splitToneMath";
+import { isColorWheelsActive, colorWheelsUniform } from "./colorWheels";
 import { isLightGroupActive } from "./lightGroup";
 import { LUT_SIZE, generateLut, isInputLutActive, HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING } from "@hance/core";
 import { chooseExportSize } from "../mediaSizing";
@@ -192,6 +193,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const grainPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, GRAIN_FRAG, stdLayout, INTERMEDIATE_FORMAT);
   const vignettePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, VIGNETTE_FRAG, stdLayout, INTERMEDIATE_FORMAT);
   const splitTonePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, SPLIT_TONE_FRAG, stdLayout, INTERMEDIATE_FORMAT);
+  const colorWheelsPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, COLOR_WHEELS_FRAG, stdLayout, INTERMEDIATE_FORMAT);
   const shakePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, CAMERA_SHAKE_FRAG, stdLayout, INTERMEDIATE_FORMAT);
   const colorspacePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, COLORSPACE_FRAG, stdLayout, INTERMEDIATE_FORMAT);
   const lutPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, LUT_FRAG, lutLayout, INTERMEDIATE_FORMAT);
@@ -216,6 +218,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const grainUB = createUniformBuffer(device, 32); // 8 floats
   const vignetteUB = createUniformBuffer(device, 16);
   const splitToneUB = createUniformBuffer(device, 48);
+  const colorWheelsUB = createUniformBuffer(device, 48);
   const shakeUB = createUniformBuffer(device, 16);
   const bloomBlurUB1 = createUniformBuffer(device, 16);
   const bloomBlurUB2 = createUniformBuffer(device, 16);
@@ -528,6 +531,14 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
     if (lightGroupActive) {
       const bg = makeStdBindGroup(current, encodeUB);
       runPass(encoder, colorspacePipeline, bg, other.createView());
+      swap();
+    }
+
+    // --- Color Wheels (lift/gamma/gain) ---
+    if (isColorWheelsActive(params)) {
+      device.queue.writeBuffer(colorWheelsUB, 0, colorWheelsUniform(params));
+      const bg = makeStdBindGroup(current, colorWheelsUB);
+      runPass(encoder, colorWheelsPipeline, bg, other.createView());
       swap();
     }
 

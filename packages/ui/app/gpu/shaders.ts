@@ -8,6 +8,7 @@ import ABERRATION_FRAG from "../../../core/shaders/aberration.frag.wgsl";
 import GRAIN_FRAG from "../../../core/shaders/grain.frag.wgsl";
 import VIGNETTE_FRAG from "../../../core/shaders/vignette.frag.wgsl";
 import SPLIT_TONE_FRAG from "../../../core/shaders/split-tone.frag.wgsl";
+import COLOR_WHEELS_FRAG from "../../../core/shaders/color-wheels.frag.wgsl";
 import CAMERA_SHAKE_FRAG from "../../../core/shaders/camera-shake.frag.wgsl";
 import COLORSPACE_FRAG from "../../../core/shaders/colorspace.frag.wgsl";
 import LUT_FRAG from "../../../core/shaders/lut.frag.wgsl";
@@ -25,6 +26,7 @@ export {
   GRAIN_FRAG,
   VIGNETTE_FRAG,
   SPLIT_TONE_FRAG,
+  COLOR_WHEELS_FRAG,
   CAMERA_SHAKE_FRAG,
   COLORSPACE_FRAG,
   SCATTER_BLUR_FRAG,
