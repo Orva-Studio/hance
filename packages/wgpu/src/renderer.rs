@@ -384,7 +384,8 @@ impl GpuRenderer {
             let amount = self.params.halation_amount();
             let radius = self.params.halation_radius();
             let consts = crate::render_constants::render_constants();
-            let base_sigma = radius * consts.blur_sigma_factor;
+            let base_sigma = radius * consts.blur_sigma_factor
+                * crate::render_constants::resolution_scale(self.height);
             let cs = consts.halation_channel_sigma;
             let sig = [base_sigma * cs[0], base_sigma * cs[1], base_sigma * cs[2]];
             let psf = consts.halation_psf;
@@ -471,7 +472,8 @@ impl GpuRenderer {
         if self.params.bloom_enabled() {
             let amount = self.params.bloom_amount();
             let radius = self.params.bloom_radius();
-            let sigma = radius * crate::render_constants::render_constants().blur_sigma_factor;
+            let sigma = radius * crate::render_constants::render_constants().blur_sigma_factor
+                * crate::render_constants::resolution_scale(self.height);
 
             self.write_uniform(&self.blur_ub1, &[0.0, 0.0, 0.001, 0.0]);
             let ds_bg = passes::make_std_bind_group(

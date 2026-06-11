@@ -13,6 +13,17 @@ export const HALATION_CHANNEL_SIGMA: readonly [number, number, number] =
 export const HALATION_PSF: readonly (readonly [number, number])[] =
   renderConstants.halationPsf as [number, number][];
 export const HALATION_RING: number = renderConstants.halationRing;
+/** Frame height (px) at which blur radii are calibrated. */
+export const REFERENCE_HEIGHT: number = renderConstants.referenceHeight;
+/**
+ * Factor to scale pixel-space blur sigmas so halation/bloom keep the same
+ * relative size at any resolution. Calibrated at REFERENCE_HEIGHT.
+ */
+export function resolutionScale(frameHeight: number): number {
+  if (frameHeight <= 0) return 1;
+  return frameHeight / REFERENCE_HEIGHT;
+}
+
 /** Hue (degrees) of each named fade color; neutral has no entry (no tint). */
 export const FADE_COLOR_HUES: Record<string, number> = renderConstants.fadeColorHues;
 /** Tint strength applied to the black lift for any non-neutral fade color. */

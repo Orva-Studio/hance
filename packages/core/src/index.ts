@@ -16,7 +16,7 @@ export { EXPORT_PRESETS, resolveExportPreset, requireCodecLicense } from "./expo
 
 export type { RangeOption, SelectOption, BooleanOption, OptionDef, EffectGroup } from "./schema";
 export { EFFECT_SCHEMA, getDefaults, seedDefaults, migrateLegacyParams } from "./schema";
-export { HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING, FADE_COLOR_HUES, FADE_TINT_STRENGTH } from "./render-constants";
+export { HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING, FADE_COLOR_HUES, FADE_TINT_STRENGTH, REFERENCE_HEIGHT, resolutionScale } from "./render-constants";
 
 export type { PresetData } from "./presets";
 export { loadPreset, applyPreset, builtinPresetsDir, userPresetsDir, listPresetNames, exportLook, importLook } from "./presets";

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING } from "../src/render-constants";
+import { HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING, REFERENCE_HEIGHT, resolutionScale } from "../src/render-constants";
 
 const repoRoot = join(import.meta.dir, "..", "..", "..");
 
@@ -35,5 +35,22 @@ describe("shared render constants", () => {
     expect(src).toContain("render_constants()");
     expect(src).not.toMatch(/\[0\.65,\s*0\.75/);
     expect(src).not.toMatch(/radius \* 0\.5\b/);
+  });
+
+  test("resolutionScale normalizes blur sizes to the 1080p reference height", () => {
+    expect(REFERENCE_HEIGHT).toBe(1080);
+    expect(resolutionScale(1080)).toBe(1);
+    expect(resolutionScale(2160)).toBe(2);
+    expect(resolutionScale(540)).toBe(0.5);
+    // Degenerate heights must not zero out or invert the effect.
+    expect(resolutionScale(0)).toBe(1);
+    expect(resolutionScale(-5)).toBe(1);
+  });
+
+  test("both renderers scale halation sigma by resolution", () => {
+    const ts = readFileSync(join(repoRoot, "packages/ui/app/gpu/renderer.ts"), "utf8");
+    expect(ts).toContain("resolutionScale");
+    const rs = readFileSync(join(repoRoot, "packages/wgpu/src/renderer.rs"), "utf8");
+    expect(rs).toContain("resolution_scale");
   });
 });
