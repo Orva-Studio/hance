@@ -27,19 +27,18 @@ export function CompareOverlay({ mode, position, onPositionChange, overlaySrc, i
     return () => clearInterval(id);
   }, [isVideo, videoRef]);
 
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
+  // Pointer capture keeps the drag on the handle, so moving across other
+  // controls (color wheels, sliders) cannot trigger their drag handlers.
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
-    function move(ev: MouseEvent) {
-      if (!canvasRect || canvasRect.width === 0) return;
-      const x = ev.clientX - canvasRect.left;
-      onPositionChange(Math.max(0, Math.min(1, x / canvasRect.width)));
-    }
-    function up() {
-      document.removeEventListener("mousemove", move);
-      document.removeEventListener("mouseup", up);
-    }
-    document.addEventListener("mousemove", move);
-    document.addEventListener("mouseup", up);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }, []);
+
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    if (e.buttons !== 1 || !e.currentTarget.hasPointerCapture(e.pointerId)) return;
+    if (!canvasRect || canvasRect.width === 0) return;
+    const x = e.clientX - canvasRect.left;
+    onPositionChange(Math.max(0, Math.min(1, x / canvasRect.width)));
   }, [canvasRect, onPositionChange]);
 
   if (!canvasRect) return null;
@@ -76,7 +75,8 @@ export function CompareOverlay({ mode, position, onPositionChange, overlaySrc, i
       <div style={dividerStyle} className="pointer-events-auto">
         <div className="w-0.5 h-full bg-white/70" />
         <div
-          onMouseDown={onMouseDown}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
           className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-white/80 rounded-full cursor-ew-resize flex items-center justify-center text-[10px] text-zinc-800 font-bold"
         >‹›</div>
       </div>
