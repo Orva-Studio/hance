@@ -112,9 +112,9 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
     label: "Grain",
     enableKey: "no-grain",
     options: [
+      { key: "grain-iso", label: "ISO", type: "range", min: 0, max: 3200, step: 50, default: 400, description: "Grain intensity as virtual film speed (0 = off, 3200 = heavy)" },
       { key: "grain-size", label: "Size", type: "range", min: 0, max: 5, step: 0.1, default: 0, description: "Grain particle size (0 = finest, higher = coarser)" },
       { key: "grain-saturation", label: "Saturation", type: "range", min: 0, max: 1, step: 0.01, default: 0.3, description: "Grain color saturation" },
-      { key: "grain-iso", label: "ISO", type: "range", min: 0, max: 3200, step: 50, default: 400, description: "Grain intensity as virtual film speed (0 = off, 3200 = heavy)" },
     ],
   },
   {
