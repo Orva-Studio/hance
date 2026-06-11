@@ -33,3 +33,28 @@ describe("colorWheelsUniform", () => {
     }
   });
 });
+
+// Pointer-event guards: a drag that starts elsewhere (e.g. the compare-view
+// divider) must not change wheel values when the pointer crosses a wheel, and
+// the divider must capture its pointer so it cannot leak into other controls.
+// No DOM-event test infra exists here, so guard the source directly.
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+describe("drag isolation between compare divider and color wheels", () => {
+  const dir = join(import.meta.dir, "..", "app", "components");
+
+  test("wheel pointermove only acts on drags that started on the wheel", () => {
+    const src = readFileSync(join(dir, "ColorWheelsControls.tsx"), "utf8");
+    expect(src).toContain("draggingRef.current = true");
+    expect(src).toMatch(/handlePointerMove[\s\S]*?!draggingRef\.current/);
+    expect(src).toContain("onPointerCancel");
+  });
+
+  test("compare divider captures its pointer for the whole drag", () => {
+    const src = readFileSync(join(dir, "CompareOverlay.tsx"), "utf8");
+    expect(src).toContain("setPointerCapture");
+    expect(src).not.toContain("onMouseDown");
+    expect(src).toMatch(/hasPointerCapture/);
+  });
+});

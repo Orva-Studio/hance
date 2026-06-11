@@ -24,6 +24,10 @@ export function ColorWheelsControls({ group, values, onChange, onCommit, disable
   const [zone, setZone] = useState<Zone>("lift");
   const [fineOpen, setFineOpen] = useState(false);
   const wheelRef = useRef<HTMLDivElement>(null);
+  // True only while a drag that started on this wheel is active. Without this,
+  // a drag begun elsewhere (e.g. the compare-view divider) that crosses the
+  // wheel with the button held would be treated as a wheel drag.
+  const draggingRef = useRef(false);
   const def = ZONES[zone];
 
   const keys = [`${zone}-r`, `${zone}-g`, `${zone}-b`] as const;
@@ -49,18 +53,21 @@ export function ColorWheelsControls({ group, values, onChange, onCommit, disable
 
   function handlePointerDown(e: React.PointerEvent) {
     if (disabled) return;
+    draggingRef.current = true;
     e.currentTarget.setPointerCapture(e.pointerId);
     const p = puckFromPointer(e);
     setRgb(rgbFromWheel(zone, p.x, p.y, master));
   }
 
   function handlePointerMove(e: React.PointerEvent) {
-    if (disabled || e.buttons !== 1) return;
+    if (disabled || !draggingRef.current || e.buttons !== 1) return;
     const p = puckFromPointer(e);
     setRgb(rgbFromWheel(zone, p.x, p.y, master));
   }
 
   function handlePointerUp() {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
     if (!disabled) onCommit();
   }
 
@@ -120,6 +127,7 @@ export function ColorWheelsControls({ group, values, onChange, onCommit, disable
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
           onDoubleClick={() => resetZone()}
           title="Drag to balance; double-click to reset"
           className="relative rounded-full cursor-crosshair touch-none select-none"
