@@ -131,8 +131,12 @@ export async function runGpuExport(
   const initPath = join(tmpdir(), `hance-init-${process.pid}-${Date.now()}.json`);
   await Bun.write(initPath, initJson);
 
+  // Decode with an explicit bt709 matrix so untagged footage converts to RGB
+  // the same way browsers (and the bt709-tagged encode side) assume, instead
+  // of falling back to swscale's bt601 default.
   const decoderCmd = [
     "ffmpeg", "-i", shellEscape(input),
+    "-vf", shellEscape("scale=in_color_matrix=bt709:in_range=auto"),
     "-f", "rawvideo", "-pix_fmt", "rgba",
     "-v", "quiet",
     "pipe:1",

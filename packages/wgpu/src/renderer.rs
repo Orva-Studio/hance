@@ -502,7 +502,7 @@ impl GpuRenderer {
             passes::run_pass(&mut encoder, &self.blur_pipeline, &v_bg,
                 &self.half_a.create_view(&TextureViewDescriptor::default()));
 
-            self.write_uniform(&self.bloom_blend_ub, &[amount, 0.0, 1.0, 0.0]);
+            self.write_uniform(&self.bloom_blend_ub, &[amount, 0.0, 0.0, 0.0]);
             let blend_bg = passes::make_blend_bind_group(
                 &self.device, &self.blend_layout,
                 &current_tex!().create_view(&TextureViewDescriptor::default()),
