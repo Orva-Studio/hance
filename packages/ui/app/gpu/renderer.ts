@@ -423,7 +423,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
           runPass(encoder, blurPipeline, makeStdBindGroup(current, blurUB1), t.coreTex.createView());
         }
 
-        const baseSigma = radius * BLUR_SIGMA_FACTOR * resolutionScale(previewHeight);
+        const baseSigma = radius * BLUR_SIGMA_FACTOR * resolutionScale(t.h);
         const sigR = baseSigma * HALATION_CHANNEL_SIGMA[0];
         const sigG = baseSigma * HALATION_CHANNEL_SIGMA[1];
         const sigB = baseSigma * HALATION_CHANNEL_SIGMA[2];
@@ -477,7 +477,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
         runPass(encoder, blurPipeline, downsampleBG, t.halfA.createView());
 
         // H-blur → halfB
-        const sigma = radius * BLUR_SIGMA_FACTOR * resolutionScale(previewHeight);
+        const sigma = radius * BLUR_SIGMA_FACTOR * resolutionScale(t.h);
         device.queue.writeBuffer(bloomBlurUB1, 0, new Float32Array([1.0 / halfW, 0, sigma, 0]));
         const hBG = makeStdBindGroup(t.halfA, bloomBlurUB1);
         runPass(encoder, blurPipeline, hBG, t.halfB.createView());

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "bun:test";
 import { createHeadlessRenderer, type HeadlessRenderer } from "@hance/gpu";
+import { REFERENCE_HEIGHT } from "@hance/core";
 
 // Isolate halation: disable every other effect so the only thing tinting the
 // frame is the halation glow.
@@ -47,7 +48,11 @@ describe("halation (headless sidecar)", () => {
 
   beforeAll(async () => {
     renderer = await createHeadlessRenderer();
-    const params = { ...HALATION_ONLY, "halation-amount": 0.5 };
+    // Blur sigma scales with frame height relative to REFERENCE_HEIGHT, so at
+    // this tiny test resolution boost the radius to keep the calibrated glow
+    // profile the assertions were written against.
+    const radius = 4 * (REFERENCE_HEIGHT / H);
+    const params = { ...HALATION_ONLY, "halation-amount": 0.5, "halation-radius": radius };
     await renderer.init(W, H, params);
     out = await renderer.renderFrame(makeFrame(), W, H, params);
   }, 30000);
