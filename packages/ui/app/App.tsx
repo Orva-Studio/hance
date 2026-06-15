@@ -4,7 +4,9 @@ import { useInitialFile } from "./hooks/useInitialFile";
 import { useLooks } from "./hooks/useLooks";
 import { useResizable } from "./hooks/useResizable";
 import { useHistory } from "./hooks/useHistory";
-import { useCanvasTransform, ZOOM_LEVELS, ZOOM_LEVELS_DESC } from "./hooks/useCanvasTransform";
+import { useCanvasTransform } from "./hooks/useCanvasTransform";
+import { useCanvasInput } from "./hooks/useCanvasInput";
+import { useUndoRedo } from "./hooks/useUndoRedo";
 import { TopBar } from "./components/TopBar";
 import { LooksPanel } from "./components/LooksPanel";
 import { AdjustmentsPanel } from "./components/AdjustmentsPanel";
@@ -364,102 +366,8 @@ export function App() {
     setTimeout(() => setAnimating(false), 350);
   }, [restoreActiveLook]);
 
-  const spacebarPanRef = useRef(false);
-  const didPanRef = useRef(false);
-  const zoomRef = useRef(canvasTransform.zoom);
-  const panModeRef = useRef(canvasTransform.panMode);
-  zoomRef.current = canvasTransform.zoom;
-  panModeRef.current = canvasTransform.panMode;
-  if (canvasTransform.isPanning) didPanRef.current = true;
-
-  useEffect(() => {
-    if (viewMode !== "normal") return;
-    function isTextField(e: KeyboardEvent) {
-      const t = e.target as HTMLElement | null;
-      return t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
-    }
-    function onKeyDown(e: KeyboardEvent) {
-      if (isTextField(e)) return;
-      if (e.key === " ") {
-        e.preventDefault();
-        if (!e.repeat && zoomRef.current !== "fit") {
-          spacebarPanRef.current = true;
-          canvasTransform.setPanMode(true);
-        }
-      }
-      if (e.key.toLowerCase() === "h" && zoomRef.current !== "fit") {
-        canvasTransform.setPanMode(!panModeRef.current);
-      }
-    }
-    function onKeyUp(e: KeyboardEvent) {
-      if (e.key !== " ") return;
-      if (isTextField(e)) return;
-      const didPan = didPanRef.current;
-      if (spacebarPanRef.current) {
-        spacebarPanRef.current = false;
-        didPanRef.current = false;
-        canvasTransform.setPanMode(false);
-      }
-      if (!didPan && videoElement) {
-        e.preventDefault();
-        if (videoElement.paused) videoElement.play();
-        else videoElement.pause();
-      }
-    }
-    window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("keyup", onKeyUp);
-    return () => { window.removeEventListener("keydown", onKeyDown); window.removeEventListener("keyup", onKeyUp); };
-  }, [viewMode, canvasTransform.setPanMode, videoElement]);
-
-  useEffect(() => {
-    if (viewMode !== "normal") return;
-    function onWheel(e: WheelEvent) {
-      if (!e.ctrlKey && !e.metaKey) return;
-      e.preventDefault();
-      const current = zoomRef.current;
-      const currentNum = current === "fit" ? 100 : current;
-      const idx = ZOOM_LEVELS.indexOf(currentNum as (typeof ZOOM_LEVELS)[number]);
-      if (e.deltaY < 0) {
-        const next = idx === -1 ? ZOOM_LEVELS.find(z => z > currentNum) : ZOOM_LEVELS[idx + 1];
-        if (next) canvasTransform.setZoom(next);
-      } else {
-        const prev = idx === -1 ? ZOOM_LEVELS_DESC.find(z => z < currentNum) : ZOOM_LEVELS[idx - 1];
-        if (prev) canvasTransform.setZoom(prev);
-        else canvasTransform.setZoom("fit");
-      }
-    }
-    window.addEventListener("wheel", onWheel, { passive: false });
-    return () => window.removeEventListener("wheel", onWheel);
-  }, [viewMode, canvasTransform.setZoom]);
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      const mod = e.metaKey || e.ctrlKey;
-      if (!mod || e.key.toLowerCase() !== "z") return;
-      const target = e.target as HTMLElement | null;
-      if (target) {
-        const tag = target.tagName;
-        if (tag === "INPUT" || tag === "TEXTAREA" || target.isContentEditable) {
-          // Exception: the range input's keyboard arrows fire commits already
-          // and benefit from app-level undo. Let undo/redo work from range.
-          const inputType = (target as HTMLInputElement).type;
-          if (tag === "INPUT" && inputType === "range") {
-            // fall through to app undo
-          } else {
-            return;
-          }
-        }
-      }
-      e.preventDefault();
-      if (e.shiftKey) {
-        applySnapshot(historyRef.current.redo());
-      } else {
-        applySnapshot(historyRef.current.undo());
-      }
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [applySnapshot]);
+  useCanvasInput(viewMode, canvasTransform, videoElement);
+  useUndoRedo(history, applySnapshot);
 
   if (!objectUrl) {
     return (
