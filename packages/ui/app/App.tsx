@@ -77,6 +77,8 @@ export function App() {
   // AI depth-of-field. The map is fetched once per source (cached on the server
   // too), then every focus/amount drag is real-time off the cached map.
   const [depthMap, setDepthMap] = useState<DepthMapState | null>(null);
+  const [showDepth, setShowDepth] = useState(false);
+  const depthCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [depthState, setDepthState] = useState<"idle" | "loading" | "error">("idle");
   const [depthError, setDepthError] = useState<string | null>(null);
   // "Active" = group on and aperture open. Gating the paid depth fetch on
@@ -85,6 +87,7 @@ export function App() {
   const dofEnabled = params["no-dof"] !== true && Number(params["dof-amount"] ?? 0) > 0;
 
   const lastTimeRef = useRef(0);
+  const depthFetching = useRef(false);
   useEffect(() => {
     if (videoElement) {
       const onTime = () => { lastTimeRef.current = videoElement.currentTime; };
@@ -275,8 +278,12 @@ export function App() {
   // Fetch the depth map the first time DoF is enabled for this source. Stills
   // upload the file; the per-frame video preview uploads the current frame.
   useEffect(() => {
-    if (!file || !dofEnabled || depthMap || depthState === "loading") return;
+    // depthState is intentionally not a dependency: setting it to "loading"
+    // below would otherwise re-trigger this effect, cancel the in-flight fetch,
+    // and deadlock on the guard. depthFetching ref guards re-entrancy instead.
+    if (!file || !dofEnabled || depthMap || depthFetching.current) return;
     let cancelled = false;
+    depthFetching.current = true;
     setDepthState("loading");
     setDepthError(null);
     (async () => {
@@ -294,10 +301,12 @@ export function App() {
         if (cancelled) return;
         setDepthError((err as Error).message);
         setDepthState("error");
+      } finally {
+        depthFetching.current = false;
       }
     })();
     return () => { cancelled = true; };
-  }, [file, isVideo, videoElement, dofEnabled, depthMap, depthState]);
+  }, [file, isVideo, videoElement, dofEnabled, depthMap]);
 
   // Push the depth map (or clear it) into the renderer so the preview's DoF pass
   // matches what the CLI/export would produce.
@@ -310,6 +319,25 @@ export function App() {
     }
     if (!isVideo) renderer.renderFrame();
   }, [renderer, depthMap, dofEnabled, isVideo]);
+
+  // Paint the normalized depth map (0=far/black .. 1=near/white) onto the
+  // overlay canvas when "Show depth" is toggled on.
+  useEffect(() => {
+    const canvas = depthCanvasRef.current;
+    if (!showDepth || !depthMap || !canvas) return;
+    const { width, height, data } = depthMap;
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const img = ctx.createImageData(width, height);
+    for (let i = 0; i < data.length; i++) {
+      const g = Math.round(data[i] * 255);
+      img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = g;
+      img.data[i * 4 + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+  }, [showDepth, depthMap]);
 
   // Click-to-focus: read the depth under the cursor and set the focus plane.
   const handlePickFocus = useCallback((u: number, v: number) => {
@@ -534,9 +562,22 @@ export function App() {
               {depthError}
             </div>
           )}
+          {dofEnabled && depthMap && showDepth && (
+            <canvas
+              ref={depthCanvasRef}
+              className="absolute inset-0 z-[5] w-full h-full object-contain pointer-events-none"
+            />
+          )}
           {dofEnabled && depthMap && (
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 px-3 py-1 rounded-full bg-zinc-900/70 text-[11px] text-zinc-400 pointer-events-none">
-              Click the image to set focus
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/70 text-[11px] text-zinc-400">
+              <span className="pointer-events-none">Click the image to set focus</span>
+              <button
+                type="button"
+                onClick={() => setShowDepth((v) => !v)}
+                className={`px-2 py-0.5 rounded-full border ${showDepth ? "border-accent text-accent" : "border-zinc-600 text-zinc-300"}`}
+              >
+                {showDepth ? "Hide depth" : "Show depth"}
+              </button>
             </div>
           )}
           {previewError && !isVideo ? (

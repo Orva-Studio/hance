@@ -322,6 +322,7 @@ export function createServer(port: number) {
           const depth = await fetchDepthMap(inputPath);
           return Response.json({ width: depth.width, height: depth.height, data: Array.from(depth.data) });
         } catch (err) {
+          console.error("depth fetch failed:", (err as Error).message);
           return new Response((err as Error).message, { status: 400 });
         } finally {
           try { unlinkSync(inputPath); } catch {}

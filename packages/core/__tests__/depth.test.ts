@@ -42,7 +42,11 @@ function mockReplicate(imageBytes: Uint8Array) {
     if (u === "https://api/preds/pred1") {
       polls++;
       const status = polls >= 2 ? "succeeded" : "processing";
-      const output = status === "succeeded" ? "https://cdn/depth.png" : null;
+      // Mirror the real model's output shape: { grey_depth, color_depth }.
+      const output =
+        status === "succeeded"
+          ? { grey_depth: "https://cdn/depth.png", color_depth: "https://cdn/color.png" }
+          : null;
       return new Response(JSON.stringify({ id: "pred1", status, output }));
     }
     if (u === "https://cdn/depth.png") {
@@ -71,7 +75,7 @@ describe("requestReplicateDepth (mocked HTTP)", () => {
     expect((post.init!.headers as Record<string, string>).Authorization).toBe("Bearer r8_secret");
     const body = JSON.parse(post.init!.body as string);
     expect(body.version).toBe("vtest");
-    expect(body.input.encoder).toBe("vits"); // commercial-safe Small encoder
+    expect(body.input.model_size).toBe("Small"); // commercial-safe Apache tier
     for (const c of calls) {
       expect(c.url).not.toContain("r8_secret");
       if (typeof c.init?.body === "string") expect(c.init.body).not.toContain("r8_secret");

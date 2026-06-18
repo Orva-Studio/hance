@@ -24,7 +24,8 @@ export const REPLICATE_MODEL = "chenxwh/depth-anything-v2";
 // pin against https://replicate.com/chenxwh/depth-anything-v2/versions before
 // shipping. Override per-call with opts.version (tests inject their own).
 export const REPLICATE_MODEL_VERSION =
-  process.env.HANCE_DEPTH_VERSION ?? "REPLACE_WITH_DEPTH_ANYTHING_V2_SMALL_VERSION";
+  (typeof process !== "undefined" ? process.env.HANCE_DEPTH_VERSION : undefined) ??
+  "b239ea33cff32bb7abb5db39ffe9a09c14cbc2894331d1ef66fe096eed88ebd4";
 
 const REPLICATE_API = "https://api.replicate.com/v1/predictions";
 
@@ -46,13 +47,17 @@ export interface ReplicateOpts {
 interface Prediction {
   id: string;
   status: "starting" | "processing" | "succeeded" | "failed" | "canceled";
-  output?: string | string[] | null;
+  // This model returns { grey_depth, color_depth }; older/other depth models
+  // return a bare URL or array. Handle all shapes.
+  output?: string | string[] | { grey_depth?: string; color_depth?: string } | null;
   error?: string | null;
   urls?: { get?: string };
 }
 
 function firstOutputUrl(output: Prediction["output"]): string {
-  const url = Array.isArray(output) ? output[output.length - 1] : output;
+  let url: unknown = output;
+  if (Array.isArray(output)) url = output[output.length - 1];
+  else if (output && typeof output === "object") url = output.grey_depth ?? output.color_depth;
   if (typeof url !== "string" || !url) throw new Error("Replicate returned no depth image");
   return url;
 }
@@ -78,7 +83,7 @@ export async function requestReplicateDepth(opts: ReplicateOpts): Promise<Uint8A
     headers,
     body: JSON.stringify({
       version: opts.version ?? REPLICATE_MODEL_VERSION,
-      input: { image: opts.imageDataUri, encoder: "vits" },
+      input: { image: opts.imageDataUri, model_size: "Small" },
     }),
   });
   if (!createRes.ok) {
