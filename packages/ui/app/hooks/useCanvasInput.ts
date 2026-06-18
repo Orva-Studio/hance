@@ -1,14 +1,13 @@
 import { useEffect, useRef } from "react";
-import { ZOOM_LEVELS, ZOOM_LEVELS_DESC, type useCanvasTransform } from "./useCanvasTransform";
+import { ZOOM_LEVELS, ZOOM_LEVELS_DESC, type ZoomLevel, type useCanvasTransform } from "./useCanvasTransform";
 import type { ViewMode } from "../components/ViewModeToolbar";
 
 type CanvasTransform = ReturnType<typeof useCanvasTransform>;
-type Zoom = "fit" | number;
 
 // Pure: given the current zoom and a wheel direction ("in" steps up the level
 // ladder, "out" steps down toward "fit"), return the next zoom value, or null
 // when already at the relevant extreme.
-export function nextZoom(current: Zoom, direction: "in" | "out"): Zoom | null {
+export function nextZoom(current: ZoomLevel, direction: "in" | "out"): ZoomLevel | null {
   const currentNum = current === "fit" ? 100 : current;
   const idx = ZOOM_LEVELS.indexOf(currentNum as (typeof ZOOM_LEVELS)[number]);
   if (direction === "in") {
