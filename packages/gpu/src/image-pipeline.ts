@@ -1,4 +1,5 @@
 import { createHeadlessRenderer } from "./wgpu-renderer";
+import type { DepthMap } from "@hance/core";
 
 export async function decodeRgbaFrame(
   input: string,
@@ -48,11 +49,12 @@ export async function renderImage(
   width: number,
   height: number,
   params: Record<string, unknown>,
+  depth?: DepthMap,
 ): Promise<void> {
   const rgba = await decodeRgbaFrame(input, width, height);
   const renderer = await createHeadlessRenderer();
   try {
-    await renderer.init(width, height, params);
+    await renderer.init(width, height, params, depth);
     const out = await renderer.renderFrame(rgba, width, height, params);
     await encodeRgbaToFile(out, width, height, output);
   } finally {

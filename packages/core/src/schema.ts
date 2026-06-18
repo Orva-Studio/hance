@@ -157,6 +157,17 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
     ],
   },
   {
+    key: "depthOfField",
+    label: "Depth of Field",
+    enableKey: "no-dof",
+    enableHelp: "Disable AI depth-of-field (also disabled unless a depth map is loaded)",
+    options: [
+      { key: "focus", label: "Focus", type: "range", min: 0, max: 1, step: 0.01, default: 0.5, description: "Focus plane over normalized depth (0 = far, 1 = near)" },
+      { key: "dof-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0, description: "Aperture/blur strength (0 = off)" },
+      { key: "dof-max-blur", label: "Max Blur", type: "range", min: 1, max: 100, step: 1, default: 40, description: "Clamp on blur radius in px (perf)" },
+    ],
+  },
+  {
     key: "cameraShake",
     label: "Camera Shake",
     enableKey: "no-camera-shake",

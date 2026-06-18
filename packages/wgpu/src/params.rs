@@ -10,6 +10,20 @@ pub struct InitMessage {
     // pre-LUT is identity (rec709) or disabled — the pass is skipped entirely.
     #[serde(default)]
     pub lut: Option<Vec<f32>>,
+    // Per-pixel depth for the DoF pass. None when DoF is off (no `--dof`), so
+    // the offline path is unaffected. Its own input (not the LUT) because depth
+    // is per-pixel and, in future, per-frame. See issue #114.
+    #[serde(default)]
+    pub depth: Option<DepthMap>,
+}
+
+/// Normalized depth map (0–1, near=1) with its own resolution; the bokeh shader
+/// samples it by UV so it need not match the frame size.
+#[derive(Deserialize)]
+pub struct DepthMap {
+    pub width: u32,
+    pub height: u32,
+    pub data: Vec<f32>,
 }
 
 /// Fully-saturated RGB for a hue in degrees (HSV with s=v=1).
@@ -217,6 +231,27 @@ impl Params {
         ]
     }
 
+    /// Whether the DoF blur should run. Gated on amount > 0; the renderer also
+    /// requires a depth map to be present.
+    pub fn dof_active(&self) -> bool {
+        !self.bool("no-dof", false) && self.num("dof-amount", 0.0) > 0.0
+    }
+
+    /// DoF uniform: [focus, coeff, maxBlur, _, texelW, texelH, _, _] where
+    /// `coeff = amount * dof_max_radius * resolution_scale(height)`. Mirrors
+    /// `dofRadiusPx` in packages/core/src/render-constants.ts.
+    pub fn dof_uniform(&self, width: u32, height: u32) -> [f32; 8] {
+        let focus = self.num("focus", 0.5);
+        let amount = self.num("dof-amount", 0.0);
+        let max_blur = self.num("dof-max-blur", 40.0);
+        let dof_max_radius = crate::render_constants::render_constants().dof_max_radius;
+        let coeff = amount * dof_max_radius * crate::render_constants::resolution_scale(height);
+        [
+            focus, coeff, max_blur, 0.0,
+            1.0 / width as f32, 1.0 / height as f32, 0.0, 0.0,
+        ]
+    }
+
     pub fn camera_shake_enabled(&self) -> bool {
         !self.bool("no-camera-shake", false) && self.num("camera-shake-amount", 0.25) > 0.0
     }
@@ -384,6 +419,28 @@ mod tests {
         let p = make_params(&[("grain-iso", serde_json::json!(1600))]);
         let u = p.grain_uniform(0);
         assert_eq!(u[3], 1600.0);
+    }
+
+    #[test]
+    fn dof_inactive_by_default() {
+        let p = make_params(&[]);
+        assert!(!p.dof_active()); // amount defaults to 0
+    }
+
+    #[test]
+    fn dof_uniform_maps_amount_to_coeff() {
+        // At the reference height the coeff is amount * dofMaxRadius (50).
+        let p = make_params(&[
+            ("dof-amount", serde_json::json!(0.5)),
+            ("focus", serde_json::json!(0.3)),
+            ("dof-max-blur", serde_json::json!(40.0)),
+        ]);
+        assert!(p.dof_active());
+        let u = p.dof_uniform(1920, 1080);
+        assert!((u[0] - 0.3).abs() < 1e-6); // focus
+        assert!((u[1] - 25.0).abs() < 1e-4); // 0.5 * 50 * 1.0
+        assert!((u[2] - 40.0).abs() < 1e-6); // max blur
+        assert!((u[4] - 1.0 / 1920.0).abs() < 1e-9); // texel w
     }
 
     #[test]

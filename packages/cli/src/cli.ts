@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync } from "node:fs";
-import { probe, applyPreset, resolveExportPreset, requireCodecLicense, HANCE_PRO_URL } from "@hance/core";
-import type { PresetData, FilmOptions, LicenseContext } from "@hance/core";
+import { probe, applyPreset, resolveExportPreset, requireCodecLicense, HANCE_PRO_URL, fetchDepthMap } from "@hance/core";
+import type { PresetData, FilmOptions, LicenseContext, DepthMap } from "@hance/core";
 import { runGpuExport } from "@hance/gpu";
 import { parseEffectFlags, EFFECT_HELP_TEXT } from "./effect-flags";
 import { loadConfig, configToArgv } from "./config";
@@ -60,6 +60,7 @@ Examples:
   hance *.jpg -o ./graded/ --export high          batch images into a directory, high-quality export
   hance shot.mov --grain-iso 800 --no-halation   tweak one effect, disable another
   hance shot.mov --exposure 0.5 --contrast 1.2    quick color grade
+  hance photo.jpg --dof --focus 0.4 --dof-amount 0.6   AI depth-of-field (needs REPLICATE_API_TOKEN)
   hance preset save mylook --bleach-bypass 0.4    save current flags as a reusable preset
 
 Agents: run "hance skills" first for the agent skill router.
@@ -301,12 +302,25 @@ async function main() {
       console.log(`${prefix}Input:  ${input}${probeResult.isImage ? " (image)" : ""}`);
       console.log(`${" ".repeat(prefix.length)}Output: ${output}`);
 
+      const dofEnabled = parsed.params["dof"] === true;
+
       if (probeResult.isImage) {
+        let depth: DepthMap | undefined;
+        if (dofEnabled) {
+          process.stdout.write(`${prefix}Fetching depth map...\n`);
+          depth = await fetchDepthMap(input);
+        }
         process.stdout.write(`${prefix}Processing...\n`);
         const { renderImage } = await import("@hance/gpu");
-        await renderImage(input, output, probeResult.width!, probeResult.height!, parsed.params);
+        await renderImage(input, output, probeResult.width!, probeResult.height!, parsed.params, depth);
         console.log(`${prefix}Done.`);
       } else {
+        if (dofEnabled) {
+          throw new Error(
+            "--dof on video is preview-only for now. Apply depth-of-field per frame " +
+            "in the UI (hance ui); whole-clip DoF export is planned (issue #114, phase 2).",
+          );
+        }
         await runGpuExport(input, output, parsed.params, probeResult, (ratio) => {
           const pct = Math.round(ratio * 100);
           process.stdout.write(`\r${prefix}Processing... ${pct}%`);

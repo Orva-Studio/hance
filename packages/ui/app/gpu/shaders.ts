@@ -14,10 +14,12 @@ import COLORSPACE_FRAG from "../../../core/shaders/colorspace.frag.wgsl";
 import LUT_FRAG from "../../../core/shaders/lut.frag.wgsl";
 import SCATTER_BLUR_FRAG from "../../../core/shaders/scatter-blur.frag.wgsl";
 import HALATION_COMBINE_FRAG from "../../../core/shaders/halation-combine.frag.wgsl";
+import DOF_FRAG from "../../../core/shaders/dof.frag.wgsl";
 
 export {
   FULLSCREEN_VERT,
   LUT_FRAG,
+  DOF_FRAG,
   COLOR_SETTINGS_FRAG,
   THRESHOLD_FRAG,
   BLUR_FRAG,

@@ -19,6 +19,8 @@ interface Props {
   onPanMouseDown?: (e: MouseEvent) => void;
   onPanMouseMove?: (e: MouseEvent) => void;
   onPanMouseUp?: () => void;
+  /** Click-to-focus: fires with the clicked point in 0–1 image coords. */
+  onPick?: (u: number, v: number) => void;
 }
 
 export function Canvas(props: Props) {
@@ -190,7 +192,15 @@ export function Canvas(props: Props) {
       <canvas
         ref={canvasRef}
         className={hasTransform ? "" : "max-w-full max-h-[calc(100vh-140px)]"}
-        style={transformStyle}
+        style={props.onPick && !panMode ? { ...transformStyle, cursor: "crosshair" } : transformStyle}
+        onClick={props.onPick && !panMode ? (e: MouseEvent) => {
+          // getBoundingClientRect is post-transform, so this maps correctly even
+          // when the canvas is zoomed/panned.
+          const rect = e.currentTarget.getBoundingClientRect();
+          const u = (e.clientX - rect.left) / rect.width;
+          const v = (e.clientY - rect.top) / rect.height;
+          props.onPick!(Math.min(1, Math.max(0, u)), Math.min(1, Math.max(0, v)));
+        } : undefined}
       />
     </div>
   );

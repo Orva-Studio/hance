@@ -2,13 +2,13 @@ import {
   FULLSCREEN_VERT, COLOR_SETTINGS_FRAG, THRESHOLD_FRAG, BLUR_FRAG,
   SCREEN_BLEND_FRAG, ABERRATION_FRAG, GRAIN_FRAG, VIGNETTE_FRAG,
   SPLIT_TONE_FRAG, COLOR_WHEELS_FRAG, CAMERA_SHAKE_FRAG, COLORSPACE_FRAG, LUT_FRAG,
-  SCATTER_BLUR_FRAG, HALATION_COMBINE_FRAG,
+  SCATTER_BLUR_FRAG, HALATION_COMBINE_FRAG, DOF_FRAG,
 } from "./shaders";
 import { createFullscreenPipeline, createTexture, runPass } from "./passes";
 import { getSplitToneTintValues, hueToRgb } from "./splitToneMath";
 import { isColorWheelsActive, colorWheelsUniform } from "./colorWheels";
 import { isLightGroupActive } from "./lightGroup";
-import { LUT_SIZE, generateLut, isInputLutActive, HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING, FADE_COLOR_HUES, FADE_TINT_STRENGTH, resolutionScale } from "@hance/core";
+import { LUT_SIZE, generateLut, isInputLutActive, HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING, FADE_COLOR_HUES, FADE_TINT_STRENGTH, resolutionScale, DOF_MAX_RADIUS } from "@hance/core";
 import { chooseExportSize } from "../mediaSizing";
 
 export interface PreviewParams {
@@ -19,6 +19,10 @@ export interface Renderer {
   setSource(source: HTMLVideoElement | HTMLImageElement): Promise<void>;
   setSourceFromBuffer(data: Uint8Array, width: number, height: number): void;
   setParams(params: PreviewParams): void;
+  /** Supply a normalized (0–1, near=1) depth map to drive the DoF pass. */
+  setDepth(data: Float32Array, width: number, height: number): void;
+  /** Drop the depth map so DoF is skipped (preview matches no-`--dof`). */
+  clearDepth(): void;
   renderFrame(): void;
   readPixels(): Promise<Uint8Array>;
   /**
@@ -76,6 +80,18 @@ function createLutLayout(device: GPUDevice): GPUBindGroupLayout {
       { binding: 0, visibility: GPUShaderStage.FRAGMENT, texture: {} },
       { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
       { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: { viewDimension: "3d" } },
+    ],
+  });
+}
+
+// Scene + depth textures + DoF uniform. Mirrors the Rust dof_layout.
+function createDofLayout(device: GPUDevice): GPUBindGroupLayout {
+  return device.createBindGroupLayout({
+    entries: [
+      { binding: 0, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+      { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+      { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+      { binding: 3, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } },
     ],
   });
 }
@@ -158,6 +174,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const blendLayout = createBlendLayout(device);
   const combineLayout = createCombineLayout(device);
   const lutLayout = createLutLayout(device);
+  const dofLayout = createDofLayout(device);
 
   const halfW = Math.max(1, Math.floor(previewWidth / 2));
   const halfH = Math.max(1, Math.floor(previewHeight / 2));
@@ -197,6 +214,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const shakePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, CAMERA_SHAKE_FRAG, stdLayout, INTERMEDIATE_FORMAT);
   const colorspacePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, COLORSPACE_FRAG, stdLayout, INTERMEDIATE_FORMAT);
   const lutPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, LUT_FRAG, lutLayout, INTERMEDIATE_FORMAT);
+  const dofPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, DOF_FRAG, dofLayout, INTERMEDIATE_FORMAT);
   // Blit reads a 16float intermediate and writes the 8-bit output/canvas format.
   const blitPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, COLOR_SETTINGS_FRAG, stdLayout, format);
 
@@ -227,12 +245,15 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   device.queue.writeBuffer(decodeUB, 0, new Float32Array([0, 0, 0, 0])); // 0 = sRGB->linear
   const encodeUB = createUniformBuffer(device, 16);
   device.queue.writeBuffer(encodeUB, 0, new Float32Array([1, 0, 0, 0])); // 1 = linear->sRGB
+  const dofUB = createUniformBuffer(device, 32); // 8 floats
 
   let source: HTMLVideoElement | HTMLImageElement | null = null;
   let imageBitmap: ImageBitmap | null = null;
   let bufferSource: { data: Uint8Array; width: number; height: number } | null = null;
   let params: PreviewParams = {};
   let frameCount = 0;
+  // Depth map (r16float) for the DoF pass; null until the UI supplies one.
+  let depthTex: GPUTexture | null = null;
 
 
   function makeStdBindGroup(inputTex: GPUTexture, ub: GPUBuffer): GPUBindGroup {
@@ -253,6 +274,18 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
         { binding: 0, resource: inputTex.createView() },
         { binding: 1, resource: sampler },
         { binding: 2, resource: lutView },
+      ],
+    });
+  }
+
+  function makeDofBindGroup(sceneTex: GPUTexture, depth: GPUTexture, ub: GPUBuffer): GPUBindGroup {
+    return device.createBindGroup({
+      layout: dofLayout,
+      entries: [
+        { binding: 0, resource: sceneTex.createView() },
+        { binding: 1, resource: sampler },
+        { binding: 2, resource: depth.createView() },
+        { binding: 3, resource: { buffer: ub } },
       ],
     });
   }
@@ -392,6 +425,21 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
       const bg = makeStdBindGroup(colorInput, colorUB);
       device.queue.writeBuffer(colorUB, 0, new Float32Array([1, 0, 1, 1, 6500, 0, 0, 0, 0, 0, 0, 0]));
       runPass(encoder, colorPipeline, bg, current.createView());
+    }
+
+    // --- Depth of Field (bokeh) ---
+    // Mirrors the Rust pass: runs on the graded base before the light group,
+    // only when a depth map is loaded and amount > 0. Coeff matches dofRadiusPx.
+    if (depthTex && params["no-dof"] !== true && num("dof-amount") > 0) {
+      const focus = num("focus", 0.5);
+      const coeff = num("dof-amount") * DOF_MAX_RADIUS * resolutionScale(t.h);
+      const maxBlur = num("dof-max-blur", 40);
+      device.queue.writeBuffer(dofUB, 0, new Float32Array([
+        focus, coeff, maxBlur, 0,
+        1 / t.w, 1 / t.h, 0, 0,
+      ]));
+      runPass(encoder, dofPipeline, makeDofBindGroup(current, depthTex, dofUB), other.createView());
+      swap();
     }
 
     // The light-transport group runs in linear light. Only bracket the chain
@@ -730,6 +778,26 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
     setParams(p: PreviewParams) {
       params = p;
     },
+    setDepth(data: Float32Array, width: number, height: number) {
+      if (depthTex) depthTex.destroy();
+      // r16float so the filtering sampler can upscale the (smaller) depth map.
+      const texels = new Uint16Array(width * height);
+      for (let i = 0; i < texels.length; i++) texels[i] = floatToHalf(data[i] ?? 0);
+      depthTex = device.createTexture({
+        size: { width, height },
+        format: "r16float",
+        usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+      });
+      device.queue.writeTexture(
+        { texture: depthTex },
+        texels.buffer,
+        { bytesPerRow: width * 2, rowsPerImage: height },
+        { width, height },
+      );
+    },
+    clearDepth() {
+      if (depthTex) { depthTex.destroy(); depthTex = null; }
+    },
     renderFrame,
     readPixels,
     exportImage,
@@ -743,6 +811,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
       outputTex.destroy();
       srcTex.destroy();
       lutTex.destroy();
+      if (depthTex) depthTex.destroy();
       device.destroy();
     },
   };

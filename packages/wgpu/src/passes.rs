@@ -86,6 +86,72 @@ pub fn make_lut_bind_group(
     })
 }
 
+/// Scene + depth textures, a shared sampler, and the DoF uniform. Modeled on
+/// `create_lut_bind_group_layout` but with a 2D depth texture and a uniform.
+pub fn create_dof_bind_group_layout(device: &Device) -> BindGroupLayout {
+    device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+        label: Some("dof_layout"),
+        entries: &[
+            BindGroupLayoutEntry {
+                binding: 0,
+                visibility: ShaderStages::FRAGMENT,
+                ty: BindingType::Texture {
+                    sample_type: TextureSampleType::Float { filterable: true },
+                    view_dimension: TextureViewDimension::D2,
+                    multisampled: false,
+                },
+                count: None,
+            },
+            BindGroupLayoutEntry {
+                binding: 1,
+                visibility: ShaderStages::FRAGMENT,
+                ty: BindingType::Sampler(SamplerBindingType::Filtering),
+                count: None,
+            },
+            BindGroupLayoutEntry {
+                binding: 2,
+                visibility: ShaderStages::FRAGMENT,
+                ty: BindingType::Texture {
+                    sample_type: TextureSampleType::Float { filterable: true },
+                    view_dimension: TextureViewDimension::D2,
+                    multisampled: false,
+                },
+                count: None,
+            },
+            BindGroupLayoutEntry {
+                binding: 3,
+                visibility: ShaderStages::FRAGMENT,
+                ty: BindingType::Buffer {
+                    ty: BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            },
+        ],
+    })
+}
+
+pub fn make_dof_bind_group(
+    device: &Device,
+    layout: &BindGroupLayout,
+    scene: &TextureView,
+    sampler: &Sampler,
+    depth: &TextureView,
+    uniform: &Buffer,
+) -> BindGroup {
+    device.create_bind_group(&BindGroupDescriptor {
+        label: Some("dof_bind_group"),
+        layout,
+        entries: &[
+            BindGroupEntry { binding: 0, resource: BindingResource::TextureView(scene) },
+            BindGroupEntry { binding: 1, resource: BindingResource::Sampler(sampler) },
+            BindGroupEntry { binding: 2, resource: BindingResource::TextureView(depth) },
+            BindGroupEntry { binding: 3, resource: uniform.as_entire_binding() },
+        ],
+    })
+}
+
 pub fn create_blend_bind_group_layout(device: &Device) -> BindGroupLayout {
     device.create_bind_group_layout(&BindGroupLayoutDescriptor {
         label: Some("blend_layout"),

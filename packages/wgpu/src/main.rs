@@ -40,7 +40,7 @@ fn main() {
         }
     };
 
-    let mut gpu = match renderer::GpuRenderer::new(init.width, init.height, &init.params, init.lut.as_deref()) {
+    let mut gpu = match renderer::GpuRenderer::new(init.width, init.height, &init.params, init.lut.as_deref(), init.depth.as_ref()) {
         Ok(r) => r,
         Err(e) => {
             eprintln!("GPU init failed: {e}");

@@ -2,10 +2,11 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { unlink } from "node:fs/promises";
 import { lutDataForParams } from "@hance/core";
+import type { DepthMap } from "@hance/core";
 import { sidecarPath } from "./sidecar-path";
 
 export interface HeadlessRenderer {
-  init(width: number, height: number, params?: Record<string, unknown>): Promise<void>;
+  init(width: number, height: number, params?: Record<string, unknown>, depth?: DepthMap): Promise<void>;
   renderFrame(
     rgba: Uint8Array,
     width: number,
@@ -36,11 +37,13 @@ export async function createHeadlessRenderer(): Promise<HeadlessRenderer> {
     return result;
   }
 
-  async function init(width: number, height: number, params: Record<string, unknown> = {}): Promise<void> {
+  async function init(width: number, height: number, params: Record<string, unknown> = {}, depth?: DepthMap): Promise<void> {
     frameSize = width * height * 4;
 
     const lut = lutDataForParams(params as Record<string, string | number | boolean>);
-    const initJson = JSON.stringify({ width, height, params, lut });
+    // Float32Array doesn't JSON-serialize as an array, so flatten for the sidecar.
+    const depthMsg = depth ? { width: depth.width, height: depth.height, data: Array.from(depth.data) } : undefined;
+    const initJson = JSON.stringify({ width, height, params, lut, depth: depthMsg });
     // The baked LUT can push init JSON past the OS argv limit, so pass it via a
     // temp file (the sidecar reads a file path that isn't inline JSON).
     initPath = join(tmpdir(), `hance-init-${process.pid}-${Date.now()}.json`);

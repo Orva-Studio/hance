@@ -6,5 +6,6 @@
   "halationRing": 1.0,
   "referenceHeight": 1080,
   "fadeColorHues": { "warm": 30, "green": 150, "teal": 190, "magenta": 300 },
-  "fadeTintStrength": 0.7
+  "fadeTintStrength": 0.7,
+  "dofMaxRadius": 50
 }

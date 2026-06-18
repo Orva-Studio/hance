@@ -30,6 +30,21 @@ import { useProxyStream } from "./hooks/useProxyStream";
 // evicts (by design), so this nudges the user to clear it manually.
 const PROXY_CACHE_WARN_BYTES = 5 * 1024 ** 3;
 
+interface DepthMapState { width: number; height: number; data: Float32Array; }
+
+// Grab the current video frame as a PNG so the per-frame DoF preview can ask
+// the depth model about exactly what's on screen. ponytail: relies on the
+// source being same-origin (blob: / proxy) so the 2D canvas isn't tainted.
+async function captureVideoFrame(video: HTMLVideoElement | null): Promise<Blob> {
+  if (!video || !video.videoWidth) throw new Error("No video frame to analyze yet");
+  const c = document.createElement("canvas");
+  c.width = video.videoWidth;
+  c.height = video.videoHeight;
+  c.getContext("2d")!.drawImage(video, 0, 0);
+  return new Promise<Blob>((resolve, reject) =>
+    c.toBlob((b) => (b ? resolve(b) : reject(new Error("Frame capture failed"))), "image/png"));
+}
+
 export function App() {
   const { file, objectUrl, isVideo, upload, error: uploadError, clearError } = useUpload();
   const proxy = useProxyStream();
@@ -58,6 +73,16 @@ export function App() {
   const [renderer, setRenderer] = useState<Renderer | null>(null);
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
+
+  // AI depth-of-field. The map is fetched once per source (cached on the server
+  // too), then every focus/amount drag is real-time off the cached map.
+  const [depthMap, setDepthMap] = useState<DepthMapState | null>(null);
+  const [depthState, setDepthState] = useState<"idle" | "loading" | "error">("idle");
+  const [depthError, setDepthError] = useState<string | null>(null);
+  // "Active" = group on and aperture open. Gating the paid depth fetch on
+  // amount > 0 means just enabling the group (amount still 0, no visible blur)
+  // doesn't spend a Replicate run; raising the slider is the real trigger.
+  const dofEnabled = params["no-dof"] !== true && Number(params["dof-amount"] ?? 0) > 0;
 
   const lastTimeRef = useRef(0);
   useEffect(() => {
@@ -239,6 +264,62 @@ export function App() {
   const handleParamChange = useCallback((key: string, value: number | string | boolean) => {
     setParams(prev => ({ ...prev, [key]: value }));
   }, []);
+
+  // Drop any cached depth when the source changes — it belongs to the old image.
+  useEffect(() => {
+    setDepthMap(null);
+    setDepthState("idle");
+    setDepthError(null);
+  }, [objectUrl]);
+
+  // Fetch the depth map the first time DoF is enabled for this source. Stills
+  // upload the file; the per-frame video preview uploads the current frame.
+  useEffect(() => {
+    if (!file || !dofEnabled || depthMap || depthState === "loading") return;
+    let cancelled = false;
+    setDepthState("loading");
+    setDepthError(null);
+    (async () => {
+      try {
+        const blob: Blob = isVideo ? await captureVideoFrame(videoElement) : file;
+        const fd = new FormData();
+        fd.append("file", blob, isVideo ? "frame.png" : file.name);
+        const res = await fetch("/api/depth", { method: "POST", body: fd });
+        if (!res.ok) throw new Error(await res.text());
+        const json = (await res.json()) as { width: number; height: number; data: number[] };
+        if (cancelled) return;
+        setDepthMap({ width: json.width, height: json.height, data: new Float32Array(json.data) });
+        setDepthState("idle");
+      } catch (err) {
+        if (cancelled) return;
+        setDepthError((err as Error).message);
+        setDepthState("error");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [file, isVideo, videoElement, dofEnabled, depthMap, depthState]);
+
+  // Push the depth map (or clear it) into the renderer so the preview's DoF pass
+  // matches what the CLI/export would produce.
+  useEffect(() => {
+    if (!renderer) return;
+    if (dofEnabled && depthMap) {
+      renderer.setDepth(depthMap.data, depthMap.width, depthMap.height);
+    } else {
+      renderer.clearDepth();
+    }
+    if (!isVideo) renderer.renderFrame();
+  }, [renderer, depthMap, dofEnabled, isVideo]);
+
+  // Click-to-focus: read the depth under the cursor and set the focus plane.
+  const handlePickFocus = useCallback((u: number, v: number) => {
+    if (!depthMap) return;
+    const x = Math.min(depthMap.width - 1, Math.max(0, Math.floor(u * depthMap.width)));
+    const y = Math.min(depthMap.height - 1, Math.max(0, Math.floor(v * depthMap.height)));
+    const d = depthMap.data[y * depthMap.width + x];
+    handleParamChange("focus", Math.round(d * 100) / 100);
+    commitHistory();
+  }, [depthMap, handleParamChange, commitHistory]);
 
   const handleReset = useCallback(() => {
     if (!activeLookParams) return;
@@ -440,6 +521,24 @@ export function App() {
               </div>
             </div>
           )}
+          {dofEnabled && depthState === "loading" && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 backdrop-blur text-xs text-zinc-200">
+                <span className="w-3 h-3 rounded-full border-2 border-zinc-500 border-t-accent animate-spin" />
+                Analyzing depth…
+              </div>
+            </div>
+          )}
+          {dofEnabled && depthError && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 max-w-md px-3 py-2 rounded-lg bg-zinc-900/90 border border-danger/40 text-xs text-zinc-300 text-center">
+              {depthError}
+            </div>
+          )}
+          {dofEnabled && depthMap && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 px-3 py-1 rounded-full bg-zinc-900/70 text-[11px] text-zinc-400 pointer-events-none">
+              Click the image to set focus
+            </div>
+          )}
           {previewError && !isVideo ? (
             <div className="flex flex-col items-center gap-3 max-w-md text-center p-6 bg-zinc-900 rounded-lg border border-danger/40">
               <div className="text-sm text-zinc-200">Preview failed</div>
@@ -462,6 +561,7 @@ export function App() {
               onPanMouseDown={canvasTransform.onMouseDown}
               onPanMouseMove={canvasTransform.onMouseMove}
               onPanMouseUp={canvasTransform.onMouseUp}
+              onPick={dofEnabled && depthMap ? handlePickFocus : undefined}
             />
           )}
         </div>

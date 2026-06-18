@@ -1,4 +1,4 @@
-import { EFFECT_SCHEMA, seedDefaults, loadPreset, builtinPresetsDir, userPresetsDir, listPresetNames, probe, rebuildPresetIndex, requireCodecLicense } from "@hance/core";
+import { EFFECT_SCHEMA, seedDefaults, loadPreset, builtinPresetsDir, userPresetsDir, listPresetNames, probe, rebuildPresetIndex, requireCodecLicense, fetchDepthMap } from "@hance/core";
 import type { PresetData, LicenseContext } from "@hance/core";
 import { runGpuExport } from "@hance/gpu";
 import { join, extname, basename, resolve } from "node:path";
@@ -304,6 +304,28 @@ export function createServer(port: number) {
             "Connection": "keep-alive",
           },
         });
+      }
+
+      // AI depth-of-field: fetch (or load the cached) depth map for the source.
+      // The client uploads an image File for stills, or a captured frame PNG for
+      // the per-frame video preview. Token comes from REPLICATE_API_TOKEN; a
+      // missing token surfaces fetchDepthMap's actionable message as a 400.
+      if (url.pathname === "/api/depth" && req.method === "POST") {
+        const formData = await req.formData();
+        const file = formData.get("file") as File | null;
+        if (!file) return new Response("file required", { status: 400 });
+        const tempDir = join(tmpdir(), "hance-depth-src");
+        if (!existsSync(tempDir)) mkdirSync(tempDir, { recursive: true });
+        const inputPath = join(tempDir, file.name || "frame.png");
+        await Bun.write(inputPath, file);
+        try {
+          const depth = await fetchDepthMap(inputPath);
+          return Response.json({ width: depth.width, height: depth.height, data: Array.from(depth.data) });
+        } catch (err) {
+          return new Response((err as Error).message, { status: 400 });
+        } finally {
+          try { unlinkSync(inputPath); } catch {}
+        }
       }
 
       // Cheap cache probe: the client sends only file metadata, so a hit costs

@@ -13,6 +13,9 @@ const EXPORT_PRESETS = ["low", "medium", "high", "max"] as const;
 const NON_EFFECT_FLAGS = new Set([
   "--output", "-o", "--preset", "--codec", "--encode-preset", "--crf",
   "--blend", "--export", "--no-config", "--help", "-h",
+  // Trigger to fetch/load a depth map and enable the DoF pass. The focus /
+  // amount / max-blur values come from the schema-derived flags.
+  "--dof",
 ]);
 
 // ---------------------------------------------------------------------------
@@ -82,7 +85,7 @@ const KNOWN_FLAGS = new Set<string>([
 ]);
 
 /** Flags that take no value. */
-const BOOLEAN_FLAGS = new Set<string>(["--no-config", ...ENABLE_FLAGS.keys()]);
+const BOOLEAN_FLAGS = new Set<string>(["--no-config", "--dof", ...ENABLE_FLAGS.keys()]);
 for (const [flag, b] of FLAG_BINDINGS) {
   if (b.aliasValue !== undefined || b.opt.type === "boolean") BOOLEAN_FLAGS.add(flag);
 }
@@ -182,6 +185,7 @@ export function parseEffectFlags(argv: string[]): ParsedEffectFlags {
     // Boolean flags (effect toggles, aliases, boolean options, --no-config).
     if (BOOLEAN_FLAGS.has(arg)) {
       if (arg === "--no-config") { i++; continue; }
+      if (arg === "--dof") { overrides["dof"] = true; i++; continue; }
       const enableGroup = ENABLE_FLAGS.get(arg);
       if (enableGroup) { overrides[enableGroup.enableKey] = true; i++; continue; }
       const binding = FLAG_BINDINGS.get(arg)!;
