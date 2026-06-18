@@ -7,6 +7,8 @@ import { useHistory } from "./hooks/useHistory";
 import { useCanvasTransform } from "./hooks/useCanvasTransform";
 import { useCanvasInput } from "./hooks/useCanvasInput";
 import { useUndoRedo } from "./hooks/useUndoRedo";
+import { useExport } from "./hooks/useExport";
+import { useCanvasRect } from "./hooks/useCanvasRect";
 import { TopBar } from "./components/TopBar";
 import { LooksPanel } from "./components/LooksPanel";
 import { AdjustmentsPanel } from "./components/AdjustmentsPanel";
@@ -21,7 +23,6 @@ import { CompareOverlay } from "./components/CompareOverlay";
 import type { Renderer, PreviewParams } from "./gpu/renderer";
 import type { EffectGroup } from "@hance/core";
 import { seedDefaults } from "@hance/core";
-import { consumeSSE } from "./lib/sse";
 import { fetchJson } from "./lib/fetchJson";
 import { useProxyStream } from "./hooks/useProxyStream";
 
@@ -106,9 +107,6 @@ export function App() {
   const [animating, setAnimating] = useState(false);
   const [showSaveAsNew, setShowSaveAsNew] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
-  const [exportProgress, setExportProgress] = useState<{ state: "idle" | "uploading" | "rendering" | "done" | "error"; progress: number; downloadUrl: string | null; error: string | null }>({
-    state: "idle", progress: 0, downloadUrl: null, error: null,
-  });
   const [viewMode, setViewMode] = useState<ViewMode>("normal");
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [splitPosition, setSplitPosition] = useState(0.5);
@@ -121,8 +119,9 @@ export function App() {
       canvasTransform.setPanMode(false);
     }
   }, [canvasTransform.setZoom, canvasTransform.setPanMode]);
-  const [canvasRect, setCanvasRect] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+  const canvasRect = useCanvasRect(canvas);
   const hoverParamsRef = useRef<PreviewParams | null>(null);
+  const { exportProgress, startExport, resetExport } = useExport(file, params);
 
   function chooseReferenceImage() {
     const input = document.createElement("input");
@@ -147,20 +146,6 @@ export function App() {
     canvasTransform.setZoom("fit");
     canvasTransform.setPanMode(false);
   }, [objectUrl]);
-
-  useEffect(() => {
-    if (!canvas) { setCanvasRect(null); return; }
-    function update() {
-      const r = canvas!.getBoundingClientRect();
-      setCanvasRect({ left: r.left, top: r.top, width: r.width, height: r.height });
-    }
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(canvas);
-    window.addEventListener("scroll", update, true);
-    window.addEventListener("resize", update);
-    return () => { ro.disconnect(); window.removeEventListener("scroll", update, true); window.removeEventListener("resize", update); };
-  }, [canvas]);
 
   const {
     looks, activeLook, activeLookParams,
@@ -322,37 +307,10 @@ export function App() {
     setShowSaveAsNew(true);
   }, []);
 
-  const handleExport = useCallback(async (opts: { codec: string; crf: number; outputPath: string }) => {
-    if (!file) return;
+  const handleExport = useCallback((opts: { codec: string; crf: number; outputPath: string }) => {
     setShowExportModal(false);
-    setExportProgress({ state: "uploading", progress: 0, downloadUrl: null, error: null });
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("params", JSON.stringify(params));
-    formData.append("codec", opts.codec);
-    formData.append("crf", String(opts.crf));
-    formData.append("outputName", opts.outputPath);
-    try {
-      const res = await fetch("/api/export", { method: "POST", body: formData });
-      setExportProgress(p => ({ ...p, state: "rendering" }));
-      await consumeSSE(res, {
-        onProgress: (p) => setExportProgress(prev => ({ ...prev, progress: p })),
-        onDone: (data) => {
-          const url = data.downloadUrl as string;
-          setExportProgress({ state: "done", progress: 1, downloadUrl: url, error: null });
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = opts.outputPath;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-        },
-        onError: (msg) => setExportProgress({ state: "error", progress: 0, downloadUrl: null, error: msg }),
-      });
-    } catch (err) {
-      setExportProgress({ state: "error", progress: 0, downloadUrl: null, error: (err as Error).message });
-    }
-  }, [file, params]);
+    startExport(opts);
+  }, [startExport]);
 
   const handleCreateLook = useCallback((name: string, metadata: { description: string; keywords: string[]; characteristics: string[] }) => {
     createLook(name, params, metadata);
@@ -412,7 +370,7 @@ export function App() {
         onSaveAsNew={handleSaveAsNew}
         onExportClick={() => setShowExportModal(true)}
         exportProgress={exportProgress}
-        onExportDone={() => setExportProgress({ state: "idle", progress: 0, downloadUrl: null, error: null })}
+        onExportDone={resetExport}
       />
 
       <div className="flex-1 flex overflow-hidden">
