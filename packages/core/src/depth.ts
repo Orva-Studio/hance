@@ -195,8 +195,9 @@ async function decodeDepthImage(bytes: Uint8Array, maxDim: number, invert: boole
   const tmp = join(tmpdir(), `hance-depth-${process.pid}-${Date.now()}.img`);
   await Bun.write(tmp, bytes);
   try {
-    // gray16le keeps the model's full bit depth so the blur falloff doesn't band.
-    const scale = `scale='min(${maxDim},iw)':-1:force_original_aspect_ratio=decrease`;
+    // Fit within a maxDim box, never upscale. gray16le keeps the model's full
+    // bit depth so the blur falloff doesn't band.
+    const scale = `scale=w='min(${maxDim},iw)':h='min(${maxDim},ih)':force_original_aspect_ratio=decrease`;
     const proc = Bun.spawn(
       ["ffmpeg", "-i", tmp, "-vf", scale, "-f", "rawvideo", "-pix_fmt", "gray16le", "-v", "error", "pipe:1"],
       { stdout: "pipe", stderr: "pipe" },
@@ -205,33 +206,32 @@ async function decodeDepthImage(bytes: Uint8Array, maxDim: number, invert: boole
     if ((await proc.exited) !== 0) {
       throw new Error(`ffmpeg depth decode failed: ${(await new Response(proc.stderr).text()).trim()}`);
     }
-    // Recover dimensions from the scaled image (ffprobe reads the same temp file
-    // through the same scale filter would be redundant; derive from byte count
-    // and probed aspect instead).
-    const { width, height } = await probeScaledSize(tmp, maxDim, raw.length / 2);
-    const samples = new Uint16Array(raw.buffer, raw.byteOffset, raw.length / 2);
+    const sampleCount = raw.length / 2; // gray16le = 2 bytes/sample
+    // ffmpeg's decrease-fit rounds width = round(iw * min(1, maxDim/max(iw,ih)));
+    // the matching height then falls out of the exact sample count, so there's
+    // no second rounding to drift against.
+    const src = await probeSize(tmp);
+    const ratio = Math.min(1, maxDim / Math.max(src.width, src.height));
+    const width = Math.max(1, Math.round(src.width * ratio));
+    const height = sampleCount / width;
+    if (!Number.isInteger(height)) {
+      throw new Error(`depth decode size mismatch: ${sampleCount} samples for width ${width}`);
+    }
+    const samples = new Uint16Array(raw.buffer, raw.byteOffset, sampleCount);
     return { width, height, data: normalizeDepth(samples, invert) };
   } finally {
     try { await Bun.file(tmp).exists() && (await import("node:fs/promises")).unlink(tmp); } catch {}
   }
 }
 
-async function probeScaledSize(path: string, maxDim: number, pixelCount: number): Promise<{ width: number; height: number }> {
+async function probeSize(path: string): Promise<{ width: number; height: number }> {
   const proc = Bun.spawn(
     ["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0", path],
     { stdout: "pipe", stderr: "ignore" },
   );
   const out = (await new Response(proc.stdout).text()).trim();
   await proc.exited;
-  const [w, h] = out.split(",").map((n) => parseInt(n, 10));
-  // Mirror ffmpeg's decrease-fit so width*height matches the decoded byte count.
-  const ratio = Math.min(1, maxDim / Math.max(w, h));
-  let width = Math.round(w * ratio);
-  let height = Math.round(h * ratio);
-  if (width * height !== pixelCount) {
-    // Aspect rounding can be off by a row/col; trust the byte count for height.
-    height = Math.max(1, Math.floor(pixelCount / Math.max(1, width)));
-  }
+  const [width, height] = out.split(",").map((n) => parseInt(n, 10));
   return { width, height };
 }
 

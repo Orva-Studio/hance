@@ -314,9 +314,14 @@ export function createServer(port: number) {
         const formData = await req.formData();
         const file = formData.get("file") as File | null;
         if (!file) return new Response("file required", { status: 400 });
+        // Cap the upload: a still gets downscaled to maxDim (1024) before the
+        // model sees it anyway, so anything past this is abuse, not a photo.
+        if (file.size > 50 * 1024 * 1024) return new Response("file too large", { status: 413 });
         const tempDir = join(tmpdir(), "hance-depth-src");
         if (!existsSync(tempDir)) mkdirSync(tempDir, { recursive: true });
-        const inputPath = join(tempDir, file.name || "frame.png");
+        // basename() strips any path in the client-supplied name so it can't
+        // escape tempDir (e.g. "../../etc/x") into an arbitrary write/delete.
+        const inputPath = join(tempDir, basename(file.name) || "frame.png");
         await Bun.write(inputPath, file);
         try {
           const depth = await fetchDepthMap(inputPath);
