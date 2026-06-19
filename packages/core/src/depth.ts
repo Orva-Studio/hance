@@ -1,0 +1,276 @@
+import { existsSync, mkdirSync } from "node:fs";
+import { join } from "node:path";
+import { homedir, tmpdir } from "node:os";
+
+/**
+ * A monocular depth map normalized to 0–1. `near=1, far=0` (Depth Anything
+ * emits relative *inverse* depth / disparity, where brighter = closer; we keep
+ * that convention explicit here so `focus` reads the same way in the shader).
+ * `data` is row-major, length `width * height`.
+ */
+export interface DepthMap {
+  width: number;
+  height: number;
+  data: Float32Array;
+}
+
+// --- Replicate model pin --------------------------------------------------
+// Depth Anything V2 *Small* is Apache-2.0 — safe for commercial use. The
+// Base/Large/Giant checkpoints are CC-BY-NC, so we deliberately pin the small
+// encoder and never default to a larger tier. See issue #114.
+export const REPLICATE_MODEL = "chenxwh/depth-anything-v2";
+// ponytail: version hash must track the current Small/Apache build of the model.
+// Replicate community models require an explicit version; confirm/update this
+// pin against https://replicate.com/chenxwh/depth-anything-v2/versions before
+// shipping. Override per-call with opts.version (tests inject their own).
+export const REPLICATE_MODEL_VERSION =
+  (typeof process !== "undefined" ? process.env.HANCE_DEPTH_VERSION : undefined) ??
+  "b239ea33cff32bb7abb5db39ffe9a09c14cbc2894331d1ef66fe096eed88ebd4";
+
+const REPLICATE_API = "https://api.replicate.com/v1/predictions";
+
+export type FetchImpl = typeof fetch;
+
+export interface ReplicateOpts {
+  token: string;
+  /** Data URI of the source image, e.g. `data:image/png;base64,...`. */
+  imageDataUri: string;
+  model?: string;
+  version?: string;
+  fetchImpl?: FetchImpl;
+  /** Poll interval while the prediction runs (0 in tests). */
+  pollIntervalMs?: number;
+  /** Safety cap on poll attempts. */
+  maxPolls?: number;
+}
+
+interface Prediction {
+  id: string;
+  status: "starting" | "processing" | "succeeded" | "failed" | "canceled";
+  // This model returns { grey_depth, color_depth }; older/other depth models
+  // return a bare URL or array. Handle all shapes.
+  output?: string | string[] | { grey_depth?: string; color_depth?: string } | null;
+  error?: string | null;
+  urls?: { get?: string };
+}
+
+function firstOutputUrl(output: Prediction["output"]): string {
+  let url: unknown = output;
+  if (Array.isArray(output)) url = output[output.length - 1];
+  else if (output && typeof output === "object") url = output.grey_depth ?? output.color_depth;
+  if (typeof url !== "string" || !url) throw new Error("Replicate returned no depth image");
+  return url;
+}
+
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+/**
+ * Call the Replicate depth model and return the raw depth-image bytes. Pure HTTP
+ * (no ffmpeg, no disk) so it can be unit-tested with a mocked `fetchImpl`; the
+ * token is sent only in the Authorization header and never logged.
+ */
+export async function requestReplicateDepth(opts: ReplicateOpts): Promise<Uint8Array> {
+  const doFetch = opts.fetchImpl ?? fetch;
+  const pollIntervalMs = opts.pollIntervalMs ?? 1500;
+  const maxPolls = opts.maxPolls ?? 120;
+  const headers = {
+    Authorization: `Bearer ${opts.token}`,
+    "Content-Type": "application/json",
+  };
+
+  const createRes = await doFetch(REPLICATE_API, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      version: opts.version ?? REPLICATE_MODEL_VERSION,
+      input: { image: opts.imageDataUri, model_size: "Small" },
+    }),
+  });
+  if (!createRes.ok) {
+    throw new Error(`Replicate prediction failed (${createRes.status}): ${await safeText(createRes)}`);
+  }
+
+  let pred = (await createRes.json()) as Prediction;
+  // Capture the poll URL once — poll responses don't always echo `urls`.
+  const getUrl = pred.urls?.get ?? `${REPLICATE_API}/${pred.id}`;
+  let polls = 0;
+  while (pred.status !== "succeeded" && pred.status !== "failed" && pred.status !== "canceled") {
+    if (polls++ >= maxPolls) throw new Error("Replicate prediction timed out");
+    await sleep(pollIntervalMs);
+    const pollRes = await doFetch(getUrl, { headers });
+    if (!pollRes.ok) throw new Error(`Replicate poll failed (${pollRes.status})`);
+    pred = (await pollRes.json()) as Prediction;
+  }
+  if (pred.status !== "succeeded") {
+    throw new Error(`Replicate prediction ${pred.status}: ${pred.error ?? "unknown error"}`);
+  }
+
+  const imgRes = await doFetch(firstOutputUrl(pred.output));
+  if (!imgRes.ok) throw new Error(`Failed to download depth image (${imgRes.status})`);
+  return new Uint8Array(await imgRes.arrayBuffer());
+}
+
+async function safeText(res: Response): Promise<string> {
+  try {
+    return (await res.text()).slice(0, 200);
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Per-image min–max stretch of raw depth samples to 0–1. Depth Anything emits a
+ * relative map with no absolute scale, so normalizing per image is correct.
+ * `invert` flips the near/far sign for models that emit near=dark.
+ */
+export function normalizeDepth(samples: ArrayLike<number>, invert = false): Float32Array {
+  const n = samples.length;
+  let min = Infinity;
+  let max = -Infinity;
+  for (let i = 0; i < n; i++) {
+    const v = samples[i];
+    if (v < min) min = v;
+    if (v > max) max = v;
+  }
+  const out = new Float32Array(n);
+  const span = max - min;
+  if (span <= 0) return out; // flat map → all 0 (no defocus anywhere)
+  for (let i = 0; i < n; i++) {
+    const t = (samples[i] - min) / span;
+    out[i] = invert ? 1 - t : t;
+  }
+  return out;
+}
+
+// --- Disk cache + orchestration ------------------------------------------
+
+export interface FetchDepthOpts {
+  token?: string;
+  cacheDir?: string;
+  model?: string;
+  version?: string;
+  invert?: boolean;
+  /** Cap the longer depth-map edge to bound init payload + GPU memory. */
+  maxDim?: number;
+  fetchImpl?: FetchImpl;
+  pollIntervalMs?: number;
+}
+
+export function depthCacheDir(): string {
+  return join(homedir(), ".cache", "hance", "depth");
+}
+
+async function sha256Hex(...parts: Array<Uint8Array | string>): Promise<string> {
+  const hasher = new Bun.CryptoHasher("sha256");
+  for (const p of parts) hasher.update(p);
+  return hasher.digest("hex");
+}
+
+function writeDepthCache(path: string, map: DepthMap): void {
+  const header = new Uint32Array([map.width, map.height]);
+  const out = new Uint8Array(8 + map.data.byteLength);
+  out.set(new Uint8Array(header.buffer), 0);
+  out.set(new Uint8Array(map.data.buffer, map.data.byteOffset, map.data.byteLength), 8);
+  Bun.write(path, out);
+}
+
+async function readDepthCache(path: string): Promise<DepthMap> {
+  const buf = new Uint8Array(await Bun.file(path).arrayBuffer());
+  const header = new Uint32Array(buf.buffer, buf.byteOffset, 2);
+  const width = header[0];
+  const height = header[1];
+  const data = new Float32Array(buf.buffer.slice(buf.byteOffset + 8));
+  return { width, height, data: data.slice(0, width * height) };
+}
+
+function mimeFor(path: string): string {
+  const ext = path.toLowerCase().split(".").pop();
+  if (ext === "png") return "image/png";
+  if (ext === "webp") return "image/webp";
+  return "image/jpeg";
+}
+
+/** Decode a depth image (any format ffmpeg reads) to normalized 0–1 samples. */
+async function decodeDepthImage(bytes: Uint8Array, maxDim: number, invert: boolean): Promise<DepthMap> {
+  const tmp = join(tmpdir(), `hance-depth-${process.pid}-${Date.now()}.img`);
+  await Bun.write(tmp, bytes);
+  try {
+    // Fit within a maxDim box, never upscale. gray16le keeps the model's full
+    // bit depth so the blur falloff doesn't band.
+    const scale = `scale=w='min(${maxDim},iw)':h='min(${maxDim},ih)':force_original_aspect_ratio=decrease`;
+    const proc = Bun.spawn(
+      ["ffmpeg", "-i", tmp, "-vf", scale, "-f", "rawvideo", "-pix_fmt", "gray16le", "-v", "error", "pipe:1"],
+      { stdout: "pipe", stderr: "pipe" },
+    );
+    const raw = new Uint8Array(await new Response(proc.stdout).arrayBuffer());
+    if ((await proc.exited) !== 0) {
+      throw new Error(`ffmpeg depth decode failed: ${(await new Response(proc.stderr).text()).trim()}`);
+    }
+    const sampleCount = raw.length / 2; // gray16le = 2 bytes/sample
+    // ffmpeg's decrease-fit rounds width = round(iw * min(1, maxDim/max(iw,ih)));
+    // the matching height then falls out of the exact sample count, so there's
+    // no second rounding to drift against.
+    const src = await probeSize(tmp);
+    const ratio = Math.min(1, maxDim / Math.max(src.width, src.height));
+    const width = Math.max(1, Math.round(src.width * ratio));
+    const height = sampleCount / width;
+    if (!Number.isInteger(height)) {
+      throw new Error(`depth decode size mismatch: ${sampleCount} samples for width ${width}`);
+    }
+    const samples = new Uint16Array(raw.buffer, raw.byteOffset, sampleCount);
+    return { width, height, data: normalizeDepth(samples, invert) };
+  } finally {
+    try { await Bun.file(tmp).exists() && (await import("node:fs/promises")).unlink(tmp); } catch {}
+  }
+}
+
+async function probeSize(path: string): Promise<{ width: number; height: number }> {
+  const proc = Bun.spawn(
+    ["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0", path],
+    { stdout: "pipe", stderr: "ignore" },
+  );
+  const out = (await new Response(proc.stdout).text()).trim();
+  await proc.exited;
+  const [width, height] = out.split(",").map((n) => parseInt(n, 10));
+  return { width, height };
+}
+
+/**
+ * Get a normalized depth map for `inputPath`, fetching from Replicate on a cache
+ * miss and caching the result to disk keyed by sha256(file + model + version).
+ * Caching is mandatory: every fetch is a paid Replicate run. Throws an
+ * actionable error when no token is available.
+ */
+export async function fetchDepthMap(inputPath: string, opts: FetchDepthOpts = {}): Promise<DepthMap> {
+  const model = opts.model ?? REPLICATE_MODEL;
+  const version = opts.version ?? REPLICATE_MODEL_VERSION;
+  const invert = opts.invert ?? false;
+  const maxDim = opts.maxDim ?? 1024;
+  const cacheDir = opts.cacheDir ?? depthCacheDir();
+
+  const fileBytes = new Uint8Array(await Bun.file(inputPath).arrayBuffer());
+  const key = await sha256Hex(fileBytes, `${model}@${version}@${maxDim}@${invert}`);
+  const cachePath = join(cacheDir, `${key}.depth`);
+
+  if (existsSync(cachePath)) return readDepthCache(cachePath);
+
+  const token = opts.token ?? process.env.REPLICATE_API_TOKEN;
+  if (!token) {
+    throw new Error(
+      "Depth-of-field needs a Replicate API token. Set REPLICATE_API_TOKEN " +
+      "(get one at https://replicate.com/account/api-tokens). The depth map is " +
+      "fetched once and cached, so later runs are offline.",
+    );
+  }
+
+  const imageDataUri = `data:${mimeFor(inputPath)};base64,${Buffer.from(fileBytes).toString("base64")}`;
+  const depthBytes = await requestReplicateDepth({
+    token, imageDataUri, model, version,
+    fetchImpl: opts.fetchImpl, pollIntervalMs: opts.pollIntervalMs,
+  });
+  const map = await decodeDepthImage(depthBytes, maxDim, invert);
+
+  if (!existsSync(cacheDir)) mkdirSync(cacheDir, { recursive: true });
+  writeDepthCache(cachePath, map);
+  return map;
+}

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING, REFERENCE_HEIGHT, resolutionScale } from "../src/render-constants";
+import { HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING, REFERENCE_HEIGHT, resolutionScale, DOF_MAX_RADIUS, dofRadiusPx } from "../src/render-constants";
 
 const repoRoot = join(import.meta.dir, "..", "..", "..");
 
@@ -52,5 +52,33 @@ describe("shared render constants", () => {
     expect(ts).toContain("resolutionScale");
     const rs = readFileSync(join(repoRoot, "packages/wgpu/src/renderer.rs"), "utf8");
     expect(rs).toContain("resolution_scale");
+  });
+});
+
+describe("depth-of-field amount → radius mapping", () => {
+  test("a pixel on the focus plane is never blurred", () => {
+    expect(dofRadiusPx(0.5, 0.5, 1, 100, 1080)).toBe(0);
+  });
+
+  test("radius scales linearly with amount and with depth distance", () => {
+    // coeff = amount * DOF_MAX_RADIUS * resolutionScale(1080=1).
+    expect(dofRadiusPx(1.0, 0.5, 0.5, 100, 1080)).toBeCloseTo(0.5 * DOF_MAX_RADIUS * 0.5, 5);
+    // Double the depth distance → double the radius (below the clamp).
+    expect(dofRadiusPx(0.6, 0.5, 0.2, 100, 1080)).toBeCloseTo(
+      2 * dofRadiusPx(0.55, 0.5, 0.2, 100, 1080),
+      5,
+    );
+  });
+
+  test("max-blur clamps the radius", () => {
+    // amount 1, full depth distance would be DOF_MAX_RADIUS px; clamp to 8.
+    expect(dofRadiusPx(1.0, 0.0, 1, 8, 1080)).toBe(8);
+  });
+
+  test("higher resolution scales the radius up", () => {
+    expect(dofRadiusPx(1.0, 0.0, 0.1, 1000, 2160)).toBeCloseTo(
+      2 * dofRadiusPx(1.0, 0.0, 0.1, 1000, 1080),
+      5,
+    );
   });
 });

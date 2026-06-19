@@ -23,6 +23,8 @@ pub struct RenderConstants {
     pub fade_color_hues: std::collections::HashMap<String, f32>,
     #[serde(rename = "fadeTintStrength")]
     pub fade_tint_strength: f32,
+    #[serde(rename = "dofMaxRadius")]
+    pub dof_max_radius: f32,
 }
 
 const RENDER_CONSTANTS_JSON: &str = include_str!("../../core/constants/render.json");

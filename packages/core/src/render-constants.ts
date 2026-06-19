@@ -28,3 +28,29 @@ export function resolutionScale(frameHeight: number): number {
 export const FADE_COLOR_HUES: Record<string, number> = renderConstants.fadeColorHues;
 /** Tint strength applied to the black lift for any non-neutral fade color. */
 export const FADE_TINT_STRENGTH: number = renderConstants.fadeTintStrength;
+
+/**
+ * Blur radius (px, at REFERENCE_HEIGHT) a fully-open aperture produces for a
+ * pixel one full unit of depth away from the focus plane. The artistic DoF
+ * heuristic, NOT a physical circle-of-confusion. Shared with the Rust export
+ * renderer so preview and export agree.
+ */
+export const DOF_MAX_RADIUS: number = renderConstants.dofMaxRadius;
+
+/**
+ * Per-pixel DoF blur radius in px. `depth` and `focus` are in the normalized
+ * 0–1 depth space (1 = near, 0 = far). The renderers (TS preview + Rust export
+ * + WGSL shader) all compute this same value: a coefficient
+ * `amount * DOF_MAX_RADIUS * resolutionScale` times the distance from the focus
+ * plane, clamped to `maxBlurPx`. This pure mirror is the tested contract.
+ */
+export function dofRadiusPx(
+  depth: number,
+  focus: number,
+  amount: number,
+  maxBlurPx: number,
+  frameHeight: number,
+): number {
+  const coeff = amount * DOF_MAX_RADIUS * resolutionScale(frameHeight);
+  return Math.min(coeff * Math.abs(depth - focus), maxBlurPx);
+}

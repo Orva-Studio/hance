@@ -20,6 +20,7 @@ const COMBINE_FRAG: &str = include_str!("../../core/shaders/halation-combine.fra
 
 const COLORSPACE_FRAG: &str = include_str!("../../core/shaders/colorspace.frag.wgsl");
 const LUT_FRAG: &str = include_str!("../../core/shaders/lut.frag.wgsl");
+const DOF_FRAG: &str = include_str!("../../core/shaders/dof.frag.wgsl");
 
 const LUT_N: u32 = 33;
 
@@ -48,11 +49,16 @@ pub struct GpuRenderer {
     blend_layout: BindGroupLayout,
     combine_layout: BindGroupLayout,
     lut_layout: BindGroupLayout,
+    dof_layout: BindGroupLayout,
     sampler: Sampler,
 
     // Input/pre-LUT (None = identity/disabled, pass skipped)
     lut_pipeline: RenderPipeline,
     lut_tex: Option<Texture>,
+
+    // Depth-of-field (None depth = pass skipped, offline path unchanged)
+    dof_pipeline: RenderPipeline,
+    depth_tex: Option<Texture>,
 
     // Pipelines
     color_pipeline: RenderPipeline,
@@ -89,13 +95,14 @@ pub struct GpuRenderer {
     decode_ub: Buffer,
     encode_ub: Buffer,
     color_ub_identity: Buffer,
+    dof_ub: Buffer,
 
     // Readback
     staging_buf: Buffer,
 }
 
 impl GpuRenderer {
-    pub fn new(width: u32, height: u32, raw_params: &HashMap<String, serde_json::Value>, lut: Option<&[f32]>) -> Result<Self, String> {
+    pub fn new(width: u32, height: u32, raw_params: &HashMap<String, serde_json::Value>, lut: Option<&[f32]>, depth: Option<&crate::params::DepthMap>) -> Result<Self, String> {
         let instance = Instance::new(&InstanceDescriptor {
             backends: Backends::all(),
             ..Default::default()
@@ -123,6 +130,7 @@ impl GpuRenderer {
         let blend_layout = passes::create_blend_bind_group_layout(&device);
         let combine_layout = passes::create_combine_bind_group_layout(&device);
         let lut_layout = passes::create_lut_bind_group_layout(&device);
+        let dof_layout = passes::create_dof_bind_group_layout(&device);
 
         let half_w = (width / 2).max(1);
         let half_h = (height / 2).max(1);
@@ -160,6 +168,7 @@ impl GpuRenderer {
         let colorspace_pipeline = passes::create_pipeline(&device, VERT, COLORSPACE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
         let blit_pipeline = passes::create_pipeline(&device, VERT, COLOR_FRAG, &std_layout, OUTPUT_FORMAT);
         let lut_pipeline = passes::create_pipeline(&device, VERT, LUT_FRAG, &lut_layout, INTERMEDIATE_FORMAT);
+        let dof_pipeline = passes::create_pipeline(&device, VERT, DOF_FRAG, &dof_layout, INTERMEDIATE_FORMAT);
 
         // Upload the baked LUT as a 33^3 rgba16float 3D texture (alpha = 1).
         let lut_tex = lut.map(|data| {
@@ -200,6 +209,47 @@ impl GpuRenderer {
             tex
         });
 
+        // Upload the normalized depth map as an R32Float 2D texture. The bokeh
+        // shader samples it by UV, so it keeps its own (possibly smaller)
+        // resolution and the GPU bilinearly resizes.
+        // R16Float so a filtering sampler can bilinearly upscale it (R32Float
+        // isn't filterable without an extra device feature). 16-bit keeps the
+        // falloff smooth — the issue calls out banding from 8-bit depth.
+        let depth_tex = depth.map(|d| {
+            let dw = d.width.max(1);
+            let dh = d.height.max(1);
+            let mut texels: Vec<u8> = Vec::with_capacity(d.data.len() * 2);
+            for &v in &d.data {
+                texels.extend_from_slice(&half::f16::from_f32(v).to_le_bytes());
+            }
+            let tex = device.create_texture(&TextureDescriptor {
+                label: Some("depth"),
+                size: Extent3d { width: dw, height: dh, depth_or_array_layers: 1 },
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: TextureDimension::D2,
+                format: TextureFormat::R16Float,
+                usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
+                view_formats: &[],
+            });
+            queue.write_texture(
+                TexelCopyTextureInfo {
+                    texture: &tex,
+                    mip_level: 0,
+                    origin: Origin3d::ZERO,
+                    aspect: TextureAspect::All,
+                },
+                &texels,
+                TexelCopyBufferLayout {
+                    offset: 0,
+                    bytes_per_row: Some(dw * 2),
+                    rows_per_image: Some(dh),
+                },
+                Extent3d { width: dw, height: dh, depth_or_array_layers: 1 },
+            );
+            tex
+        });
+
         let color_ub = passes::create_uniform_buffer(&device, 48);
         let threshold_ub = passes::create_uniform_buffer(&device, 16);
         let blur_ub1 = passes::create_uniform_buffer(&device, 16);
@@ -221,6 +271,7 @@ impl GpuRenderer {
         queue.write_buffer(&encode_ub, 0, bytemuck_cast(&[1.0f32, 0.0, 0.0, 0.0])); // 1 = linear->sRGB
         let color_ub_identity = passes::create_uniform_buffer(&device, 48);
         queue.write_buffer(&color_ub_identity, 0, bytemuck_cast(&Params::color_settings_identity()));
+        let dof_ub = passes::create_uniform_buffer(&device, 32);
 
         let bytes_per_row = ((width * 4 + 255) / 256) * 256;
         let staging_buf = device.create_buffer(&BufferDescriptor {
@@ -248,9 +299,12 @@ impl GpuRenderer {
             blend_layout,
             combine_layout,
             lut_layout,
+            dof_layout,
             sampler,
             lut_pipeline,
             lut_tex,
+            dof_pipeline,
+            depth_tex,
             color_pipeline,
             threshold_pipeline,
             blur_pipeline,
@@ -283,6 +337,7 @@ impl GpuRenderer {
             decode_ub,
             encode_ub,
             color_ub_identity,
+            dof_ub,
             staging_buf,
         })
     }
@@ -357,6 +412,26 @@ impl GpuRenderer {
         );
         passes::run_pass(&mut encoder, &self.color_pipeline, &bg,
             &current_tex!().create_view(&TextureViewDescriptor::default()));
+
+        // --- Depth of Field (bokeh) ---
+        // Blurs the graded base by depth before the light-transport group, so
+        // halation/grain/bloom layer over the defocused image. Runs only when a
+        // depth map was supplied (DoF off → byte-for-byte passthrough).
+        if let Some(depth_tex) = &self.depth_tex {
+            if self.params.dof_active() {
+                self.write_uniform(&self.dof_ub, &self.params.dof_uniform(self.width, self.height));
+                let bg = passes::make_dof_bind_group(
+                    &self.device, &self.dof_layout,
+                    &current_tex!().create_view(&TextureViewDescriptor::default()),
+                    &self.sampler,
+                    &depth_tex.create_view(&TextureViewDescriptor::default()),
+                    &self.dof_ub,
+                );
+                passes::run_pass(&mut encoder, &self.dof_pipeline, &bg,
+                    &other_tex!().create_view(&TextureViewDescriptor::default()));
+                swap!();
+            }
+        }
 
         // The light-transport group runs in linear light. Only bracket the chain
         // with decode/encode passes when at least one of those effects is active,
