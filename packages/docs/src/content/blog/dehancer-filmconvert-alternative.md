@@ -34,9 +34,9 @@ This is an honest comparison. Hance isn't trying to out-emulate a colorist's plu
 | Agent / AI-harness friendly | **Yes** | No | No | No |
 | GUI preview | Browser preview (`hance ui`) | Yes (polished) | Yes (polished) | Yes (polished) |
 | Film-stock breadth / emulation fidelity | Good, growing | **Excellent** | **Excellent** | **Excellent** |
-| Maturity | Alpha, mac-first | Mature | Mature | Mature |
+| Maturity | Beta, mac-first | Mature | Mature | Mature |
 
-Where they win, credit where it's due: **if your job is matching a specific film stock with the deepest possible emulation fidelity, inside a colour grade, Dehancer and FilmBox are the better tool.** That's their moat and Hance isn't fighting it. Hance is alpha and mac-first today, with a smaller stock library.
+Where they win, credit where it's due: **if your job is matching a specific film stock with the deepest possible emulation fidelity, inside a colour grade, Dehancer and FilmBox are the better tool.** That's their moat and Hance isn't fighting it. Hance is beta and mac-first today, with a smaller stock library.
 
 Where Hance wins: **everything about workflow.** If you batch, script, automate, or just resent paying a subscription to add grain and halation to a clip, this is the one built for you. (Curious how the halation actually works? See [halation in FFmpeg, and in one Hance flag](/blog/halation-ffmpeg/).)
 

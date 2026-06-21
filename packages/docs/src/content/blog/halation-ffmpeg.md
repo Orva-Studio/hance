@@ -68,7 +68,7 @@ hance input.mp4 --halation-amount 0.4 --halation-radius 45
 
 The glow rolls off more smoothly because the highlight mask is a proper luminance curve rather than a hard luma threshold, so it stays on the highlights instead of tinting the whole high-key sky.
 
-See the [effects reference](/docs/cli/effects/) for the full list of flags. Same input plus same flags always produces the same frame, so it drops straight into a batch script or CI. No app, no plugin, no subscription. It's alpha and mac-first today (worth knowing), but if your goal is "I want film halation in a pipeline," it beats hand-authoring `filter_complex` per clip.
+See the [effects reference](/docs/cli/effects/) for the full list of flags. Same input plus same flags always produces the same frame, so it drops straight into a batch script or CI. No app, no plugin, no subscription. It's beta and mac-first today (worth knowing), but if your goal is "I want film halation in a pipeline," it beats hand-authoring `filter_complex` per clip.
 
 ```bash
 # try with no install (needs ffmpeg on PATH)
