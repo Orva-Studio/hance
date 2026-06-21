@@ -1,6 +1,6 @@
 # Hance
 
-> ⚠️ **Alpha software.** Mainly tested on macOS by a single developer. Expect rough edges on Linux, and pin versions if you rely on it. Windows is not supported; binaries ship for macOS (arm64/x64) and Linux (x64/arm64) only.
+> ⚠️ **Beta software.** Mainly tested on macOS by a single developer. Expect rough edges on Linux, and pin versions if you rely on it. Windows is not supported; binaries ship for macOS (arm64/x64) and Linux (x64/arm64) only.
 
 **Preview a cinematic film look in the browser, then batch-apply it from the CLI.** GPU-accelerated colour, halation, bloom, grain, vignette, split-tone, aberration, and camera shake — one binary, no plugins, no subscriptions.
 
