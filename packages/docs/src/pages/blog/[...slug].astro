@@ -1,0 +1,166 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import { SITE_URL } from '../../../site.config';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const url = new URL(`/blog/${post.id}/`, SITE_URL).href;
+const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'long' });
+
+// Article JSON-LD, plus an optional FAQPage when the post declares `faq`.
+// Built from frontmatter so the markup and rendered copy can't drift.
+const graph: Record<string, unknown>[] = [
+  {
+    '@type': 'Article',
+    headline: post.data.title,
+    description: post.data.description,
+    about: post.data.about ?? post.data.description,
+    image: new URL(post.data.heroImage, SITE_URL).href,
+    datePublished: post.data.pubDate.toISOString(),
+    author: { '@type': 'Person', name: post.data.author },
+    mainEntityOfPage: url,
+    url,
+  },
+];
+if (post.data.faq?.length) {
+  graph.push({
+    '@type': 'FAQPage',
+    mainEntity: post.data.faq.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  });
+}
+const jsonLd = { '@context': 'https://schema.org', '@graph': graph };
+---
+<Base title={`${post.data.title} — Hance`} description={post.data.description} image={post.data.heroImage}>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
+  <Nav />
+
+  <main class="px-6 sm:px-10 lg:px-16 pt-16 sm:pt-24 pb-24">
+    <article class="max-w-[68ch] mx-auto">
+      <a href="/blog/" class="font-mono text-[12px] text-accent uppercase tracking-[0.14em] hover:underline underline-offset-4">← Blog</a>
+      <time datetime={post.data.pubDate.toISOString()} class="mt-8 block font-mono text-[12px] text-ink-dim uppercase tracking-[0.18em]">
+        {dateFmt.format(post.data.pubDate)} · {post.data.author}
+      </time>
+      <h1 class="mt-4 font-sans font-medium tracking-tightest-2 leading-[1.02] text-ink text-[clamp(2rem,5.5vw,3.5rem)] text-balance">
+        {post.data.title}
+      </h1>
+
+      <img
+        src={post.data.heroImage}
+        alt={post.data.heroAlt}
+        width="1280"
+        height="720"
+        loading="eager"
+        class="mt-10 w-full aspect-video object-cover rounded-md ring-1 ring-surface-3"
+      />
+
+      <div class="post mt-12">
+        <Content />
+      </div>
+
+      <footer class="mt-16 pt-8 border-t border-surface-3 font-mono text-[12px] text-ink-dim uppercase tracking-[0.18em]">
+        Written by {post.data.author}
+      </footer>
+    </article>
+  </main>
+
+  <Footer />
+</Base>
+
+<style>
+  /* Prose styling for rendered markdown, using the site's design tokens. */
+  .post {
+    color: var(--color-ink-muted, #c8c8c8);
+    line-height: 1.7;
+  }
+  .post :global(p) { margin: 1.15em 0; }
+  .post :global(h2) {
+    font-family: "Inter Tight", Inter, system-ui, sans-serif;
+    color: var(--color-ink, #fff);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    font-size: 1.6rem;
+    margin: 2.2em 0 0.6em;
+  }
+  .post :global(h3) {
+    font-family: "Inter Tight", Inter, system-ui, sans-serif;
+    color: var(--color-ink, #fff);
+    font-weight: 500;
+    font-size: 1.25rem;
+    margin: 1.8em 0 0.5em;
+  }
+  .post :global(strong) { color: var(--color-ink, #fff); font-weight: 600; }
+  .post :global(a) {
+    color: var(--color-accent, #e08a4a);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .post :global(a:hover) { opacity: 0.85; }
+  .post :global(ul) { margin: 1.15em 0; padding-left: 1.3em; list-style: disc; }
+  .post :global(li) { margin: 0.4em 0; }
+  .post :global(img) {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid var(--color-surface-3, #2a2a2a);
+    margin: 1.6em 0;
+  }
+  .post :global(hr) {
+    border: 0;
+    border-top: 1px solid var(--color-surface-3, #2a2a2a);
+    margin: 2.4em 0;
+  }
+  .post :global(em) { color: var(--color-ink, #fff); }
+
+  /* Inline code + fenced blocks */
+  .post :global(code) {
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 0.88em;
+    background: oklch(0.17 0.013 220 / 0.6);
+    border: 1px solid oklch(0.22 0.014 220 / 0.7);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+  }
+  .post :global(pre) {
+    background: oklch(0.17 0.013 220 / 0.5);
+    border: 1px solid oklch(0.22 0.014 220 / 0.7);
+    border-radius: 6px;
+    padding: 18px 22px;
+    overflow-x: auto;
+    margin: 1.6em 0;
+    line-height: 1.55;
+  }
+  .post :global(pre code) {
+    background: none;
+    border: 0;
+    padding: 0;
+    font-size: 0.85rem;
+    color: oklch(0.94 0.015 80);
+  }
+
+  /* Comparison table */
+  .post :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.8em 0;
+    font-size: 0.92rem;
+  }
+  .post :global(th), .post :global(td) {
+    border: 1px solid var(--color-surface-3, #2a2a2a);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  .post :global(th) { color: var(--color-ink, #fff); font-weight: 600; }
+  .post :global(table strong) { color: var(--color-accent, #e08a4a); }
+</style>

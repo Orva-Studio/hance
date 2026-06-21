@@ -1,9 +1,9 @@
 ---
 import '../styles/global.css';
 import { SITE_URL } from '../../site.config';
-const { title = 'Hance: cinematic film looks for any editor', description = 'Cinematic film looks for any editor, rendered in one command. No plugins, no LUTs. Color, halation, bloom, grain, and more — GPU-accelerated, on your machine, and ready to drive from AI agents like Claude Code and Cursor.' } = Astro.props;
+const { title = 'Hance: cinematic film looks for any editor', description = 'Cinematic film looks for any editor, rendered in one command. No plugins, no LUTs. Color, halation, bloom, grain, and more — GPU-accelerated, on your machine, and ready to drive from AI agents like Claude Code and Cursor.', image = '/og-card.png' } = Astro.props;
 const canonical = new URL(Astro.url.pathname, SITE_URL).href;
-const ogImage = new URL('/og-card.png', SITE_URL).href;
+const ogImage = new URL(image, SITE_URL).href;
 ---
 <!doctype html>
 <html lang="en">

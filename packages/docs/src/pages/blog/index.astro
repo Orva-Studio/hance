@@ -1,0 +1,59 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+
+// Newest first; hide drafts.
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const dateFmt = new Intl.DateTimeFormat('en', { dateStyle: 'long' });
+---
+<Base
+  title="Blog — Hance"
+  description="Guides and comparisons on film looks, halation, grain, and grading from the command line with Hance."
+>
+  <Nav />
+
+  <main class="px-6 sm:px-10 lg:px-16 pt-16 sm:pt-24 pb-24">
+    <div class="max-w-[68ch] mx-auto">
+      <p class="font-mono text-[12px] text-ink-dim uppercase tracking-[0.18em]">Blog</p>
+      <h1 class="mt-4 font-sans font-medium tracking-tightest-2 leading-[0.95] text-ink text-[clamp(2.5rem,8vw,5rem)]">
+        Field Notes
+      </h1>
+      <p class="mt-6 text-ink-muted leading-relaxed">
+        Film looks from the command line: how the effects work, and how Hance fits a scriptable, reproducible pipeline.
+      </p>
+
+      <ul class="mt-14 sm:mt-20 divide-y divide-surface-3/80 border-y border-surface-3/80">
+        {posts.map((post) => (
+          <li>
+            <a href={`/blog/${post.id}/`} class="group grid sm:grid-cols-[200px_1fr] gap-5 sm:gap-7 py-7 sm:py-9 transition-colors hover:bg-surface-2/30 rounded-sm">
+              <img
+                src={post.data.heroImage}
+                alt={post.data.heroAlt}
+                width="400"
+                height="225"
+                loading="lazy"
+                class="w-full aspect-video object-cover rounded-md ring-1 ring-surface-3"
+              />
+              <div>
+                <time datetime={post.data.pubDate.toISOString()} class="font-mono text-[12px] text-ink-dim uppercase tracking-[0.14em]">
+                  {dateFmt.format(post.data.pubDate)}
+                </time>
+                <h2 class="mt-3 font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink group-hover:text-accent transition-colors">
+                  {post.data.title}
+                </h2>
+                <p class="mt-3 max-w-[60ch] text-ink-muted leading-relaxed">{post.data.description}</p>
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </main>
+
+  <Footer />
+</Base>
