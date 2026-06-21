@@ -4,7 +4,7 @@ Thanks for your interest in improving Hance! This guide covers everything you
 need to get a development environment running, make a change, and open a pull
 request.
 
-> ⚠️ Hance is **alpha software**, mainly tested on macOS by a single developer.
+> ⚠️ Hance is **beta software**, mainly tested on macOS by a single developer.
 > Contributions that improve Linux/Windows support, test coverage, and docs are
 > especially welcome.
 
