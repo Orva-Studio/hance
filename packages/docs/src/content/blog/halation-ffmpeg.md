@@ -1,5 +1,5 @@
 ---
-title: "Halation in FFmpeg: the glow nobody documents on the command line"
+title: "FFmpeg Halation: How to Add Film Glow from the Command Line"
 description: "How to create film halation with FFmpeg using filter_complex, and how to get the same look with one flag in Hance."
 pubDate: 2026-06-20
 author: "Richard Oliver Bray"
