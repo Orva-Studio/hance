@@ -55,23 +55,16 @@ The colour is off too. The glow is red-orange, but screen it over a blue sky and
 Once you've done it the hard way, here's the short way. [Hance](https://github.com/Orva-Studio/hance) is a single binary that does film looks from the command line, with halation included as a first-class effect:
 
 ```bash
-hance input.mp4 --halation-amount 0.5 --halation-radius 8
+hance input.mp4 --halation-amount 0.4 --halation-radius 45
 ```
 
-- `--halation-amount` (0-1, default 0.25) - intensity.
-- `--halation-radius` (1-100, default 4) - spread.
-- `--halation-highlights-only` (default true) - restrict the glow to highlights, the same idea as the luma threshold above, done properly.
+- **`--halation-amount`** (0-1, default 0.25) - intensity.
+- **`--halation-radius`** (1-100, default 4) - spread.
+- **`--halation-highlights-only`** (default true) - restrict the glow to highlights, the same idea as the luma threshold above, done properly.
 
 ![Side-by-side of the same sunflower at sunset: left is the untouched original, right is graded in Hance with a warm white balance, a touch more exposure, and highlights-only halation. The glow stays on the bright rim and sun without flooding the whole sky](/blog/halation-hance-before-after.webp)
 
-Same frame as the FFmpeg comparison above, graded with one command:
-
-```bash
-hance sunflower.jpg --exposure 0.42 --white-balance 5100 \
-  --halation-amount 0.4 --halation-radius 45 --halation-highlights-only
-```
-
-*Exposure is bumped slightly here on purpose: halation screens a glow on top of the highlights, so the bright areas read a touch denser. A small lift in exposure brings them back, keeping the highlights bright and the look balanced rather than muddy.*
+*NOTE: Exposure is bumped slightly on purpose. The glow sits on top of the highlights and makes them read denser, so a small lift brings them back rather than letting the look go muddy.*
 
 The glow rolls off more smoothly because the highlight mask is a proper luminance curve rather than a hard luma threshold, so it stays on the highlights instead of tinting the whole high-key sky.
 
@@ -79,7 +72,7 @@ See the [effects reference](/docs/cli/effects/) for the full list of flags. Same
 
 ```bash
 # try with no install (needs ffmpeg on PATH)
-npx @orva-studio/hance input.mp4 --halation-amount 0.5 --halation-radius 8
+npx @orva-studio/hance input.mp4 --halation-amount 0.4 --halation-radius 45
 ```
 
 ## FAQ
@@ -95,6 +88,6 @@ With raw FFmpeg you'd script a loop. With Hance the same flags run across a batc
 
 ---
 
-Halation is one of those effects that's simple in principle and finicky in practice. Now you know the mechanism *and* the shortcut - use whichever fits the job.
+Halation is one of those effects that's simple in principle and finicky in practice. Although I'm biased towards Hance, I think you should use whichever tool fits the job.
 
 Happy grading 👋
