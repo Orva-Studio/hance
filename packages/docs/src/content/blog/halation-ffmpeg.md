@@ -44,7 +44,9 @@ Reading that part by part:
 - **`colorchannelmixer=rr=1:gg=0.35:bb=0.2`** - push the blurred highlights red-orange. This is what *reads* as film bloom rather than a generic blur.
 - **`blend=all_mode=screen:all_opacity=0.6`** - screen mode adds light without crushing the base; opacity dials the intensity.
 
-It works. It's also four interacting parameters you'll be tweaking per shot, and the threshold-based highlight mask is cruder than a proper luminance rolloff. Good enough to learn the mechanism; annoying to art-direct across a whole edit.
+It works, but it is blunt. Look at the comparison below. The glow does not sit on the sun; it floods the whole sky. That is the highlight mask: a hard cutoff that grabs every bright pixel, so the entire high-key background lights up instead of just the sun.
+
+The colour is off too. The glow is red-orange, but screen it over a blue sky and the result reads pink. The same warm glow looks right on the sunflower and wrong everywhere else. To control any of this you have four settings pulling against each other, tuned by hand for every shot. Fine for learning how halation works, painful across a whole edit.
 
 ![Side-by-side of a sunflower against a bright sunset: left is the untouched original, right has FFmpeg halation from the filter_complex above. The hard luma threshold catches the whole high-key sky, so the glow floods well past the highlights and tints the background magenta](/blog/halation-ffmpeg-before-after.webp)
 
