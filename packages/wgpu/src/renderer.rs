@@ -6,6 +6,7 @@ use crate::passes;
 
 const VERT: &str = include_str!("../../core/shaders/fullscreen.vert.wgsl");
 const COLOR_FRAG: &str = include_str!("../../core/shaders/color-settings.frag.wgsl");
+const BLIT_FRAG: &str = include_str!("../../core/shaders/blit.frag.wgsl");
 const THRESHOLD_FRAG: &str = include_str!("../../core/shaders/threshold.frag.wgsl");
 const BLUR_FRAG: &str = include_str!("../../core/shaders/blur.frag.wgsl");
 const BLEND_FRAG: &str = include_str!("../../core/shaders/screen-blend.frag.wgsl");
@@ -158,7 +159,7 @@ impl GpuRenderer {
         let color_wheels_pipeline = passes::create_pipeline(&device, VERT, COLOR_WHEELS_FRAG, &std_layout, INTERMEDIATE_FORMAT);
         let shake_pipeline = passes::create_pipeline(&device, VERT, SHAKE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
         let colorspace_pipeline = passes::create_pipeline(&device, VERT, COLORSPACE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
-        let blit_pipeline = passes::create_pipeline(&device, VERT, COLOR_FRAG, &std_layout, OUTPUT_FORMAT);
+        let blit_pipeline = passes::create_pipeline(&device, VERT, BLIT_FRAG, &std_layout, OUTPUT_FORMAT);
         let lut_pipeline = passes::create_pipeline(&device, VERT, LUT_FRAG, &lut_layout, INTERMEDIATE_FORMAT);
 
         // Upload the baked LUT as a 33^3 rgba16float 3D texture (alpha = 1).
