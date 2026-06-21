@@ -89,7 +89,7 @@ pub struct GpuRenderer {
     bloom_blend_ub: Buffer,
     decode_ub: Buffer,
     encode_ub: Buffer,
-    color_ub_identity: Buffer,
+    blit_ub: Buffer,
 
     // Readback
     staging_buf: Buffer,
@@ -220,8 +220,7 @@ impl GpuRenderer {
         queue.write_buffer(&decode_ub, 0, bytemuck_cast(&[0.0f32, 0.0, 0.0, 0.0])); // 0 = sRGB->linear
         let encode_ub = passes::create_uniform_buffer(&device, 16);
         queue.write_buffer(&encode_ub, 0, bytemuck_cast(&[1.0f32, 0.0, 0.0, 0.0])); // 1 = linear->sRGB
-        let color_ub_identity = passes::create_uniform_buffer(&device, 48);
-        queue.write_buffer(&color_ub_identity, 0, bytemuck_cast(&Params::color_settings_identity()));
+        let blit_ub = passes::create_uniform_buffer(&device, 16);
 
         let bytes_per_row = ((width * 4 + 255) / 256) * 256;
         let staging_buf = device.create_buffer(&BufferDescriptor {
@@ -283,7 +282,7 @@ impl GpuRenderer {
             bloom_blend_ub,
             decode_ub,
             encode_ub,
-            color_ub_identity,
+            blit_ub,
             staging_buf,
         })
     }
@@ -595,10 +594,13 @@ impl GpuRenderer {
 
         // --- Final blit to 8-bit output ---
         {
+            // Feed the frame counter to the dither so its noise decorrelates
+            // across frames instead of sitting frozen on top of the video.
+            self.write_uniform(&self.blit_ub, &[self.frame_count as f32, 0.0, 0.0, 0.0]);
             let bg = passes::make_std_bind_group(
                 &self.device, &self.std_layout,
                 &current_tex!().create_view(&TextureViewDescriptor::default()),
-                &self.sampler, &self.color_ub_identity,
+                &self.sampler, &self.blit_ub,
             );
             passes::run_pass(&mut encoder, &self.blit_pipeline, &bg,
                 &self.output_tex.create_view(&TextureViewDescriptor::default()));

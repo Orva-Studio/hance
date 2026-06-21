@@ -99,9 +99,10 @@ describe("halation (headless sidecar)", () => {
     for (let d = 1; d <= 10; d++) {
       const h = lum(out, CY + d, CY);
       const v = lum(out, CY, CY + d);
-      // Output dither shifts each pixel's luma by up to ~3 (one LSB across
-      // three channels), so two pixels can differ by ~6 from dither alone.
-      expect(Math.abs(h - v)).toBeLessThanOrEqual(6);
+      // Output dither shifts each pixel's luma by up to ~1.5 (half an LSB
+      // across three channels), so two pixels can differ by ~3 from dither
+      // alone. Tight enough to still catch a real scatter asymmetry.
+      expect(Math.abs(h - v)).toBeLessThanOrEqual(3);
     }
   });
 
