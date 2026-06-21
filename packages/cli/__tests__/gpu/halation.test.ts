@@ -99,7 +99,9 @@ describe("halation (headless sidecar)", () => {
     for (let d = 1; d <= 10; d++) {
       const h = lum(out, CY + d, CY);
       const v = lum(out, CY, CY + d);
-      expect(Math.abs(h - v)).toBeLessThanOrEqual(2);
+      // Output dither shifts each pixel's luma by up to ~3 (one LSB across
+      // three channels), so two pixels can differ by ~6 from dither alone.
+      expect(Math.abs(h - v)).toBeLessThanOrEqual(6);
     }
   });
 
