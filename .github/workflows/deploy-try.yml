@@ -1,0 +1,46 @@
+name: deploy-try
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/try/**"
+      - "packages/ui/app/**"
+      - "packages/core/**"
+      - "presets/**"
+      - ".github/workflows/deploy-try.yml"
+  workflow_dispatch:
+
+# Mirrors deploy-docs: the `try-hance` Cloudflare Pages project has no Git
+# integration, so this workflow is the manual wrangler deploy, automated.
+# One-time setup: create the `try-hance` Pages project and point the
+# try.hance.video CNAME at it in the Cloudflare dashboard.
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-try
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      - name: Build try site
+        working-directory: packages/try
+        run: bun run build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy packages/try/dist --project-name=try-hance --branch=main

@@ -3,7 +3,7 @@ import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
-import { SITE_URL } from '../../../site.config';
+import { SITE_URL, TRY_URL } from '../../../site.config';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
@@ -70,7 +70,20 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': graph };
         <Content />
       </div>
 
-      <footer class="mt-16 pt-8 border-t border-surface-3 font-mono text-[12px] text-ink-dim uppercase tracking-[0.18em]">
+      <aside class="mt-16 p-6 rounded-xl border border-surface-3 bg-surface-2/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <p class="font-sans text-ink font-medium text-lg tracking-tightest-2">See a film look on your own photo</p>
+          <p class="mt-1 text-ink-muted text-sm">No install, no upload. Tune a look live in your browser, then take it to video.</p>
+        </div>
+        <a
+          href={TRY_URL}
+          class="shrink-0 inline-flex items-center gap-2 rounded-full bg-accent px-6 py-2.5 font-mono text-sm uppercase tracking-wide text-surface-1 transition-transform duration-300 ease-out-quart hover:-translate-y-px"
+        >
+          Try free online
+        </a>
+      </aside>
+
+      <footer class="mt-12 pt-8 border-t border-surface-3 font-mono text-[12px] text-ink-dim uppercase tracking-[0.18em]">
         Written by {post.data.author}
       </footer>
     </article>
