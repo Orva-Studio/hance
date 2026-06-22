@@ -5,6 +5,8 @@ import { AdjustmentsPanel } from "@hance/ui/app/components/AdjustmentsPanel";
 import type { Renderer, PreviewParams } from "@hance/ui/app/gpu/renderer";
 import { LOOKS, findLook } from "./looks";
 import { Landing } from "./Landing";
+import { LooksGrid } from "./LooksGrid";
+import { useThumbnails } from "./useThumbnails";
 import { downloadBlob, exportImageBlob } from "./download";
 
 const DEFAULT_LOOK = findLook("default") ? "default" : LOOKS[0]?.name;
@@ -24,6 +26,9 @@ export function App() {
   );
   const [error, setError] = useState<string | null>(null);
   const rendererRef = useRef<Renderer | null>(null);
+
+  // Generated client-side from the loaded image; empty until a source loads.
+  const thumbnails = useThumbnails(source?.src ?? "", LOOKS);
 
   const look = findLook(activeLook);
   const dirty = useMemo(() => {
@@ -48,6 +53,21 @@ export function App() {
   const onChange = useCallback((key: string, value: string | number | boolean) => {
     setParams(prev => ({ ...prev, [key]: value }));
   }, []);
+
+  // Hover-preview: push the hovered look straight to the renderer without
+  // committing it to state, then restore the live params on leave.
+  const onLookHover = useCallback((name: string) => {
+    const next = findLook(name);
+    if (!next || !rendererRef.current) return;
+    rendererRef.current.setParams(next.previewParams);
+    rendererRef.current.renderFrame();
+  }, []);
+
+  const onLookHoverEnd = useCallback(() => {
+    if (!rendererRef.current) return;
+    rendererRef.current.setParams(params);
+    rendererRef.current.renderFrame();
+  }, [params]);
 
   const resetLook = useCallback(() => {
     if (look) setParams(look.previewParams);
@@ -95,11 +115,19 @@ export function App() {
             onRendererReady={r => (rendererRef.current = r)}
             onError={err => setError(err.message)}
           />
-          <CtaBar lookName={activeLook} customized={dirty} />
+          <CtaBar lookName={activeLook} />
         </main>
-        <aside className="w-72 shrink-0 border-l border-zinc-800 bg-zinc-950 flex flex-col min-h-0">
-          <LookPicker active={activeLook} onSelect={selectLook} />
-          <div className="flex-1 min-h-0 overflow-y-auto">
+        <aside className="w-80 shrink-0 border-l border-zinc-800 bg-zinc-950 flex flex-col min-h-0">
+          <div className="basis-1/2 min-h-0 flex flex-col border-b border-zinc-800">
+            <LooksGrid
+              active={activeLook}
+              thumbnails={thumbnails}
+              onSelect={selectLook}
+              onHover={onLookHover}
+              onHoverEnd={onLookHoverEnd}
+            />
+          </div>
+          <div className="basis-1/2 min-h-0 overflow-y-auto">
             <AdjustmentsPanel
               schema={EFFECT_SCHEMA}
               values={params}
@@ -158,30 +186,7 @@ function TopBar(props: {
   );
 }
 
-function LookPicker(props: { active: string; onSelect: (name: string) => void }) {
-  return (
-    <div className="border-b border-zinc-800">
-      <label className="block px-5 pt-3 text-xs font-semibold text-zinc-300 uppercase tracking-wide">
-        Look
-      </label>
-      <div className="p-3">
-        <select
-          value={props.active}
-          onChange={e => props.onSelect(e.target.value)}
-          className="w-full bg-zinc-900 border border-zinc-700 rounded-md px-3 py-2 text-sm text-zinc-200"
-        >
-          {LOOKS.map(l => (
-            <option key={l.name} value={l.name}>
-              {l.label}
-            </option>
-          ))}
-        </select>
-      </div>
-    </div>
-  );
-}
-
-function CtaBar(props: { lookName: string; customized: boolean }) {
+function CtaBar(props: { lookName: string }) {
   const cmd = `npx @orva-studio/hance ui your-clip.mp4 --preset ${props.lookName}`;
   return (
     <div className="border-t border-zinc-800 bg-zinc-950 px-4 py-3">
@@ -199,13 +204,6 @@ function CtaBar(props: { lookName: string; customized: boolean }) {
           Copy
         </button>
       </div>
-      {props.customized && (
-        <p className="text-xs text-zinc-500 mt-2">
-          Tuned the sliders? Download the .hlook above and run with{" "}
-          <code className="text-cyan-300">--preset ./{props.lookName}.hlook</code> to keep
-          your exact settings.
-        </p>
-      )}
     </div>
   );
 }
