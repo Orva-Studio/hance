@@ -45,6 +45,17 @@ export function App() {
   const [comparePos, setComparePos] = useState(0.5);
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
   const canvasRect = useCanvasRect(canvasEl);
+
+  // Compare modes overlay the original at the fit-sized canvas rect, so force
+  // the canvas back to "fit" on entry — otherwise a zoomed canvas and the
+  // un-zoomed overlay drift apart.
+  const onViewModeChange = useCallback((m: ViewMode) => {
+    if (m !== "normal") {
+      transform.setZoom("fit");
+      transform.setPanMode(false);
+    }
+    setViewMode(m);
+  }, [transform.setZoom, transform.setPanMode]);
   const history = useHistory<Snapshot>({ params, activeLook });
   useCanvasInput(viewMode, transform, null);
 
@@ -160,10 +171,10 @@ export function App() {
             onHoverEnd={onLookHoverEnd}
           />
         </aside>
-        <main className="relative flex-1 min-w-0 bg-zinc-900 flex flex-col">
+        <main className="relative flex-1 min-w-0 bg-zinc-900 flex flex-col overflow-hidden">
           <ViewModeToolbar
             mode={viewMode}
-            onChange={setViewMode}
+            onChange={onViewModeChange}
             referenceDisabled
             canUndo={history.canUndo}
             canRedo={history.canRedo}
