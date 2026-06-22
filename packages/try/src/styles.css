@@ -1,0 +1,8 @@
+/* Reuse the editor's full theme + slider/checkbox styling from @hance/ui so the
+   shared control components render identically here. */
+@import "../../ui/app/styles.css";
+
+/* Tailwind only scans files it can see from this project root, so point it at
+   both our shell and the reused @hance/ui components for class detection. */
+@source "./";
+@source "../../ui/app";

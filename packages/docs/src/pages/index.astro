@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import { TRY_URL } from '../../site.config';
 
 const REPO = 'https://github.com/Orva-Studio/hance';
 const INSTALL = '$ npx @orva-studio/hance your-video.mp4';
@@ -114,6 +115,12 @@ const faqSchema = {
             copy
           </span>
         </button>
+        <a
+          href={TRY_URL}
+          class="inline-flex items-center gap-2 rounded-full bg-accent px-5 sm:px-6 py-2 sm:py-2.5 font-mono text-[12px] sm:text-sm uppercase tracking-wide text-surface-1 transition-transform duration-300 ease-out-quart hover:-translate-y-px"
+        >
+          Try free online
+        </a>
       </div>
 
       <!-- Reel: clips graded with the hance portra-400 look -->
