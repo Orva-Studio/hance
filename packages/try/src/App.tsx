@@ -106,6 +106,15 @@ export function App() {
         <div className="bg-red-900/40 text-red-200 text-sm px-4 py-2">{error}</div>
       )}
       <div className="flex flex-1 min-h-0">
+        <aside className="w-64 shrink-0 border-r border-zinc-800 bg-zinc-950 flex flex-col min-h-0">
+          <LooksGrid
+            active={activeLook}
+            thumbnails={thumbnails}
+            onSelect={selectLook}
+            onHover={onLookHover}
+            onHoverEnd={onLookHoverEnd}
+          />
+        </aside>
         <main className="flex-1 min-w-0 bg-zinc-900 flex flex-col">
           <Canvas
             key={source.src}
@@ -117,27 +126,16 @@ export function App() {
           />
           <CtaBar lookName={activeLook} />
         </main>
-        <aside className="w-80 shrink-0 border-l border-zinc-800 bg-zinc-950 flex flex-col min-h-0">
-          <div className="basis-1/2 min-h-0 flex flex-col border-b border-zinc-800">
-            <LooksGrid
-              active={activeLook}
-              thumbnails={thumbnails}
-              onSelect={selectLook}
-              onHover={onLookHover}
-              onHoverEnd={onLookHoverEnd}
-            />
-          </div>
-          <div className="basis-1/2 min-h-0 overflow-y-auto">
-            <AdjustmentsPanel
-              schema={EFFECT_SCHEMA}
-              values={params}
-              onChange={onChange}
-              onCommit={() => {}}
-              onReset={resetLook}
-              canReset={dirty}
-              animating={false}
-            />
-          </div>
+        <aside className="w-72 shrink-0 border-l border-zinc-800 bg-zinc-950 overflow-y-auto min-h-0">
+          <AdjustmentsPanel
+            schema={EFFECT_SCHEMA}
+            values={params}
+            onChange={onChange}
+            onCommit={() => {}}
+            onReset={resetLook}
+            canReset={dirty}
+            animating={false}
+          />
         </aside>
       </div>
     </div>
