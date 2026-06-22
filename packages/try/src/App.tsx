@@ -2,12 +2,24 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { EFFECT_SCHEMA, exportLook } from "@hance/core";
 import { Canvas } from "@hance/ui/app/components/Canvas";
 import { AdjustmentsPanel } from "@hance/ui/app/components/AdjustmentsPanel";
+import { ViewModeToolbar, type ViewMode } from "@hance/ui/app/components/ViewModeToolbar";
+import { CompareOverlay } from "@hance/ui/app/components/CompareOverlay";
+import { useCanvasTransform } from "@hance/ui/app/hooks/useCanvasTransform";
+import { useCanvasRect } from "@hance/ui/app/hooks/useCanvasRect";
+import { useCanvasInput } from "@hance/ui/app/hooks/useCanvasInput";
+import { useHistory } from "@hance/ui/app/hooks/useHistory";
+import { useUndoRedo } from "@hance/ui/app/hooks/useUndoRedo";
 import type { Renderer, PreviewParams } from "@hance/ui/app/gpu/renderer";
 import { LOOKS, findLook } from "./looks";
 import { Landing } from "./Landing";
 import { LooksGrid } from "./LooksGrid";
 import { useThumbnails } from "./useThumbnails";
 import { downloadBlob, exportImageBlob } from "./download";
+
+interface Snapshot {
+  params: PreviewParams;
+  activeLook: string;
+}
 
 const DEFAULT_LOOK = findLook("default") ? "default" : LOOKS[0]?.name;
 
@@ -26,6 +38,21 @@ export function App() {
   );
   const [error, setError] = useState<string | null>(null);
   const rendererRef = useRef<Renderer | null>(null);
+
+  // Pan/zoom, before/after split, and undo/redo — reused from the editor.
+  const transform = useCanvasTransform();
+  const [viewMode, setViewMode] = useState<ViewMode>("normal");
+  const [comparePos, setComparePos] = useState(0.5);
+  const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
+  const canvasRect = useCanvasRect(canvasEl);
+  const history = useHistory<Snapshot>({ params, activeLook });
+  useCanvasInput(viewMode, transform, null);
+
+  // Latest values for closures that feed the history without stale captures.
+  const paramsRef = useRef(params);
+  paramsRef.current = params;
+  const activeLookRef = useRef(activeLook);
+  activeLookRef.current = activeLook;
 
   // Generated client-side from the loaded image; empty until a source loads.
   const thumbnails = useThumbnails(source?.src ?? "", LOOKS);
@@ -48,11 +75,27 @@ export function App() {
     if (!next) return;
     setActiveLook(name);
     setParams(next.previewParams);
-  }, []);
+    history.commit({ params: next.previewParams, activeLook: name });
+  }, [history]);
 
+  // Live edits replace the present snapshot; the committed history entry lands
+  // on pointer-up (onCommit), so one slider drag is a single undo step.
   const onChange = useCallback((key: string, value: string | number | boolean) => {
-    setParams(prev => ({ ...prev, [key]: value }));
+    const next = { ...paramsRef.current, [key]: value };
+    setParams(next);
+    history.replace({ params: next, activeLook: activeLookRef.current });
+  }, [history]);
+
+  const onCommit = useCallback(() => {
+    history.commit({ params: paramsRef.current, activeLook: activeLookRef.current });
+  }, [history]);
+
+  const applySnapshot = useCallback((snap: Snapshot | null) => {
+    if (!snap) return;
+    setParams(snap.params);
+    setActiveLook(snap.activeLook);
   }, []);
+  useUndoRedo(history, applySnapshot);
 
   // Hover-preview: push the hovered look straight to the renderer without
   // committing it to state, then restore the live params on leave.
@@ -70,8 +113,10 @@ export function App() {
   }, [params]);
 
   const resetLook = useCallback(() => {
-    if (look) setParams(look.previewParams);
-  }, [look]);
+    if (!look) return;
+    setParams(look.previewParams);
+    history.commit({ params: look.previewParams, activeLook: look.name });
+  }, [look, history]);
 
   const downloadImage = useCallback(async () => {
     const renderer = rendererRef.current;
@@ -115,14 +160,35 @@ export function App() {
             onHoverEnd={onLookHoverEnd}
           />
         </aside>
-        <main className="flex-1 min-w-0 bg-zinc-900 flex flex-col">
+        <main className="relative flex-1 min-w-0 bg-zinc-900 flex flex-col">
+          <ViewModeToolbar
+            mode={viewMode}
+            onChange={setViewMode}
+            referenceDisabled
+            canUndo={history.canUndo}
+            canRedo={history.canRedo}
+            onUndo={() => applySnapshot(history.undo())}
+            onRedo={() => applySnapshot(history.redo())}
+            zoom={transform.zoom}
+            onZoomChange={transform.setZoom}
+            panMode={transform.panMode}
+            onPanModeChange={transform.setPanMode}
+          />
           <Canvas
             key={source.src}
             src={source.src}
             isVideo={false}
             params={params}
             onRendererReady={r => (rendererRef.current = r)}
+            onCanvasReady={setCanvasEl}
             onError={err => setError(err.message)}
+            zoom={transform.zoom}
+            pan={transform.pan}
+            isPanning={transform.isPanning}
+            panMode={transform.panMode}
+            onPanMouseDown={transform.onMouseDown}
+            onPanMouseMove={transform.onMouseMove}
+            onPanMouseUp={transform.onMouseUp}
           />
           <CtaBar lookName={activeLook} />
         </main>
@@ -131,13 +197,26 @@ export function App() {
             schema={EFFECT_SCHEMA}
             values={params}
             onChange={onChange}
-            onCommit={() => {}}
+            onCommit={onCommit}
             onReset={resetLook}
             canReset={dirty}
             animating={false}
           />
         </aside>
       </div>
+      {viewMode === "split" && (
+        // Draggable before/after: the original (ungraded) image clipped over
+        // the graded canvas. Rendered at the editor root so its viewport-based
+        // coordinates line up with the canvas rect.
+        <CompareOverlay
+          mode="split"
+          position={comparePos}
+          onPositionChange={setComparePos}
+          overlaySrc={source.src}
+          isVideo={false}
+          canvasRect={canvasRect}
+        />
+      )}
     </div>
   );
 }
