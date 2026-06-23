@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EFFECT_SCHEMA, exportLook } from "@hance/core";
 import { Canvas } from "@hance/ui/app/components/Canvas";
 import { AdjustmentsPanel } from "@hance/ui/app/components/AdjustmentsPanel";
@@ -29,8 +29,28 @@ interface Source {
 }
 
 export function App() {
-  // navigator.gpu is the cheap, reliable WebGPU feature test.
-  const webgpu = typeof navigator !== "undefined" && "gpu" in navigator;
+  // `"gpu" in navigator` only checks the property exists; a browser can expose
+  // it and still fail to hand out an adapter (blocked GPU, software path off,
+  // older Safari). Probe requestAdapter once so UnsupportedNotice fires when
+  // WebGPU is actually unusable, not just absent. undefined = still probing.
+  const [webgpu, setWebgpu] = useState<boolean | undefined>(undefined);
+  useEffect(() => {
+    let cancelled = false;
+    async function probe() {
+      if (typeof navigator === "undefined" || !("gpu" in navigator)) {
+        if (!cancelled) setWebgpu(false);
+        return;
+      }
+      try {
+        const adapter = await navigator.gpu.requestAdapter();
+        if (!cancelled) setWebgpu(!!adapter);
+      } catch {
+        if (!cancelled) setWebgpu(false);
+      }
+    }
+    probe();
+    return () => { cancelled = true; };
+  }, []);
   const [source, setSource] = useState<Source | null>(null);
   const [activeLook, setActiveLook] = useState<string>(DEFAULT_LOOK);
   const [params, setParams] = useState<PreviewParams>(
@@ -43,6 +63,7 @@ export function App() {
   const transform = useCanvasTransform();
   const [viewMode, setViewMode] = useState<ViewMode>("normal");
   const [comparePos, setComparePos] = useState(0.5);
+  const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
   const canvasRect = useCanvasRect(canvasEl);
 
@@ -56,6 +77,31 @@ export function App() {
     }
     setViewMode(m);
   }, [transform.setZoom, transform.setPanMode]);
+
+  // Reference compare: drag the user's own image over the graded canvas to
+  // match a target grade. The blob URL is revoked on replace/clear so it
+  // doesn't pin the file for the life of the tab.
+  const chooseReferenceImage = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = () => {
+      const f = input.files?.[0];
+      if (!f) return;
+      setReferenceImage(prev => {
+        if (prev) URL.revokeObjectURL(prev);
+        return URL.createObjectURL(f);
+      });
+    };
+    input.click();
+  }, []);
+
+  const clearReferenceImage = useCallback(() => {
+    setReferenceImage(prev => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  }, []);
   const history = useHistory<Snapshot>({ params, activeLook });
   useCanvasInput(viewMode, transform, null);
 
@@ -66,7 +112,8 @@ export function App() {
   activeLookRef.current = activeLook;
 
   // Generated client-side from the loaded image; empty until a source loads.
-  const thumbnails = useThumbnails(source?.src ?? "", LOOKS);
+  const onThumbnailError = useCallback((message: string) => setError(message), []);
+  const thumbnails = useThumbnails(source?.src ?? "", LOOKS, onThumbnailError);
 
   const look = findLook(activeLook);
   const dirty = useMemo(() => {
@@ -76,9 +123,27 @@ export function App() {
     );
   }, [params, look]);
 
+  // Free the previous blob URL before replacing it; orphaned object URLs pin
+  // their File in memory (up to MAX_BYTES each) for the life of the tab.
+  // revokeObjectURL is a no-op on the sample http(s) URLs, so they're safe.
   const loadSource = useCallback((src: string, name: string) => {
     setError(null);
-    setSource({ src, name });
+    setSource(prev => {
+      if (prev) URL.revokeObjectURL(prev.src);
+      return { src, name };
+    });
+  }, []);
+
+  const discardSource = useCallback(() => {
+    setReferenceImage(prev => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setViewMode("normal");
+    setSource(prev => {
+      if (prev) URL.revokeObjectURL(prev.src);
+      return null;
+    });
   }, []);
 
   const selectLook = useCallback((name: string) => {
@@ -133,7 +198,8 @@ export function App() {
     const renderer = rendererRef.current;
     if (!renderer || !source) return;
     const blob = await exportImageBlob(renderer);
-    downloadBlob(blob, `${source.name}-${activeLook}.png`);
+    const ext = blob.type === "image/jpeg" ? "jpg" : "png";
+    downloadBlob(blob, `${source.name}-${activeLook}.${ext}`);
   }, [source, activeLook, look]);
 
   const downloadHlook = useCallback(() => {
@@ -144,6 +210,7 @@ export function App() {
     downloadBlob(new Blob([json], { type: "application/json" }), `${activeLook}.hlook`);
   }, [activeLook, params]);
 
+  if (webgpu === undefined) return null; // probing; brief, no flash of fallback
   if (!webgpu) return <UnsupportedNotice />;
 
   if (!source) {
@@ -154,7 +221,7 @@ export function App() {
     <div className="flex flex-col h-screen">
       <TopBar
         lookName={look?.label ?? activeLook}
-        onChangeImage={() => setSource(null)}
+        onChangeImage={discardSource}
         onDownloadImage={downloadImage}
         onDownloadHlook={downloadHlook}
       />
@@ -175,7 +242,6 @@ export function App() {
           <ViewModeToolbar
             mode={viewMode}
             onChange={onViewModeChange}
-            referenceDisabled
             canUndo={history.canUndo}
             canRedo={history.canRedo}
             onUndo={() => applySnapshot(history.undo())}
@@ -227,6 +293,41 @@ export function App() {
           isVideo={false}
           canvasRect={canvasRect}
         />
+      )}
+      {viewMode === "reference" && !referenceImage && canvasRect && (
+        <div
+          className="absolute bg-zinc-900/90 border border-zinc-700 px-4 py-3 z-30 flex flex-col items-center gap-2 rounded-md"
+          style={{
+            left: canvasRect.left + canvasRect.width / 2 - 110,
+            top: canvasRect.top + canvasRect.height / 2 - 30,
+          }}
+        >
+          <div className="text-xs text-zinc-300">Upload a reference image</div>
+          <button
+            onClick={chooseReferenceImage}
+            className="text-xs text-white bg-accent hover:bg-accent-hover rounded-sm p-btn"
+          >Choose image…</button>
+        </div>
+      )}
+      {viewMode === "reference" && referenceImage && canvasRect && (
+        <>
+          <CompareOverlay
+            mode="reference"
+            position={comparePos}
+            onPositionChange={setComparePos}
+            overlaySrc={referenceImage}
+            isVideo={false}
+            canvasRect={canvasRect}
+          />
+          <button
+            onClick={clearReferenceImage}
+            className="absolute text-[11px] text-zinc-300 bg-zinc-800/90 border border-zinc-700 hover:bg-zinc-700 z-30 rounded-sm px-2.5 py-1"
+            style={{
+              right: `calc(100vw - ${canvasRect.left + canvasRect.width}px + 8px)`,
+              top: canvasRect.top + 8,
+            }}
+          >Replace reference</button>
+        </>
       )}
     </div>
   );

@@ -7,7 +7,11 @@ import type { Look } from "./looks";
 // offscreen WebGPU renderer: set the source once, then render each look at a
 // small size and read it back to a data URL. Results stream in as they finish
 // so the grid fills progressively instead of blocking on all 41.
-export function useThumbnails(src: string, looks: Look[]): Record<string, string> {
+export function useThumbnails(
+  src: string,
+  looks: Look[],
+  onError?: (message: string) => void,
+): Record<string, string> {
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -60,11 +64,16 @@ export function useThumbnails(src: string, looks: Look[]): Record<string, string
       renderer.destroy();
     }
 
-    run().catch(() => {});
+    run().catch(err => {
+      if (cancelled) return;
+      // Thumbnail pipeline failed (decode, no adapter, GPU init). Surface it so
+      // the empty grid reads as an error, not as looks still loading.
+      onError?.(err instanceof Error ? err.message : "Failed to build look previews");
+    });
     return () => {
       cancelled = true;
     };
-  }, [src, looks]);
+  }, [src, looks, onError]);
 
   return thumbs;
 }

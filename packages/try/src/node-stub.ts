@@ -13,8 +13,8 @@ export const readdirSync = () => nope("fs.readdirSync");
 export const statSync = () => nope("fs.statSync");
 export const writeFileSync = () => nope("fs.writeFileSync");
 export const mkdirSync = () => nope("fs.mkdirSync");
-export const join = (...parts: string[]) => parts.join("/");
-export const dirname = (p: string) => p.replace(/\/[^/]*$/, "");
+export const join = () => nope("path.join");
+export const dirname = () => nope("path.dirname");
 export const homedir = () => nope("os.homedir");
 
 export default {

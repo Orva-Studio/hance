@@ -6,10 +6,17 @@ export async function exportImageBlob(renderer: Renderer): Promise<Blob> {
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
-  const ctx = canvas.getContext("2d")!;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Could not get a 2D canvas context for export");
   ctx.putImageData(new ImageData(new Uint8ClampedArray(pixels), width, height), 0, 0);
+  // PNG holds a multi-source-sized working set in memory; above ~24MP the
+  // encode risks OOM-crashing the tab, so fall back to JPEG which encodes
+  // streaming with a far smaller peak. ponytail: dimension threshold, swap to
+  // a real memory probe if exports still OOM on low-RAM devices.
+  const big = width * height > 24_000_000;
+  const type = big ? "image/jpeg" : "image/png";
   return await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(b => (b ? resolve(b) : reject(new Error("toBlob failed"))), "image/png");
+    canvas.toBlob(b => (b ? resolve(b) : reject(new Error("toBlob failed"))), type, 0.92);
   });
 }
 
