@@ -21,7 +21,7 @@ interface Snapshot {
   activeLook: string;
 }
 
-const DEFAULT_LOOK = findLook("default") ? "default" : LOOKS[0]?.name;
+const DEFAULT_LOOK = findLook("original") ? "original" : LOOKS[0]?.name;
 
 interface Source {
   src: string;
