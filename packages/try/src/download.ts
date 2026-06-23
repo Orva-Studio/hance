@@ -26,5 +26,7 @@ export function downloadBlob(blob: Blob, filename: string): void {
   a.href = url;
   a.download = filename;
   a.click();
-  URL.revokeObjectURL(url);
+  // Defer the revoke: some browsers (Firefox/Safari) abort the download if the
+  // object URL is invalidated before the navigation latches.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
