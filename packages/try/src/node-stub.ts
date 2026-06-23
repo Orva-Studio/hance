@@ -1,8 +1,12 @@
-// @hance/core's barrel re-exports presets.ts / preset-index.ts, which import
-// node fs/path/os at the top level. None of those code paths run in the browser
-// (we bundle our own looks and never touch the filesystem), but Rollup still
-// needs the named bindings to resolve. Stub them so the dead code links, then
-// gets tree-shaken away. Any accidental call fails loudly instead of silently.
+// Browser stub for the node builtins (fs / path / os) that @hance/core pulls in.
+// Its barrel re-exports presets.ts / preset-index.ts, which import those modules
+// at the top level. None of those code paths run in the browser (we bundle our
+// own looks and never touch the filesystem), but the bundler must still resolve
+// every named import to link the module graph - Vite's dev server and its Rollup
+// production build both need the bindings to exist. vite.config.ts aliases the
+// node imports to this file. Each export is a function that throws if it is ever
+// actually called, so the dead code links and then tree-shakes away, while any
+// accidental call fails loudly instead of silently returning undefined.
 function nope(name: string): never {
   throw new Error(`node:${name} is not available in the browser build`);
 }
