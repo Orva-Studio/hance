@@ -33,35 +33,36 @@ export function useThumbnails(
         previewWidth: preview.width,
         previewHeight: preview.height,
       });
-      await renderer.setSource(img);
-      if (cancelled) {
+      // Once the renderer exists it holds GPU textures/buffers, so every exit
+      // path (cancel, error mid-loop, completion) must destroy it.
+      try {
+        await renderer.setSource(img);
+        if (cancelled) return;
+
+        const out = document.createElement("canvas");
+        out.width = preview.width;
+        out.height = preview.height;
+        const ctx = out.getContext("2d")!;
+
+        for (const look of looks) {
+          if (cancelled) break;
+          renderer.setParams(look.previewParams);
+          renderer.renderFrame();
+          const pixels = await renderer.readPixels();
+          if (cancelled) break;
+          ctx.putImageData(
+            new ImageData(new Uint8ClampedArray(pixels), preview.width, preview.height),
+            0,
+            0,
+          );
+          const url = out.toDataURL("image/jpeg", 0.7);
+          setThumbs(prev => ({ ...prev, [look.name]: url }));
+          // Yield so the UI stays responsive while the grid fills in.
+          await new Promise(r => setTimeout(r, 0));
+        }
+      } finally {
         renderer.destroy();
-        return;
       }
-
-      const out = document.createElement("canvas");
-      out.width = preview.width;
-      out.height = preview.height;
-      const ctx = out.getContext("2d")!;
-
-      for (const look of looks) {
-        if (cancelled) break;
-        renderer.setParams(look.previewParams);
-        renderer.renderFrame();
-        const pixels = await renderer.readPixels();
-        if (cancelled) break;
-        ctx.putImageData(
-          new ImageData(new Uint8ClampedArray(pixels), preview.width, preview.height),
-          0,
-          0,
-        );
-        const url = out.toDataURL("image/jpeg", 0.7);
-        setThumbs(prev => ({ ...prev, [look.name]: url }));
-        // Yield so the UI stays responsive while the grid fills in.
-        await new Promise(r => setTimeout(r, 0));
-      }
-
-      renderer.destroy();
     }
 
     run().catch(err => {
