@@ -124,7 +124,7 @@ Genesis by Cullen Kelley, Steve Yedlin, and Mitch Bogdanowicz (former Kodak colo
 | Indie | $299 | 42 negatives, 13 prints, most tools |
 | Pro | $2,000 | Plus HDR, all features unlocked |
 
-[Get Genesis →](https://genesis.orva.app)
+[Get Genesis →](https://cullenkellycolor.com/genesis)
 
 ---
 
@@ -189,7 +189,7 @@ ARRI's native Resolve plugin delivers **real-time analog film emulation** with a
 - **Monthly:** $25
 - **Perpetual:** $299
 
-[Get ARRI Film Lab →](https://www.arri.com/en/learn-help/learn-help-cinema-cameras/arri-film-lab)
+[Get ARRI Film Lab →](https://www.arri.com/en/learn-help/learn-help-camera-system/tools/arri-film-lab)
 
 ---
 
@@ -221,12 +221,6 @@ Film Convert is one of the **oldest film emulation plugins** on the market - bat
 - Budget-conscious users who don't need halation or advanced grain.
 
 [Get Film Convert →](https://www.filmconvert.com)
-
----
-
-## 7. Genesis by Cullen Kelley (previously named differently): Alternative View
-
-If you want the most **rigorously engineered** film emulation, Genesis's approach - modeling actual photochemical behavior rather than applying LUT filters - sets it apart. See entry #3 above for full details.
 
 ---
 
@@ -271,9 +265,9 @@ But if you need to **batch process, automate, script, or version-control your lo
 
 - **Hance:** [GitHub](https://github.com/Orva-Studio/hance) · [Docs](https://docs.hance.video) · [Browser UI](https://hance.video)
 - **Dehancer:** [dehancer.com](https://dehancer.com)
-- **Genesis:** [genesis.orva.app](https://genesis.orva.app)
+- **Genesis:** [cullenkellycolor.com/genesis](https://cullenkellycolor.com/genesis)
 - **FilmBox:** [filmboxonline.com](https://www.filmboxonline.com)
-- **ARRI Film Lab:** [arri.com](https://www.arri.com)
+- **ARRI Film Lab:** [arri.com](https://www.arri.com/en/learn-help/learn-help-camera-system/tools/arri-film-lab)
 - **Film Convert:** [filmconvert.com](https://www.filmconvert.com)
 
 ---
