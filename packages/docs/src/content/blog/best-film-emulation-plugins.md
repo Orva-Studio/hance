@@ -3,8 +3,8 @@ title: "The Best Film Emulation Plugins 2024–2025: Complete Buyer's Guide"
 description: "Compare the top film emulation tools for video and photography—from CLI-first scripting to professional-grade GUI plugins. Hance, Dehancer, Genesis, FilmBox, and more."
 pubDate: 2026-06-29
 author: "Richard Oliver Bray"
-heroImage: "/blog/film-emulation-plugins-hero.png"
-heroAlt: "Comparison of film emulation plugins side by side"
+heroImage: "/blog/film-emulation-plugins-hero.webp"
+heroAlt: "Film reel and cinematic color grading setup"
 about: "A complete listicle of the best film emulation plugins, with honest comparisons of price, quality, and workflow fit."
 ---
 
