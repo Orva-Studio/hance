@@ -14,7 +14,7 @@ This guide covers **the best film emulation tools for 2024-2025**, ranked by wor
 
 ---
 
-## 1. Hance — Best for Scripting, Batch, and CI Pipelines
+## 1. Hance: Best for Scripting, Batch, and CI Pipelines
 
 **Free / Source-available** · CLI-first · Reproducible · Scriptable
 
@@ -53,7 +53,7 @@ hance batch-folder/ --preset my-custom-look  # Apply to entire folder
 
 ---
 
-## 2. Dehancer — Best for Professional, Customizable Grain
+## 2. Dehancer: Best for Professional, Customizable Grain
 
 **$449 perpetual** · DaVinci Resolve, Adobe Premiere, Final Cut Pro · High-end customization
 
@@ -90,7 +90,7 @@ Dehancer is a **professional GPU-accelerated plugin** with an expansive grain li
 
 ---
 
-## 3. Genesis — Best for Accurate Photochemical Film Modeling
+## 3. Genesis: Best for Accurate Photochemical Film Modeling
 
 **$199-$2,000** · DaVinci Resolve only · Color-science focused
 
@@ -128,7 +128,7 @@ Genesis by Cullen Kelley, Steve Yedlin, and Mitch Bogdanowicz (former Kodak colo
 
 ---
 
-## 4. FilmBox — Best for Maximum Fidelity (Professional Grade)
+## 4. FilmBox: Best for Maximum Fidelity (Professional Grade)
 
 **$995 indie, $2,495+ professional** · DaVinci Resolve only · Most expensive, highest-end
 
@@ -158,7 +158,7 @@ FilmBox is the **premium, professional-grade film emulation plugin.** If budget 
 
 ---
 
-## 5. ARRI Film Lab — Best for Real-Time Resolve Workflows
+## 5. ARRI Film Lab: Best for Real-Time Resolve Workflows
 
 **$25/month or $299 perpetual** · DaVinci Resolve native · Real-time, integrated
 
@@ -193,7 +193,7 @@ ARRI's native Resolve plugin delivers **real-time analog film emulation** with a
 
 ---
 
-## 6. Film Convert — Best for Simplicity and Speed
+## 6. Film Convert: Best for Simplicity and Speed
 
 **$119 OFX version** · Multiple platforms · Lightweight, beginner-friendly
 
@@ -224,7 +224,7 @@ Film Convert is one of the **oldest film emulation plugins** on the market - bat
 
 ---
 
-## 7. Genesis by Cullen Kelley (previously named differently) — Alternative View
+## 7. Genesis by Cullen Kelley (previously named differently): Alternative View
 
 If you want the most **rigorously engineered** film emulation, Genesis's approach - modeling actual photochemical behavior rather than applying LUT filters - sets it apart. See entry #3 above for full details.
 
