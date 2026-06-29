@@ -1,6 +1,6 @@
 ---
-title: "The Best Film Emulation Plugins 2024–2025: Complete Buyer's Guide"
-description: "Compare the top film emulation tools for video and photography—from CLI-first scripting to professional-grade GUI plugins. Hance, Dehancer, Genesis, FilmBox, and more."
+title: "The Best Film Emulation Plugins 2024-2025: Complete Buyer's Guide"
+description: "Compare the top film emulation tools for video and photography - from CLI-first scripting to professional-grade GUI plugins. Hance, Dehancer, Genesis, FilmBox, and more."
 pubDate: 2026-06-29
 author: "Richard Oliver Bray"
 heroImage: "/blog/film-emulation-plugins-hero.webp"
@@ -10,7 +10,7 @@ about: "A complete listicle of the best film emulation plugins, with honest comp
 
 Film emulation is a cornerstone of post-production, whether you're chasing the aesthetic of expired Kodak Vision 3 or layering grain and halation onto digital footage. But with prices ranging from free to $1,000+ and workflows from command-line to GPU-accelerated real-time preview, choosing the right plugin can be overwhelming.
 
-This guide covers **the best film emulation tools for 2024–2025**, ranked by workflow fit and value.
+This guide covers **the best film emulation tools for 2024-2025**, ranked by workflow fit and value.
 
 ---
 
@@ -18,7 +18,7 @@ This guide covers **the best film emulation tools for 2024–2025**, ranked by w
 
 **Free / Source-available** · CLI-first · Reproducible · Scriptable
 
-Hance is a **command-line film emulation tool** built for workflows that GUIs can't handle: batch processing, automation, CI/CD pipelines, and reproducible versioning of looks.
+Hance is a **command-line film emulation tool** built for workflows that GUIs can't handle - batch processing, automation, CI/CD pipelines, and reproducible versioning of looks.
 
 ### What makes it stand out:
 
@@ -92,7 +92,7 @@ Dehancer is a **professional GPU-accelerated plugin** with an expansive grain li
 
 ## 3. Genesis — Best for Accurate Photochemical Film Modeling
 
-**$199–$2,000** · DaVinci Resolve only · Color-science focused
+**$199-$2,000** · DaVinci Resolve only · Color-science focused
 
 Genesis by Cullen Kelley, Steve Yedlin, and Mitch Bogdanowicz (former Kodak color scientist) is a **rigorous film emulation engine** built on deep color science rather than aesthetic filters.
 
@@ -197,7 +197,7 @@ ARRI's native Resolve plugin delivers **real-time analog film emulation** with a
 
 **$119 OFX version** · Multiple platforms · Lightweight, beginner-friendly
 
-Film Convert is one of the **oldest film emulation plugins** on the market—battle-tested, simple, and fast.
+Film Convert is one of the **oldest film emulation plugins** on the market - battle-tested, simple, and fast.
 
 ### What's good:
 
@@ -226,7 +226,7 @@ Film Convert is one of the **oldest film emulation plugins** on the market—bat
 
 ## 7. Genesis by Cullen Kelley (previously named differently) — Alternative View
 
-If you want the most **rigorously engineered** film emulation, Genesis's approach—modeling actual photochemical behavior rather than applying LUT filters—sets it apart. See entry #3 above for full details.
+If you want the most **rigorously engineered** film emulation, Genesis's approach - modeling actual photochemical behavior rather than applying LUT filters - sets it apart. See entry #3 above for full details.
 
 ---
 
@@ -236,8 +236,8 @@ If you want the most **rigorously engineered** film emulation, Genesis's approac
 |------|-------|------------|----------|--------------|
 | **Hance** | **Free** | CLI (all OS) | Scripting, batch, CI | Reproducible automation |
 | **Dehancer** | $449 | Resolve, Premiere, FCP | Professional grain | GPU-accelerated, customizable |
-| **Genesis** | $299–$2,000 | Resolve only | Color science purists | Photochemical modeling |
-| **FilmBox** | $995–$2,495 | Resolve only | Maximum fidelity | Highest quality emulation |
+|| **Genesis** | $299-$2,000 | Resolve only | Color science purists | Photochemical modeling |
+| **FilmBox** | $995-$2,495 | Resolve only | Maximum fidelity | Highest quality emulation |
 | **ARRI Film Lab** | $25/mo or $299 | Resolve native | Real-time workflows | Integrated, affordable |
 | **Film Convert** | $119 | Multiple | Beginners, speed | Simple, lightweight |
 
