@@ -105,6 +105,32 @@ impl Params {
         [1.0, 0.0, 1.0, 1.0, 6500.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     }
 
+    pub fn film_density_enabled(&self) -> bool {
+        !self.bool("no-film-density", false) && self.num("film-density-amount", 0.0) > 0.0
+    }
+
+    /// Film density uniform: [amount, toeR, toeG, toeB, shoulderR, shoulderG, shoulderB, _pad]
+    pub fn film_density_uniform(&self) -> [f32; 8] {
+        let amount = self.num("film-density-amount", 0.0);
+        let preset_name = self
+            .map
+            .get("film-density-preset")
+            .and_then(|v| v.as_str())
+            .unwrap_or("warm-classic");
+        let consts = crate::render_constants::render_constants();
+        let preset = consts
+            .film_density_presets
+            .get(preset_name)
+            .or_else(|| consts.film_density_presets.get("warm-classic"))
+            .expect("warm-classic film density preset must exist");
+        [
+            amount,
+            preset.toe[0], preset.toe[1], preset.toe[2],
+            preset.shoulder[0], preset.shoulder[1], preset.shoulder[2],
+            0.0,
+        ]
+    }
+
     pub fn halation_enabled(&self) -> bool {
         !self.bool("no-halation", false) && self.num("halation-amount", 0.25) > 0.0
     }
@@ -430,5 +456,39 @@ mod tests {
         assert_eq!(u[3], 0.0);
         assert!((u[5] - 1.5).abs() < 1e-6);
         assert!((u[10] - 2.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn film_density_disabled_by_default() {
+        // Off by default (amount 0), like split-tone/color-wheels — an opt-in
+        // creative choice, unlike the baseline halation/grain/vignette look.
+        let p = make_params(&[]);
+        assert!(!p.film_density_enabled());
+    }
+
+    #[test]
+    fn film_density_enabled_when_amount_positive_uses_warm_classic_by_default() {
+        let p = make_params(&[("film-density-amount", serde_json::json!(0.5))]);
+        assert!(p.film_density_enabled());
+        let u = p.film_density_uniform();
+        assert!((u[0] - 0.5).abs() < 1e-6); // amount
+        assert!((u[1] - 1.15).abs() < 1e-6); // toeR
+        assert!((u[4] - 0.85).abs() < 1e-6); // shoulderR
+    }
+
+    #[test]
+    fn film_density_disabled_by_flag_even_with_amount() {
+        let p = make_params(&[
+            ("no-film-density", serde_json::json!(true)),
+            ("film-density-amount", serde_json::json!(0.5)),
+        ]);
+        assert!(!p.film_density_enabled());
+    }
+
+    #[test]
+    fn film_density_unknown_preset_falls_back_to_warm_classic() {
+        let p = make_params(&[("film-density-preset", serde_json::json!("bogus"))]);
+        let u = p.film_density_uniform();
+        assert!((u[1] - 1.15).abs() < 1e-6); // toeR from warm-classic
     }
 }

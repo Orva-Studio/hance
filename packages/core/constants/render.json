@@ -6,5 +6,10 @@
   "halationRing": 1.0,
   "referenceHeight": 1080,
   "fadeColorHues": { "warm": 30, "green": 150, "teal": 190, "magenta": 300 },
-  "fadeTintStrength": 0.7
+  "fadeTintStrength": 0.7,
+  "filmDensityPresets": {
+    "warm-classic": { "toe": [1.15, 1.05, 0.9], "shoulder": [0.85, 0.9, 0.75] },
+    "cool-cinema": { "toe": [1.05, 1.0, 0.95], "shoulder": [0.8, 0.85, 0.95] },
+    "vintage-fade": { "toe": [0.7, 0.75, 0.65], "shoulder": [0.7, 0.72, 0.68] }
+  }
 }

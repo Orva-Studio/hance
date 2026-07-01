@@ -11,6 +11,7 @@ const THRESHOLD_FRAG: &str = include_str!("../../core/shaders/threshold.frag.wgs
 const BLUR_FRAG: &str = include_str!("../../core/shaders/blur.frag.wgsl");
 const BLEND_FRAG: &str = include_str!("../../core/shaders/screen-blend.frag.wgsl");
 const ABERRATION_FRAG: &str = include_str!("../../core/shaders/aberration.frag.wgsl");
+const FILM_DENSITY_FRAG: &str = include_str!("../../core/shaders/film-density.frag.wgsl");
 const GRAIN_FRAG: &str = include_str!("../../core/shaders/grain.frag.wgsl");
 const VIGNETTE_FRAG: &str = include_str!("../../core/shaders/vignette.frag.wgsl");
 const SPLIT_TONE_FRAG: &str = include_str!("../../core/shaders/split-tone.frag.wgsl");
@@ -63,6 +64,7 @@ pub struct GpuRenderer {
     combine_pipeline: RenderPipeline,
     blend_pipeline: RenderPipeline,
     aberration_pipeline: RenderPipeline,
+    film_density_pipeline: RenderPipeline,
     grain_pipeline: RenderPipeline,
     vignette_pipeline: RenderPipeline,
     split_tone_pipeline: RenderPipeline,
@@ -79,6 +81,7 @@ pub struct GpuRenderer {
     scatter_blur_ub2: Buffer,
     combine_ub: Buffer,
     aberration_ub: Buffer,
+    film_density_ub: Buffer,
     grain_ub: Buffer,
     vignette_ub: Buffer,
     split_tone_ub: Buffer,
@@ -153,6 +156,7 @@ impl GpuRenderer {
         let combine_pipeline = passes::create_pipeline(&device, VERT, COMBINE_FRAG, &combine_layout, INTERMEDIATE_FORMAT);
         let blend_pipeline = passes::create_pipeline(&device, VERT, BLEND_FRAG, &blend_layout, INTERMEDIATE_FORMAT);
         let aberration_pipeline = passes::create_pipeline(&device, VERT, ABERRATION_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+        let film_density_pipeline = passes::create_pipeline(&device, VERT, FILM_DENSITY_FRAG, &std_layout, INTERMEDIATE_FORMAT);
         let grain_pipeline = passes::create_pipeline(&device, VERT, GRAIN_FRAG, &std_layout, INTERMEDIATE_FORMAT);
         let vignette_pipeline = passes::create_pipeline(&device, VERT, VIGNETTE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
         let split_tone_pipeline = passes::create_pipeline(&device, VERT, SPLIT_TONE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
@@ -208,6 +212,7 @@ impl GpuRenderer {
         let scatter_blur_ub2 = passes::create_uniform_buffer(&device, 48);
         let combine_ub = passes::create_uniform_buffer(&device, 16);
         let aberration_ub = passes::create_uniform_buffer(&device, 16);
+        let film_density_ub = passes::create_uniform_buffer(&device, 32);
         let grain_ub = passes::create_uniform_buffer(&device, 16);
         let vignette_ub = passes::create_uniform_buffer(&device, 16);
         let split_tone_ub = passes::create_uniform_buffer(&device, 48);
@@ -258,6 +263,7 @@ impl GpuRenderer {
             combine_pipeline,
             blend_pipeline,
             aberration_pipeline,
+            film_density_pipeline,
             grain_pipeline,
             vignette_pipeline,
             split_tone_pipeline,
@@ -272,6 +278,7 @@ impl GpuRenderer {
             scatter_blur_ub2,
             combine_ub,
             aberration_ub,
+            film_density_ub,
             grain_ub,
             vignette_ub,
             split_tone_ub,
@@ -365,7 +372,8 @@ impl GpuRenderer {
             || self.params.aberration_enabled()
             || self.params.bloom_enabled()
             || self.params.grain_enabled()
-            || self.params.vignette_enabled();
+            || self.params.vignette_enabled()
+            || self.params.film_density_enabled();
 
         // --- Decode to linear light (start of light-transport bracket) ---
         if light_group_active {
@@ -375,6 +383,20 @@ impl GpuRenderer {
                 &self.sampler, &self.decode_ub,
             );
             passes::run_pass(&mut encoder, &self.colorspace_pipeline, &bg,
+                &other_tex!().create_view(&TextureViewDescriptor::default()));
+            swap!();
+        }
+
+        // --- Film Density Curve (H&D) --- runs first in linear light so the
+        // exposure->density mapping feeds halation's highlight detection.
+        if self.params.film_density_enabled() {
+            self.write_uniform(&self.film_density_ub, &self.params.film_density_uniform());
+            let bg = passes::make_std_bind_group(
+                &self.device, &self.std_layout,
+                &current_tex!().create_view(&TextureViewDescriptor::default()),
+                &self.sampler, &self.film_density_ub,
+            );
+            passes::run_pass(&mut encoder, &self.film_density_pipeline, &bg,
                 &other_tex!().create_view(&TextureViewDescriptor::default()));
             swap!();
         }

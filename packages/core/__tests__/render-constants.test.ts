@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING, REFERENCE_HEIGHT, resolutionScale } from "../src/render-constants";
+import { HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING, REFERENCE_HEIGHT, resolutionScale, FILM_DENSITY_PRESETS } from "../src/render-constants";
 
 const repoRoot = join(import.meta.dir, "..", "..", "..");
 
@@ -52,5 +52,22 @@ describe("shared render constants", () => {
     expect(ts).toContain("resolutionScale");
     const rs = readFileSync(join(repoRoot, "packages/wgpu/src/renderer.rs"), "utf8");
     expect(rs).toContain("resolution_scale");
+  });
+
+  test("film density presets are present and keyed as expected", () => {
+    expect(Object.keys(FILM_DENSITY_PRESETS).sort()).toEqual(["cool-cinema", "vintage-fade", "warm-classic"]);
+    for (const preset of Object.values(FILM_DENSITY_PRESETS)) {
+      expect(preset.toe).toHaveLength(3);
+      expect(preset.shoulder).toHaveLength(3);
+    }
+  });
+
+  // Parity guard, same class as the halation drift check above (#64).
+  test("neither renderer hardcodes film density preset curve values", () => {
+    const ts = readFileSync(join(repoRoot, "packages/ui/app/gpu/renderer.ts"), "utf8");
+    expect(ts).toContain("filmDensityUniform");
+    const rs = readFileSync(join(repoRoot, "packages/wgpu/src/renderer.rs"), "utf8");
+    expect(rs).toContain("film_density_uniform");
+    expect(rs).not.toMatch(/1\.15,\s*1\.05,\s*0\.9/);
   });
 });
