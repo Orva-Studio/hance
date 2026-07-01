@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
 import type {
-  ColorSettingsOptions, HalationOptions, AberrationOptions,
+  ColorSettingsOptions, FilmDensityOptions, HalationOptions, AberrationOptions,
   BloomOptions, GrainOptions, VignetteOptions, SplitToneOptions, ColorWheelsOptions, CameraShakeOptions,
   FilmOptions, OutputCodec, LicenseContext, InputLutOptions, FadeColor,
 } from "./types";
@@ -132,6 +132,12 @@ export function applyPreset(
     bleachBypass: Number(merged["bleach-bypass"]),
   };
 
+  const filmDensity: FilmDensityOptions = {
+    enabled: merged["no-film-density"] ? false : true,
+    preset: String(merged["film-density-preset"]),
+    amount: Number(merged["film-density-amount"]),
+  };
+
   const halation: HalationOptions = {
     enabled: merged["no-halation"] ? false : true,
     amount: Number(merged["halation-amount"]),
@@ -198,5 +204,5 @@ export function applyPreset(
   const blend = Number(merged["blend"] ?? 1);
   const pixelFormat = "yuv420p";
 
-  return { encodePreset, codec, crf, blend, pixelFormat, inputLut, colorSettings, halation, aberration, bloom, grain, vignette, splitTone, colorWheels, cameraShake, mergedParams: merged };
+  return { encodePreset, codec, crf, blend, pixelFormat, inputLut, colorSettings, filmDensity, halation, aberration, bloom, grain, vignette, splitTone, colorWheels, cameraShake, mergedParams: merged };
 }

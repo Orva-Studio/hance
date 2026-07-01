@@ -81,6 +81,16 @@ export const EFFECT_SCHEMA: EffectGroup[] = [
     ],
   },
   {
+    key: "filmDensity",
+    label: "Film Density Curve",
+    enableKey: "no-film-density",
+    enableHelp: "Disable the H&D film density curve",
+    options: [
+      { key: "film-density-preset", label: "Stock", type: "select", choices: ["warm-classic", "cool-cinema", "vintage-fade"], default: "warm-classic", description: "Per-channel H&D density curve preset" },
+      { key: "film-density-amount", label: "Amount", type: "range", min: 0, max: 1, step: 0.01, default: 0, description: "Blend strength of the density curve (0 = off)" },
+    ],
+  },
+  {
     key: "halation",
     label: "Halation",
     enableKey: "no-halation",

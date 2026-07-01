@@ -28,3 +28,11 @@ export function resolutionScale(frameHeight: number): number {
 export const FADE_COLOR_HUES: Record<string, number> = renderConstants.fadeColorHues;
 /** Tint strength applied to the black lift for any non-neutral fade color. */
 export const FADE_TINT_STRENGTH: number = renderConstants.fadeTintStrength;
+
+/** Per-channel toe/shoulder gamma for a built-in H&D film density preset. */
+export interface FilmDensityPreset {
+  toe: readonly [number, number, number];
+  shoulder: readonly [number, number, number];
+}
+/** Built-in film density curve presets, keyed by preset name. */
+export const FILM_DENSITY_PRESETS: Record<string, FilmDensityPreset> = renderConstants.filmDensityPresets;

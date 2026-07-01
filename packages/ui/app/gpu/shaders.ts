@@ -5,6 +5,7 @@ import THRESHOLD_FRAG from "../../../core/shaders/threshold.frag.wgsl";
 import BLUR_FRAG from "../../../core/shaders/blur.frag.wgsl";
 import SCREEN_BLEND_FRAG from "../../../core/shaders/screen-blend.frag.wgsl";
 import ABERRATION_FRAG from "../../../core/shaders/aberration.frag.wgsl";
+import FILM_DENSITY_FRAG from "../../../core/shaders/film-density.frag.wgsl";
 import GRAIN_FRAG from "../../../core/shaders/grain.frag.wgsl";
 import VIGNETTE_FRAG from "../../../core/shaders/vignette.frag.wgsl";
 import SPLIT_TONE_FRAG from "../../../core/shaders/split-tone.frag.wgsl";
@@ -23,6 +24,7 @@ export {
   BLUR_FRAG,
   SCREEN_BLEND_FRAG,
   ABERRATION_FRAG,
+  FILM_DENSITY_FRAG,
   GRAIN_FRAG,
   VIGNETTE_FRAG,
   SPLIT_TONE_FRAG,
