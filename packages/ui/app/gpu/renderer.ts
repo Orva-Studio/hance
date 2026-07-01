@@ -1,6 +1,6 @@
 import {
   FULLSCREEN_VERT, COLOR_SETTINGS_FRAG, THRESHOLD_FRAG, BLUR_FRAG,
-  SCREEN_BLEND_FRAG, ABERRATION_FRAG, GRAIN_FRAG, VIGNETTE_FRAG,
+  SCREEN_BLEND_FRAG, ABERRATION_FRAG, FILM_DENSITY_FRAG, GRAIN_FRAG, VIGNETTE_FRAG,
   SPLIT_TONE_FRAG, COLOR_WHEELS_FRAG, CAMERA_SHAKE_FRAG, COLORSPACE_FRAG, LUT_FRAG,
   SCATTER_BLUR_FRAG, HALATION_COMBINE_FRAG,
 } from "./shaders";
@@ -8,7 +8,7 @@ import { createFullscreenPipeline, createTexture, runPass } from "./passes";
 import { getSplitToneTintValues, hueToRgb } from "./splitToneMath";
 import { isColorWheelsActive, colorWheelsUniform } from "./colorWheels";
 import { isLightGroupActive } from "./lightGroup";
-import { LUT_SIZE, generateLut, isInputLutActive, HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING, FADE_COLOR_HUES, FADE_TINT_STRENGTH, resolutionScale } from "@hance/core";
+import { LUT_SIZE, generateLut, isInputLutActive, HALATION_THRESHOLD, BLUR_SIGMA_FACTOR, HALATION_CHANNEL_SIGMA, HALATION_PSF, HALATION_RING, FADE_COLOR_HUES, FADE_TINT_STRENGTH, resolutionScale, filmDensityUniform, isFilmDensityActive } from "@hance/core";
 import { chooseExportSize } from "../mediaSizing";
 
 export interface PreviewParams {
@@ -190,6 +190,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const combinePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, HALATION_COMBINE_FRAG, combineLayout, INTERMEDIATE_FORMAT);
   const blendPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, SCREEN_BLEND_FRAG, blendLayout, INTERMEDIATE_FORMAT);
   const aberrationPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, ABERRATION_FRAG, stdLayout, INTERMEDIATE_FORMAT);
+  const filmDensityPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, FILM_DENSITY_FRAG, stdLayout, INTERMEDIATE_FORMAT);
   const grainPipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, GRAIN_FRAG, stdLayout, INTERMEDIATE_FORMAT);
   const vignettePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, VIGNETTE_FRAG, stdLayout, INTERMEDIATE_FORMAT);
   const splitTonePipeline = createFullscreenPipeline(device, FULLSCREEN_VERT, SPLIT_TONE_FRAG, stdLayout, INTERMEDIATE_FORMAT);
@@ -215,6 +216,7 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
   const combineUB = createUniformBuffer(device, 16);
   const blendUB = createUniformBuffer(device, 16);
   const aberrationUB = createUniformBuffer(device, 16);
+  const filmDensityUB = createUniformBuffer(device, 32);
   const grainUB = createUniformBuffer(device, 16); // 4 floats
   const vignetteUB = createUniformBuffer(device, 16);
   const splitToneUB = createUniformBuffer(device, 48);
@@ -403,6 +405,15 @@ export async function createRenderer(canvas: HTMLCanvasElement, init: RendererIn
     if (lightGroupActive) {
       const bg = makeStdBindGroup(current, decodeUB);
       runPass(encoder, colorspacePipeline, bg, other.createView());
+      swap();
+    }
+
+    // --- Film Density Curve (H&D) --- runs first in linear light so the
+    // exposure->density mapping feeds halation's highlight detection.
+    if (isFilmDensityActive(params)) {
+      device.queue.writeBuffer(filmDensityUB, 0, new Float32Array(filmDensityUniform(params)));
+      const bg = makeStdBindGroup(current, filmDensityUB);
+      runPass(encoder, filmDensityPipeline, bg, other.createView());
       swap();
     }
 

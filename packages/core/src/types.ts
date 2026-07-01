@@ -19,6 +19,12 @@ export interface ColorSettingsOptions {
   bleachBypass: number;
 }
 
+export interface FilmDensityOptions {
+  enabled: boolean;
+  preset: string;
+  amount: number;
+}
+
 export interface HalationOptions {
   enabled: boolean;
   amount: number;
@@ -91,6 +97,7 @@ export interface FilmOptions {
   pixelFormat: PixelFormat;
   inputLut: InputLutOptions;
   colorSettings: ColorSettingsOptions;
+  filmDensity: FilmDensityOptions;
   halation: HalationOptions;
   aberration: AberrationOptions;
   bloom: BloomOptions;

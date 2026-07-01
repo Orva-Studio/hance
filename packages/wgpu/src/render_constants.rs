@@ -23,6 +23,16 @@ pub struct RenderConstants {
     pub fade_color_hues: std::collections::HashMap<String, f32>,
     #[serde(rename = "fadeTintStrength")]
     pub fade_tint_strength: f32,
+    #[serde(rename = "filmDensityPresets")]
+    pub film_density_presets: std::collections::HashMap<String, FilmDensityPreset>,
+}
+
+/// Per-channel toe/shoulder gamma for a built-in H&D film density preset.
+/// Mirrors FilmDensityPreset in packages/core/src/render-constants.ts.
+#[derive(Deserialize)]
+pub struct FilmDensityPreset {
+    pub toe: [f32; 3],
+    pub shoulder: [f32; 3],
 }
 
 const RENDER_CONSTANTS_JSON: &str = include_str!("../../core/constants/render.json");
