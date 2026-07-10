@@ -4,8 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun run --cwd ../.. build:ui && electrobun dev",
-    "dev:watch": "bun run --cwd ../.. build:ui && electrobun dev --watch",
+    "clean:webkit-cache": "rm -rf ~/Library/WebKit/studio.orva.hance ~/Library/Caches/studio.orva.hance",
+    "dev": "bun run clean:webkit-cache && bun run --cwd ../.. build:ui && electrobun dev",
+    "dev:watch": "bun run clean:webkit-cache && bun run --cwd ../.. build:ui && electrobun dev --watch",
     "start": "electrobun dev",
     "build": "electrobun build"
   },
