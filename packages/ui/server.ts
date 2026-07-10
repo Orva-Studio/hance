@@ -69,7 +69,7 @@ function safeRebuildIndex(): void {
   try { rebuildPresetIndex(); } catch (err) { console.error("preset index rebuild failed:", err); }
 }
 
-export function createServer(port: number, hostname?: string) {
+export function createServer(port: number, hostname?: string, distDir?: string) {
   return Bun.serve({
     port,
     ...(hostname ? { hostname } : {}),
@@ -420,15 +420,15 @@ export function createServer(port: number, hostname?: string) {
       }
 
       // Static file serving (SPA)
-      const localDist = join(import.meta.dir, "dist");
+      const localDist = distDir ?? join(import.meta.dir, "dist");
       const staticDir = existsSync(localDist) ? localDist : join(homedir(), ".hance", "ui");
       const filePath = join(staticDir, url.pathname === "/" ? "index.html" : url.pathname);
       if (existsSync(filePath)) {
-        return new Response(Bun.file(filePath));
+        return new Response(Bun.file(filePath), { headers: { "Cache-Control": "no-store" } });
       }
       const indexPath = join(staticDir, "index.html");
       if (existsSync(indexPath)) {
-        return new Response(Bun.file(indexPath));
+        return new Response(Bun.file(indexPath), { headers: { "Cache-Control": "no-store" } });
       }
       return new Response("Not found", { status: 404 });
     },
@@ -453,9 +453,9 @@ export async function startUI(port: number, openBrowser = true, initialFile?: st
   process.on("SIGINT", () => { cleanup(); process.exit(0); });
   process.on("SIGTERM", () => { cleanup(); process.exit(0); });
 
-  const server = createServer(port);
+  const server = createServer(port, "127.0.0.1");
   console.log(STARTUP_ASCII_ART);
-  console.log(`\n  \x1b[2mRunning at\x1b[0m \x1b[1mhttp://localhost:${server.port}\x1b[0m\n`);
+  console.log(`\n  \x1b[2mRunning at\x1b[0m \x1b[1mhttp://127.0.0.1:${server.port}\x1b[0m\n`);
   if (openBrowser) {
     const open = process.platform === "darwin" ? "open" : "xdg-open";
     Bun.spawn([open, `http://localhost:${server.port}`], { stdout: "ignore", stderr: "ignore" });
