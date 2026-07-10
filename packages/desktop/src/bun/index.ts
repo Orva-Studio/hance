@@ -29,13 +29,17 @@ async function waitUntilReady(url: string, timeoutMs = 3000): Promise<void> {
   }
 }
 
+let mainWindow: BrowserWindow | null = null;
+
 async function main(): Promise<void> {
   const ui = startUiServer();
   await waitUntilReady(ui.url);
   ApplicationMenu.setApplicationMenu(buildApplicationMenu());
   const win = createMainWindow(ui.url);
+  mainWindow = win;
 
   win.on("close", async () => {
+    mainWindow = null;
     try {
       await ui.stop();
     } catch (err) {
@@ -46,6 +50,13 @@ async function main(): Promise<void> {
 
 main();
 
+// Forward custom menu actions into the webview as a DOM CustomEvent; the
+// React app listens for "hance:menu" and dispatches to its own handlers.
+// Role-based items (undo, copy, quit…) are handled natively and never fire.
 Electrobun.events.on("application-menu-clicked", (event) => {
-  console.log("application menu clicked", event.data.action);
+  const action = event.data.action;
+  if (!action || !mainWindow) return;
+  mainWindow.webview.executeJavascript(
+    `window.dispatchEvent(new CustomEvent("hance:menu", { detail: ${JSON.stringify(action)} }))`,
+  );
 });

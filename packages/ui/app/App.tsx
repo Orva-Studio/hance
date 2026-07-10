@@ -27,6 +27,7 @@ import { fetchJson } from "./lib/fetchJson";
 import { useProxyStream } from "./hooks/useProxyStream";
 import { captureFrame } from "./lib/captureFrame";
 import { setThumbnailSource } from "./lib/lookThumbnails";
+import { pickNativeFile, fetchLocalFile } from "./lib/openFile";
 
 // Warn once the on-disk preview proxy cache passes this size. Caching never
 // evicts (by design), so this nudges the user to clear it manually.
@@ -347,6 +348,35 @@ export function App() {
     createLook(name, params, metadata);
   }, [createLook, params]);
 
+  // Native menu actions arrive from the desktop shell as "hance:menu"
+  // CustomEvents (see packages/desktop/src/bun/index.ts). Handlers live in a
+  // ref so the mount-time listener always sees current state.
+  const menuHandlersRef = useRef<Record<string, () => void>>({});
+  menuHandlersRef.current = {
+    "open-file": () => {
+      void (async () => {
+        try {
+          const picked = await pickNativeFile();
+          if (!picked || picked === "unsupported") return;
+          upload(await fetchLocalFile(picked.path, picked.name), picked.path);
+        } catch (err) {
+          setOpenError(`Failed to open file: ${(err as Error).message}`);
+        }
+      })();
+    },
+    "save-look": () => { if (activeLook && hasChanges) saveLook(activeLook, params); },
+    "save-look-as-new": () => setShowSaveAsNew(true),
+    "export": () => { if (file) setShowExportModal(true); },
+  };
+
+  useEffect(() => {
+    function onMenu(e: Event) {
+      menuHandlersRef.current[(e as CustomEvent<string>).detail]?.();
+    }
+    window.addEventListener("hance:menu", onMenu);
+    return () => window.removeEventListener("hance:menu", onMenu);
+  }, []);
+
   const applySnapshot = useCallback(async (snap: { params: PreviewParams; activeLook: string | null } | null) => {
     if (!snap) return;
     setAnimating(true);
@@ -617,8 +647,14 @@ export function App() {
         </>
       )}
 
-      {(schemaError || looksError) && (
+      {(schemaError || looksError || openError) && (
         <div className="absolute left-1/2 -translate-x-1/2 bottom-8 flex flex-col gap-2 z-40">
+          {openError && (
+            <div className="flex items-center gap-3 bg-zinc-900 border border-danger/50 px-4 py-2 rounded-md text-xs text-danger">
+              <span>{openError}</span>
+              <button onClick={() => setOpenError(null)} className="text-zinc-400 hover:text-zinc-200">×</button>
+            </div>
+          )}
           {schemaError && (
             <div className="flex items-center gap-3 bg-zinc-900 border border-danger/50 px-4 py-2 rounded-md text-xs text-danger">
               <span>{schemaError}</span>
