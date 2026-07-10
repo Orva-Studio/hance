@@ -46,6 +46,6 @@ test("startUiServer serves the @hance/ui app over http", async () => {
     const res = await fetch(`${ui.url}/api/looks`);
     expect(res.ok).toBe(true);
   } finally {
-    ui.stop();
+    await ui.stop();
   }
 });
