@@ -10,6 +10,8 @@ export const MENU_ACTIONS = {
   saveLook: "save-look",
   saveLookAsNew: "save-look-as-new",
   export: "export",
+  undo: "undo",
+  redo: "redo",
 } as const;
 
 export function buildApplicationMenu(): ApplicationMenuItemConfig[] {
@@ -37,8 +39,11 @@ export function buildApplicationMenu(): ApplicationMenuItemConfig[] {
     {
       label: "Edit",
       submenu: [
-        { role: "undo" },
-        { role: "redo" },
+        // Custom actions, not native roles: the app has its own edit history,
+        // and a native role would swallow cmd+Z before the webview sees it.
+        // The web app falls back to text-field undo when an input is focused.
+        { label: "Undo", action: MENU_ACTIONS.undo, accelerator: "CmdOrCtrl+Z" },
+        { label: "Redo", action: MENU_ACTIONS.redo, accelerator: "CmdOrCtrl+Shift+Z" },
         { type: "separator" },
         { role: "cut" },
         { role: "copy" },
