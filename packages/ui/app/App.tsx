@@ -367,7 +367,27 @@ export function App() {
     "save-look": () => { if (activeLook && hasChanges) saveLook(activeLook, params); },
     "save-look-as-new": () => setShowSaveAsNew(true),
     "export": () => { if (file) setShowExportModal(true); },
+    "undo": () => menuUndoRedo("undo"),
+    "redo": () => menuUndoRedo("redo"),
   };
+
+  // Menu Undo/Redo target the app's edit history, mirroring useUndoRedo's
+  // keyboard rules: a focused text field gets native text undo instead
+  // (range inputs commit param changes, so they still use app history).
+  function menuUndoRedo(kind: "undo" | "redo") {
+    const el = document.activeElement as HTMLElement | null;
+    if (el) {
+      const tag = el.tagName;
+      const isTextInput = tag === "TEXTAREA" || el.isContentEditable ||
+        (tag === "INPUT" && (el as HTMLInputElement).type !== "range");
+      if (isTextInput) {
+        document.execCommand(kind);
+        return;
+      }
+    }
+    const snap = kind === "undo" ? historyRef.current.undo() : historyRef.current.redo();
+    applySnapshot(snap);
+  }
 
   useEffect(() => {
     function onMenu(e: Event) {

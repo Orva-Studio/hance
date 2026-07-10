@@ -34,7 +34,7 @@ test("application menu includes quit and the standard edit roles", () => {
   const roles = menu
     .flatMap(item => ("submenu" in item ? item.submenu ?? [] : []))
     .map(item => ("role" in item ? item.role : undefined));
-  for (const role of ["quit", "undo", "redo", "cut", "copy", "paste", "selectAll"]) {
+  for (const role of ["quit", "cut", "copy", "paste", "selectAll"]) {
     expect(roles).toContain(role);
   }
 });
