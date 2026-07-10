@@ -44,3 +44,6 @@ hance-gpu
 
 # Superpowers plan docs
 docs/superpowers/
+
+# Electrobun build output
+packages/desktop/build/
