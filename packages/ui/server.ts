@@ -69,7 +69,47 @@ function safeRebuildIndex(): void {
   try { rebuildPresetIndex(); } catch (err) { console.error("preset index rebuild failed:", err); }
 }
 
-export function createServer(port: number, hostname?: string, distDir?: string) {
+export interface RecentEntry {
+  path: string;
+  name: string;
+  thumbnail?: string;
+  openedAt: number;
+}
+
+const MAX_RECENTS = 12;
+// Data-URL thumbnails live inline in recents.json; cap each so the file stays small.
+const MAX_THUMBNAIL_CHARS = 200_000;
+
+function recentsPath(): string {
+  return join(homedir(), ".hance", "recents.json");
+}
+
+function readRecents(): RecentEntry[] {
+  try {
+    const parsed = JSON.parse(readFileSync(recentsPath(), "utf8"));
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (e): e is RecentEntry => typeof e?.path === "string" && typeof e?.name === "string",
+    );
+  } catch {
+    return [];
+  }
+}
+
+function writeRecents(entries: RecentEntry[]): void {
+  const dir = join(homedir(), ".hance");
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  writeFileSync(recentsPath(), JSON.stringify(entries, null, 2));
+}
+
+export interface ServerHooks {
+  // Native "open file" dialog, provided by the desktop shell. Returns the
+  // chosen absolute path, or null if the user cancelled. Absent in browser/CLI
+  // mode, where /api/pick-file 404s and the UI falls back to <input type=file>.
+  pickFile?: () => Promise<string | null>;
+}
+
+export function createServer(port: number, hostname?: string, distDir?: string, hooks?: ServerHooks) {
   return Bun.serve({
     port,
     ...(hostname ? { hostname } : {}),
@@ -98,6 +138,48 @@ export function createServer(port: number, hostname?: string, distDir?: string) 
             "Content-Type": file.type || "application/octet-stream",
           },
         });
+      }
+
+      if (url.pathname === "/api/pick-file" && req.method === "POST") {
+        if (!hooks?.pickFile) return new Response("Not supported", { status: 404 });
+        const picked = await hooks.pickFile();
+        if (!picked) return new Response(null, { status: 204 });
+        const path = resolve(picked);
+        allowedFilePaths.add(path);
+        return Response.json({ path, name: basename(path) });
+      }
+
+      if (url.pathname === "/api/recents" && req.method === "GET") {
+        const entries = readRecents().filter(e => existsSync(e.path));
+        // Recents came from paths the user picked natively; re-allow them so
+        // /api/local-file can serve them after a restart.
+        for (const e of entries) allowedFilePaths.add(resolve(e.path));
+        return Response.json(entries);
+      }
+
+      if (url.pathname === "/api/recents" && req.method === "POST") {
+        let body: { path?: unknown; name?: unknown; thumbnail?: unknown };
+        try { body = await req.json(); } catch {
+          return new Response("invalid JSON", { status: 400 });
+        }
+        if (typeof body.path !== "string" || typeof body.name !== "string") {
+          return new Response("path and name required", { status: 400 });
+        }
+        const path = resolve(body.path);
+        // Only paths already vetted (native picker, CLI initial file, prior
+        // recents) may enter the list — GET re-allows every stored entry, so
+        // accepting arbitrary paths here would let the page whitelist any file.
+        if (!allowedFilePaths.has(path)) {
+          return new Response("unknown file", { status: 403 });
+        }
+        const thumbnail =
+          typeof body.thumbnail === "string" && body.thumbnail.length <= MAX_THUMBNAIL_CHARS
+            ? body.thumbnail
+            : undefined;
+        const entry: RecentEntry = { path, name: body.name, thumbnail, openedAt: Date.now() };
+        const entries = [entry, ...readRecents().filter(e => resolve(e.path) !== path)].slice(0, MAX_RECENTS);
+        writeRecents(entries);
+        return Response.json(entries);
       }
 
       if (url.pathname === "/api/local-file" && req.method === "GET") {

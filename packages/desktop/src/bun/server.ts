@@ -1,6 +1,21 @@
 import { join, dirname } from "node:path";
 import { existsSync } from "node:fs";
+import { Utils } from "electrobun/bun";
 import { createServer } from "@hance/ui/server";
+
+// Native macOS open dialog via Electrobun, exposed to the web UI through the
+// server's /api/pick-file hook. Returning a real filesystem path (unlike the
+// browser <input type=file>) is what lets the recent-files list reopen media.
+async function pickFile(): Promise<string | null> {
+  const paths = await Utils.openFileDialog({
+    startingFolder: "~/",
+    allowedFileTypes: "*",
+    canChooseFiles: true,
+    canChooseDirectory: false,
+    allowsMultipleSelection: false,
+  });
+  return paths.find(p => p.length > 0) ?? null;
+}
 
 // Electrobun bundles src/bun/*.ts and runs the bundle from inside the built
 // .app (Contents/Resources/app/bun), so neither process.cwd() nor
@@ -27,7 +42,7 @@ function resolveUiDistDir(): string | undefined {
 // `bun run build:ui` at the repo root first) plus the /api routes the app uses.
 // Bound to 127.0.0.1 only so the local API is never exposed beyond localhost.
 export function startUiServer(): { url: string; stop: () => Promise<void> } {
-  const server = createServer(0, "127.0.0.1", resolveUiDistDir());
+  const server = createServer(0, "127.0.0.1", resolveUiDistDir(), { pickFile });
   async function stop(): Promise<void> {
     await server.stop(true);
   }
