@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { pickNativeFile, fetchLocalFile } from "../lib/openFile";
 
 export interface RecentEntry {
   path: string;
@@ -30,10 +31,7 @@ export function Landing({ onFile, onError }: Props) {
 
   const loadPath = useCallback(async (path: string, name: string) => {
     try {
-      const res = await fetch(`/api/local-file?path=${encodeURIComponent(path)}`);
-      if (!res.ok) throw new Error(`could not read file (${res.status})`);
-      const blob = await res.blob();
-      onFile(new File([blob], name, { type: blob.type }), path);
+      onFile(await fetchLocalFile(path, name), path);
     } catch (err) {
       onError(`Failed to open "${name}": ${(err as Error).message}`);
     }
@@ -43,15 +41,12 @@ export function Landing({ onFile, onError }: Props) {
   // for the recents list; fall back to the browser file input elsewhere.
   const openPicker = useCallback(async () => {
     try {
-      const res = await fetch("/api/pick-file", { method: "POST" });
-      if (res.status === 404) {
+      const picked = await pickNativeFile();
+      if (picked === "unsupported") {
         inputRef.current?.click();
         return;
       }
-      if (res.status === 204) return; // user cancelled the dialog
-      if (!res.ok) throw new Error(`picker failed (${res.status})`);
-      const { path, name } = await res.json();
-      await loadPath(path, name);
+      if (picked) await loadPath(picked.path, picked.name);
     } catch {
       inputRef.current?.click();
     }

@@ -4,9 +4,9 @@ import { tmpdir } from "node:os";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { createServer, allowFilePath } from "../server";
 
-// Point HOME at a temp dir so recents.json never touches the real ~/.hance.
+// Point recents storage at a temp dir so tests never touch ~/.hance.
 const fakeHome = mkdtempSync(join(tmpdir(), "hance-recents-"));
-const originalHome = process.env.HOME;
+const originalRecentsPath = process.env.HANCE_RECENTS_PATH;
 
 describe("recents & pick-file API", () => {
   let server: ReturnType<typeof createServer>;
@@ -14,7 +14,7 @@ describe("recents & pick-file API", () => {
   const mediaPath = join(fakeHome, "clip.mp4");
 
   beforeAll(() => {
-    process.env.HOME = fakeHome;
+    process.env.HANCE_RECENTS_PATH = join(fakeHome, "recents.json");
     writeFileSync(mediaPath, "fake video bytes");
     server = createServer(0, undefined, undefined, {
       pickFile: async () => mediaPath,
@@ -24,7 +24,8 @@ describe("recents & pick-file API", () => {
 
   afterAll(() => {
     server.stop();
-    process.env.HOME = originalHome;
+    if (originalRecentsPath === undefined) delete process.env.HANCE_RECENTS_PATH;
+    else process.env.HANCE_RECENTS_PATH = originalRecentsPath;
     rmSync(fakeHome, { recursive: true, force: true });
   });
 

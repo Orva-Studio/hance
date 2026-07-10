@@ -2,7 +2,7 @@ import { test, expect } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import config from "../electrobun.config";
-import { buildApplicationMenu } from "../src/bun/menu";
+import { buildApplicationMenu, MENU_ACTIONS } from "../src/bun/menu";
 import { startUiServer } from "../src/bun/server";
 
 const pkgDir = join(import.meta.dir, "..");
@@ -36,6 +36,16 @@ test("application menu includes quit and the standard edit roles", () => {
     .map(item => ("role" in item ? item.role : undefined));
   for (const role of ["quit", "undo", "redo", "cut", "copy", "paste", "selectAll"]) {
     expect(roles).toContain(role);
+  }
+});
+
+test("File menu exposes every custom action with an accelerator", () => {
+  const items = buildApplicationMenu()
+    .flatMap(item => ("submenu" in item ? item.submenu ?? [] : []))
+    .filter((item): item is { action: string; accelerator?: string } => "action" in item && !!item.action);
+  expect(items.map(i => i.action).sort()).toEqual(Object.values(MENU_ACTIONS).sort());
+  for (const item of items) {
+    expect(item.accelerator).toBeTruthy();
   }
 });
 

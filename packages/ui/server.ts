@@ -1,7 +1,7 @@
 import { EFFECT_SCHEMA, seedDefaults, loadPreset, builtinPresetsDir, userPresetsDir, listPresetNames, probe, rebuildPresetIndex, requireCodecLicense } from "@hance/core";
 import type { PresetData, LicenseContext } from "@hance/core";
 import { runGpuExport } from "@hance/gpu";
-import { join, extname, basename, resolve } from "node:path";
+import { join, extname, basename, resolve, dirname } from "node:path";
 import { existsSync, readdirSync, mkdirSync, writeFileSync, readFileSync, unlinkSync, renameSync, rmSync, statSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
 import { streamFragmentedMp4, proxyDonePath } from "./lib/transcode";
@@ -80,8 +80,10 @@ const MAX_RECENTS = 12;
 // Data-URL thumbnails live inline in recents.json; cap each so the file stays small.
 const MAX_THUMBNAIL_CHARS = 200_000;
 
+// HANCE_RECENTS_PATH override exists for tests, which must not touch the
+// user's real ~/.hance/recents.json.
 function recentsPath(): string {
-  return join(homedir(), ".hance", "recents.json");
+  return process.env.HANCE_RECENTS_PATH ?? join(homedir(), ".hance", "recents.json");
 }
 
 function readRecents(): RecentEntry[] {
@@ -97,9 +99,10 @@ function readRecents(): RecentEntry[] {
 }
 
 function writeRecents(entries: RecentEntry[]): void {
-  const dir = join(homedir(), ".hance");
+  const path = recentsPath();
+  const dir = dirname(path);
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-  writeFileSync(recentsPath(), JSON.stringify(entries, null, 2));
+  writeFileSync(path, JSON.stringify(entries, null, 2));
 }
 
 export interface ServerHooks {
