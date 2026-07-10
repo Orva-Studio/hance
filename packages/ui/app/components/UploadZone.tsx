@@ -1,31 +1,33 @@
+import { useRef } from "react";
+
 interface Props {
   onFile: (file: File) => void;
 }
 
 export function UploadZone({ onFile }: Props) {
-  function onDrop(e: React.DragEvent) {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file) onFile(file);
-  }
-
-  function openPicker() {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*,video/*";
-    input.onchange = () => { if (input.files?.[0]) onFile(input.files[0]); };
-    input.click();
-  }
+  const inputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div
-      onDrop={onDrop}
-      onDragOver={e => e.preventDefault()}
-      onClick={openPicker}
-      className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-zinc-700 rounded-xl m-4 cursor-pointer hover:border-zinc-500 transition-colors gap-3"
-    >
-      <span className="text-5xl text-zinc-700">+</span>
-      <span className="text-sm text-zinc-500">Drop image or video here</span>
+    <div className="flex-1 flex items-center justify-center">
+      {/* Persistent hidden input: a detached input created on click can be
+          GC'd by WKWebView while the file dialog is open, dropping onchange. */}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*,video/*"
+        className="hidden"
+        onChange={e => {
+          const file = e.target.files?.[0];
+          if (file) onFile(file);
+          e.target.value = "";
+        }}
+      />
+      <button
+        onClick={() => inputRef.current?.click()}
+        className="text-xs text-white bg-accent hover:bg-accent-hover transition-colors rounded-sm p-btn-primary"
+      >
+        Import Image/Video
+      </button>
     </div>
   );
 }
