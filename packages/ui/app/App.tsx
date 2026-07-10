@@ -13,7 +13,7 @@ import { TopBar } from "./components/TopBar";
 import { LooksPanel } from "./components/LooksPanel";
 import { AdjustmentsPanel } from "./components/AdjustmentsPanel";
 import { Canvas } from "./components/Canvas";
-import { UploadZone } from "./components/UploadZone";
+import { Landing } from "./components/Landing";
 import { Timeline } from "./components/Timeline";
 import { ResizeDivider } from "./components/ResizeDivider";
 import { NewLookModal } from "./components/NewLookModal";
@@ -25,13 +25,15 @@ import type { EffectGroup } from "@hance/core";
 import { seedDefaults } from "@hance/core";
 import { fetchJson } from "./lib/fetchJson";
 import { useProxyStream } from "./hooks/useProxyStream";
+import { captureFrame } from "./lib/captureFrame";
+import { setThumbnailSource } from "./lib/lookThumbnails";
 
 // Warn once the on-disk preview proxy cache passes this size. Caching never
 // evicts (by design), so this nudges the user to clear it manually.
 const PROXY_CACHE_WARN_BYTES = 5 * 1024 ** 3;
 
 export function App() {
-  const { file, objectUrl, isVideo, upload, error: uploadError, clearError } = useUpload();
+  const { file, objectUrl, sourcePath, isVideo, upload, error: uploadError, clearError } = useUpload();
   const proxy = useProxyStream();
   const previewSrc = proxy.previewSrc ?? objectUrl;
   const [previewError, setPreviewError] = useState<Error | null>(null);
@@ -153,6 +155,35 @@ export function App() {
     refreshLooks, loadLook, clearLook, saveLook, createLook, deleteLook, renameLook, importLook, restoreActiveLook,
   } = useLooks();
   const [schemaError, setSchemaError] = useState<string | null>(null);
+  const [openError, setOpenError] = useState<string | null>(null);
+
+  // Once the loaded media has a decodable first frame, capture it: it becomes
+  // the source image for the look thumbnails in the left panel, and (when the
+  // file has a real path, i.e. desktop native picker) the recents entry.
+  useEffect(() => {
+    if (!file || !objectUrl) return;
+    if (isVideo && (!videoElement || !firstFrameReady)) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const frame = await captureFrame(isVideo ? videoElement! : objectUrl);
+        if (cancelled) return;
+        setThumbnailSource(frame);
+        refreshLooks();
+        if (sourcePath) {
+          fetch("/api/recents", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ path: sourcePath, name: file.name, thumbnail: frame }),
+          }).catch(() => {});
+        }
+      } catch (err) {
+        console.error("First-frame capture failed:", err);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [objectUrl, isVideo, videoElement, firstFrameReady]);
 
   const hasChanges = activeLookParams !== null && Object.keys(activeLookParams).some(
     key => activeLookParams[key] !== params[key]
@@ -341,11 +372,14 @@ export function App() {
           onSaveAsNew={() => {}}
           onExportClick={() => {}}
         />
-        <UploadZone onFile={upload} />
-        {uploadError && (
+        <Landing onFile={upload} onError={setOpenError} />
+        {(uploadError || openError) && (
           <div className="absolute left-1/2 -translate-x-1/2 bottom-8 flex items-center gap-3 bg-zinc-900 border border-danger/50 px-4 py-2 rounded-md text-xs text-danger">
-            <span>{uploadError}</span>
-            <button onClick={clearError} className="text-zinc-400 hover:text-zinc-200">×</button>
+            <span>{uploadError ?? openError}</span>
+            <button
+              onClick={() => { clearError(); setOpenError(null); }}
+              className="text-zinc-400 hover:text-zinc-200"
+            >×</button>
           </div>
         )}
       </div>
