@@ -19,7 +19,6 @@ export function validateUploadSize(size: number): string | null {
 interface UploadState {
   file: File | null;
   objectUrl: string | null;
-  proxyUrl: string | null;
   // Absolute filesystem path when the file came from the native picker or a
   // recent entry (desktop); null for browser-picked/dropped files.
   sourcePath: string | null;
@@ -29,7 +28,7 @@ interface UploadState {
 
 export function useUpload() {
   const [state, setState] = useState<UploadState>({
-    file: null, objectUrl: null, proxyUrl: null, sourcePath: null, isVideo: false, error: null,
+    file: null, objectUrl: null, sourcePath: null, isVideo: false, error: null,
   });
 
   const prevUrlRef = useRef<string | null>(null);
@@ -43,16 +42,12 @@ export function useUpload() {
     const url = URL.createObjectURL(file);
     prevUrlRef.current = url;
     const isVideo = file.type.startsWith("video/");
-    setState({ file, objectUrl: url, proxyUrl: null, sourcePath: sourcePath ?? null, isVideo, error: null });
-  }, []);
-
-  const setProxyUrl = useCallback((proxyUrl: string) => {
-    setState(s => ({ ...s, proxyUrl }));
+    setState({ file, objectUrl: url, sourcePath: sourcePath ?? null, isVideo, error: null });
   }, []);
 
   const clearError = useCallback(() => {
     setState(s => ({ ...s, error: null }));
   }, []);
 
-  return { ...state, upload, setProxyUrl, clearError };
+  return { ...state, upload, clearError };
 }
