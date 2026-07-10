@@ -17,7 +17,7 @@ Single-binary CLI that applies cinematic film effects to video/images in one FFm
 ## Conventions
 - Verb-first naming: `buildFilterGraph`, `parseProgress`
 - Effect modules are pure functions: `(inputLabel, options) => FilterResult`
-- No external dependencies beyond Bun, FFmpeg, and Sentry (@sentry/react for error reporting)
+- No external dependencies beyond Bun and FFmpeg
 - TypeScript exclusively; function declarations over expressions
 
 ## Architecture
