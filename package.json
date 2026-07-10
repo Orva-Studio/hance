@@ -8,7 +8,8 @@
     "packages/cli",
     "packages/ui",
     "packages/docs",
-    "packages/try"
+    "packages/try",
+    "packages/desktop"
   ],
   "scripts": {
     "start": "bun run packages/cli/src/cli.ts",
