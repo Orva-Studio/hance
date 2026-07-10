@@ -72,7 +72,7 @@ effect by following the shape of the existing modules in `packages/core`.
 - Effect modules stay **pure** — return `{ fragment, output }`, no side effects.
 - Use the `node:` prefix for Node built-in imports, but prefer Bun-native APIs
   where an equivalent exists.
-- No new runtime dependencies beyond Bun, FFmpeg, and Sentry without discussion.
+- No new runtime dependencies beyond Bun and FFmpeg without discussion.
 
 ## Testing
 
