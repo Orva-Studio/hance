@@ -69,9 +69,10 @@ function safeRebuildIndex(): void {
   try { rebuildPresetIndex(); } catch (err) { console.error("preset index rebuild failed:", err); }
 }
 
-export function createServer(port: number) {
+export function createServer(port: number, hostname?: string) {
   return Bun.serve({
     port,
+    ...(hostname ? { hostname } : {}),
     maxRequestBodySize: 1024 * 1024 * 1024 * 16,
     async fetch(req) {
       const url = new URL(req.url);

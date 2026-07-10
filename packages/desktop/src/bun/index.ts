@@ -19,8 +19,12 @@ const ui = startUiServer();
 ApplicationMenu.setApplicationMenu(buildApplicationMenu());
 const win = createMainWindow(ui.url);
 
-win.on("close", () => {
-  ui.stop();
+win.on("close", async () => {
+  try {
+    await ui.stop();
+  } catch (err) {
+    console.error("failed to stop ui server:", err);
+  }
 });
 
 Electrobun.events.on("application-menu-clicked", (event) => {
