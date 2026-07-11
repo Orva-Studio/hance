@@ -47,7 +47,9 @@ export function startUiServer(): { url: string; stop: () => Promise<void> } {
     await server.stop(true);
   }
   return {
-    url: `http://localhost:${server.port}`,
+    // ?desktop=1 tells the web app it runs inside the shell (hiddenInset
+    // titlebar), so it pads the top bar clear of the macOS traffic lights.
+    url: `http://localhost:${server.port}/?desktop=1`,
     stop,
   };
 }
