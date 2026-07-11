@@ -158,6 +158,12 @@ export function App() {
   const [schemaError, setSchemaError] = useState<string | null>(null);
   const [openError, setOpenError] = useState<string | null>(null);
 
+  // A stale open error would otherwise linger in the editor's toast stack
+  // after a later file loads successfully.
+  useEffect(() => {
+    if (objectUrl) setOpenError(null);
+  }, [objectUrl]);
+
   // Once the loaded media has a decodable first frame, capture it: it becomes
   // the source image for the look thumbnails in the left panel, and (when the
   // file has a real path, i.e. desktop native picker) the recents entry.

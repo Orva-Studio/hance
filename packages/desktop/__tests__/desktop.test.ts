@@ -52,8 +52,8 @@ test("File menu exposes every custom action with an accelerator", () => {
 test("startUiServer serves the @hance/ui app over http", async () => {
   const ui = startUiServer();
   try {
-    expect(ui.url).toMatch(/^http:\/\/localhost:\d+$/);
-    const res = await fetch(`${ui.url}/api/looks`);
+    expect(ui.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+\/\?desktop=1$/);
+    const res = await fetch(`${new URL(ui.url).origin}/api/looks`);
     expect(res.ok).toBe(true);
   } finally {
     await ui.stop();

@@ -508,12 +508,16 @@ export function createServer(port: number, hostname?: string, distDir?: string, 
       const localDist = distDir ?? join(import.meta.dir, "dist");
       const staticDir = existsSync(localDist) ? localDist : join(homedir(), ".hance", "ui");
       const filePath = join(staticDir, url.pathname === "/" ? "index.html" : url.pathname);
+      // no-store on everything: dist assets are not content-hashed
+      // (index.js/index.css), so any cached copy can go stale after a
+      // rebuild - WKWebView in the desktop shell caches aggressively.
+      const noStore = { "Cache-Control": "no-store" };
       if (existsSync(filePath)) {
-        return new Response(Bun.file(filePath), { headers: { "Cache-Control": "no-store" } });
+        return new Response(Bun.file(filePath), { headers: noStore });
       }
       const indexPath = join(staticDir, "index.html");
       if (existsSync(indexPath)) {
-        return new Response(Bun.file(indexPath), { headers: { "Cache-Control": "no-store" } });
+        return new Response(Bun.file(indexPath), { headers: noStore });
       }
       return new Response("Not found", { status: 404 });
     },
@@ -543,6 +547,6 @@ export async function startUI(port: number, openBrowser = true, initialFile?: st
   console.log(`\n  \x1b[2mRunning at\x1b[0m \x1b[1mhttp://127.0.0.1:${server.port}\x1b[0m\n`);
   if (openBrowser) {
     const open = process.platform === "darwin" ? "open" : "xdg-open";
-    Bun.spawn([open, `http://localhost:${server.port}`], { stdout: "ignore", stderr: "ignore" });
+    Bun.spawn([open, `http://127.0.0.1:${server.port}`], { stdout: "ignore", stderr: "ignore" });
   }
 }

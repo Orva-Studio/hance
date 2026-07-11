@@ -28,6 +28,7 @@ async function waitUntilReady(url: string, timeoutMs = 3000): Promise<void> {
     } catch {}
     await new Promise(resolve => setTimeout(resolve, 25));
   }
+  console.error(`ui server not responding at ${url} after ${timeoutMs}ms; loading anyway`);
 }
 
 let mainWindow: BrowserWindow | null = null;
