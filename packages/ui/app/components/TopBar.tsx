@@ -1,5 +1,6 @@
 import type { Renderer } from "../gpu/renderer";
 import { SaveBar } from "./SaveBar";
+import { isDesktop } from "../lib/isDesktop";
 
 type ExportState = "idle" | "uploading" | "rendering" | "done" | "error";
 
@@ -55,15 +56,24 @@ export function TopBar({
     }
   }
 
+  // In the desktop shell (hiddenInset titlebar) the bar doubles as the window
+  // titlebar: Slack-height, left padding clears the traffic lights, and empty
+  // areas drag the window (electrobun's preload watches these class names).
   return (
-    <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-800 bg-zinc-900">
+    <div
+      className={`flex items-center justify-between border-b border-zinc-800 bg-zinc-900 ${
+        isDesktop
+          ? "h-[38px] pl-[84px] pr-3 electrobun-webkit-app-region-drag"
+          : "px-4 py-2.5"
+      }`}
+    >
       <span className="text-xs text-zinc-300 truncate max-w-xs">
         {filename || ""}
       </span>
 
       <span />
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 electrobun-webkit-app-region-no-drag">
         {file && (
           <SaveBar hasChanges={hasChanges} onSave={onSave} onSaveAsNew={onSaveAsNew} />
         )}

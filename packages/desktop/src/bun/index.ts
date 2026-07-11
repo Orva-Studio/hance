@@ -6,6 +6,7 @@ function createMainWindow(url: string): BrowserWindow {
   return new BrowserWindow({
     title: "Hance",
     url,
+    titleBarStyle: "hiddenInset",
     frame: {
       width: 1280,
       height: 800,
