@@ -120,6 +120,15 @@ export function createServer(port: number, hostname?: string, distDir?: string, 
     async fetch(req) {
       const url = new URL(req.url);
 
+      // Reject requests whose Host header is not a loopback name. The server
+      // only ever binds localhost, but a DNS-rebinding page (attacker domain
+      // resolving to 127.0.0.1) would otherwise reach the API — including
+      // /api/local-file reads and native /api/pick-file dialogs — because the
+      // browser treats it as same-origin with the attacker's site.
+      if (!["127.0.0.1", "localhost", "[::1]"].includes(url.hostname)) {
+        return new Response("Forbidden", { status: 403 });
+      }
+
       if (url.pathname === "/api/schema") {
         return Response.json(EFFECT_SCHEMA);
       }

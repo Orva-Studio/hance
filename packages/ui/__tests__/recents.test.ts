@@ -86,6 +86,19 @@ describe("recents & pick-file API", () => {
   });
 });
 
+describe("host header check", () => {
+  test("rejects non-loopback Host headers (DNS rebinding)", async () => {
+    const server = createServer(0);
+    const res = await fetch(`http://127.0.0.1:${server.port}/api/schema`, {
+      headers: { Host: "evil.example.com" },
+    });
+    expect(res.status).toBe(403);
+    const ok = await fetch(`http://127.0.0.1:${server.port}/api/schema`);
+    expect(ok.status).toBe(200);
+    server.stop();
+  });
+});
+
 describe("pick-file without a hook", () => {
   test("404s so the UI falls back to the browser input", async () => {
     const server = createServer(0);
