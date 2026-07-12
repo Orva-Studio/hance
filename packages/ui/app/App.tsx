@@ -26,6 +26,7 @@ import { seedDefaults } from "@hance/core";
 import { fetchJson } from "./lib/fetchJson";
 import { useProxyStream } from "./hooks/useProxyStream";
 import { useFirstFrame } from "./hooks/useFirstFrame";
+import { useMenuActions } from "./hooks/useMenuActions";
 import { setThumbnailSource } from "./lib/lookThumbnails";
 import { pickNativeFile, fetchLocalFile } from "./lib/openFile";
 
@@ -341,11 +342,8 @@ export function App() {
     createLook(name, params, metadata);
   }, [createLook, params]);
 
-  // Native menu actions arrive from the desktop shell as "hance:menu"
-  // CustomEvents (see packages/desktop/src/bun/index.ts). Handlers live in a
-  // ref so the mount-time listener always sees current state.
-  const menuHandlersRef = useRef<Record<string, () => void>>({});
-  menuHandlersRef.current = {
+  // Native menu actions from the desktop shell (File/Edit menus).
+  useMenuActions({
     "open-file": () => {
       void (async () => {
         try {
@@ -362,7 +360,7 @@ export function App() {
     "export": () => { if (file) setShowExportModal(true); },
     "undo": () => menuUndoRedo("undo"),
     "redo": () => menuUndoRedo("redo"),
-  };
+  });
 
   // Menu Undo/Redo target the app's edit history, mirroring useUndoRedo's
   // keyboard rules: a focused text field gets native text undo instead
@@ -381,14 +379,6 @@ export function App() {
     const snap = kind === "undo" ? historyRef.current.undo() : historyRef.current.redo();
     applySnapshot(snap);
   }
-
-  useEffect(() => {
-    function onMenu(e: Event) {
-      menuHandlersRef.current[(e as CustomEvent<string>).detail]?.();
-    }
-    window.addEventListener("hance:menu", onMenu);
-    return () => window.removeEventListener("hance:menu", onMenu);
-  }, []);
 
   const applySnapshot = useCallback(async (snap: { params: PreviewParams; activeLook: string | null } | null) => {
     if (!snap) return;
