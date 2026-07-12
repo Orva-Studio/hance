@@ -25,7 +25,7 @@ import type { EffectGroup } from "@hance/core";
 import { seedDefaults } from "@hance/core";
 import { fetchJson } from "./lib/fetchJson";
 import { useProxyStream } from "./hooks/useProxyStream";
-import { captureFrame } from "./lib/captureFrame";
+import { useFirstFrame } from "./hooks/useFirstFrame";
 import { setThumbnailSource } from "./lib/lookThumbnails";
 import { pickNativeFile, fetchLocalFile } from "./lib/openFile";
 
@@ -164,33 +164,20 @@ export function App() {
     if (objectUrl) setOpenError(null);
   }, [objectUrl]);
 
-  // Once the loaded media has a decodable first frame, capture it: it becomes
-  // the source image for the look thumbnails in the left panel, and (when the
-  // file has a real path, i.e. desktop native picker) the recents entry.
-  useEffect(() => {
-    if (!file || !objectUrl) return;
-    if (isVideo && (!videoElement || !firstFrameReady)) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const frame = await captureFrame(isVideo ? videoElement! : objectUrl);
-        if (cancelled) return;
-        setThumbnailSource(frame);
-        refreshLooks();
-        if (sourcePath) {
-          fetch("/api/recents", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ path: sourcePath, name: file.name, thumbnail: frame }),
-          }).catch(() => {});
-        }
-      } catch (err) {
-        console.error("First-frame capture failed:", err);
-      }
-    })();
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [objectUrl, isVideo, videoElement, firstFrameReady]);
+  // The loaded media's first frame becomes the source image for the look
+  // thumbnails in the left panel, and (when the file has a real path, i.e.
+  // desktop native picker) the recents entry.
+  useFirstFrame({ objectUrl, isVideo, videoElement, firstFrameReady }, frame => {
+    setThumbnailSource(frame);
+    refreshLooks();
+    if (file && sourcePath) {
+      fetch("/api/recents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: sourcePath, name: file.name, thumbnail: frame }),
+      }).catch(() => {});
+    }
+  });
 
   const hasChanges = activeLookParams !== null && Object.keys(activeLookParams).some(
     key => activeLookParams[key] !== params[key]
