@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import { localFileUrl, mimeFromName } from "../lib/openFile";
 
 export const MAX_UPLOAD_BYTES = 16 * 1024 * 1024 * 1024;
 
@@ -45,9 +46,30 @@ export function useUpload() {
     setState({ file, objectUrl: url, sourcePath: sourcePath ?? null, isVideo, error: null });
   }, []);
 
+  // Desktop path lane: the media stays on disk and is served by
+  // /api/local-file (Range-capable), so nothing is downloaded into the page.
+  // The File here is an empty stub that only carries name/type for UI gates
+  // (filename display, export button); every byte-consuming flow must use
+  // sourcePath instead (proxy from-path, export sourcePath).
+  const openPath = useCallback((path: string, name: string) => {
+    if (prevUrlRef.current) {
+      URL.revokeObjectURL(prevUrlRef.current);
+      prevUrlRef.current = null;
+    }
+    const type = mimeFromName(name);
+    const stub = new File([], name, { type });
+    setState({
+      file: stub,
+      objectUrl: localFileUrl(path),
+      sourcePath: path,
+      isVideo: type.startsWith("video/"),
+      error: null,
+    });
+  }, []);
+
   const clearError = useCallback(() => {
     setState(s => ({ ...s, error: null }));
   }, []);
 
-  return { ...state, upload, clearError };
+  return { ...state, upload, openPath, clearError };
 }

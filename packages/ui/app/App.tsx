@@ -28,14 +28,14 @@ import { useProxyStream } from "./hooks/useProxyStream";
 import { useFirstFrame } from "./hooks/useFirstFrame";
 import { useMenuActions } from "./hooks/useMenuActions";
 import { setThumbnailSource } from "./lib/lookThumbnails";
-import { pickNativeFile, fetchLocalFile } from "./lib/openFile";
+import { pickNativeFile } from "./lib/openFile";
 
 // Warn once the on-disk preview proxy cache passes this size. Caching never
 // evicts (by design), so this nudges the user to clear it manually.
 const PROXY_CACHE_WARN_BYTES = 5 * 1024 ** 3;
 
 export function App() {
-  const { file, objectUrl, sourcePath, isVideo, upload, error: uploadError, clearError } = useUpload();
+  const { file, objectUrl, sourcePath, isVideo, upload, openPath, error: uploadError, clearError } = useUpload();
   const proxy = useProxyStream();
   const previewSrc = proxy.previewSrc ?? objectUrl;
   const [previewError, setPreviewError] = useState<Error | null>(null);
@@ -52,10 +52,10 @@ export function App() {
   useEffect(() => {
     if (file && isVideo && previewError && proxy.state === "idle") {
       setPreviewError(null);
-      proxy.start(file);
+      proxy.start(file, sourcePath);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [previewError, file, isVideo]);
+  }, [previewError, file, isVideo, sourcePath]);
 
   const [params, setParams] = useState<PreviewParams>({});
   const [schema, setSchema] = useState<EffectGroup[]>([]);
@@ -125,7 +125,7 @@ export function App() {
   }, [canvasTransform.setZoom, canvasTransform.setPanMode]);
   const canvasRect = useCanvasRect(canvas);
   const hoverParamsRef = useRef<PreviewParams | null>(null);
-  const { exportProgress, startExport, resetExport } = useExport(file, params);
+  const { exportProgress, startExport, resetExport } = useExport(file, sourcePath, params);
 
   function chooseReferenceImage() {
     const input = document.createElement("input");
@@ -349,7 +349,7 @@ export function App() {
         try {
           const picked = await pickNativeFile();
           if (!picked || picked === "unsupported") return;
-          upload(await fetchLocalFile(picked.path, picked.name), picked.path);
+          openPath(picked.path, picked.name);
         } catch (err) {
           setOpenError(`Failed to open file: ${(err as Error).message}`);
         }
@@ -405,7 +405,7 @@ export function App() {
           onSaveAsNew={() => {}}
           onExportClick={() => {}}
         />
-        <Landing onFile={upload} onError={setOpenError} />
+        <Landing onFile={upload} onPath={openPath} onError={setOpenError} />
         {(uploadError || openError) && (
           <div className="absolute left-1/2 -translate-x-1/2 bottom-8 flex items-center gap-3 bg-zinc-900 border border-danger/50 px-4 py-2 rounded-md text-xs text-danger">
             <span>{uploadError ?? openError}</span>
@@ -481,7 +481,7 @@ export function App() {
           {proxy.state === "error" && (
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-danger/90 text-xs text-white">
               {proxy.errorMsg ?? "Preview failed"}
-              <button className="underline" onClick={() => file && proxy.start(file)}>Retry</button>
+              <button className="underline" onClick={() => file && proxy.start(file, sourcePath)}>Retry</button>
             </div>
           )}
           {isVideo && !firstFrameReady && proxy.state !== "error" && (
