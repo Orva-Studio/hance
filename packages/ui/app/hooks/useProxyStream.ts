@@ -25,7 +25,7 @@ export interface ProxyStreamApi {
   durationHint: number;
   errorMsg: string | null;
   cacheBytes: number;   // total size of the on-disk proxy cache, from the server
-  start: (file: File) => Promise<void>;
+  start: (file: File, sourcePath?: string | null) => Promise<void>;
 }
 
 export function useProxyStream(): ProxyStreamApi {
@@ -48,7 +48,7 @@ export function useProxyStream(): ProxyStreamApi {
     }
   }, []);
 
-  const start = useCallback(async (file: File) => {
+  const start = useCallback(async (file: File, sourcePath?: string | null) => {
     const run = ++runRef.current;
     const isStale = () => run !== runRef.current;
     // A new run supersedes any in-flight one; drop its blob immediately.
@@ -59,38 +59,50 @@ export function useProxyStream(): ProxyStreamApi {
 
     // Cheap probe first: if this exact file was transcoded before, load the
     // finished proxy directly with no upload and no streaming. Metadata-only,
-    // so a hit is effectively instant regardless of source size.
-    try {
-      const probe = await fetch("/api/proxy/lookup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: file.name, size: file.size, lastModified: file.lastModified }),
-      });
-      if (isStale()) return;
-      if (probe.ok) {
-        const hit = await probe.json();
+    // so a hit is effectively instant regardless of source size. Skipped in
+    // the path lane, where the server does its own cache check from a stat.
+    if (!sourcePath) {
+      try {
+        const probe = await fetch("/api/proxy/lookup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: file.name, size: file.size, lastModified: file.lastModified }),
+        });
         if (isStale()) return;
-        setCacheBytes(Number(hit.cacheBytes ?? 0));
-        if (hit.cached && hit.proxyPath) {
-          setDurationHint(Number(hit.durationSec ?? 0));
-          setPreviewSrc(`/api/proxy-file?path=${encodeURIComponent(hit.proxyPath)}`);
-          setProgress(1);
-          setState("ready");
-          return;
+        if (probe.ok) {
+          const hit = await probe.json();
+          if (isStale()) return;
+          setCacheBytes(Number(hit.cacheBytes ?? 0));
+          if (hit.cached && hit.proxyPath) {
+            setDurationHint(Number(hit.durationSec ?? 0));
+            setPreviewSrc(`/api/proxy-file?path=${encodeURIComponent(hit.proxyPath)}`);
+            setProgress(1);
+            setState("ready");
+            return;
+          }
         }
+      } catch {
+        // Lookup is an optimization; fall through to the normal transcode path.
+        if (isStale()) return;
       }
-    } catch {
-      // Lookup is an optimization; fall through to the normal transcode path.
-      if (isStale()) return;
     }
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("lastModified", String(file.lastModified));
 
     let res: Response;
     try {
-      res = await fetch("/api/proxy", { method: "POST", body: formData });
+      if (sourcePath) {
+        // Desktop path lane: the file is already on disk next to the server,
+        // so ffmpeg reads it in place instead of receiving an upload.
+        res = await fetch("/api/proxy/from-path", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path: sourcePath }),
+        });
+      } else {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("lastModified", String(file.lastModified));
+        res = await fetch("/api/proxy", { method: "POST", body: formData });
+      }
     } catch (err) {
       if (isStale()) return;
       setState("error");
@@ -112,6 +124,16 @@ export function useProxyStream(): ProxyStreamApi {
     setDurationHint(durationSec);
     setCacheBytes(Number(res.headers.get("X-Proxy-Cache-Bytes") ?? "0"));
     const fileUrl = `/api/proxy-file?path=${encodeURIComponent(proxyPath)}`;
+
+    // Server-side cache hit (path lane): the body is the finished proxy, so
+    // skip MediaSource and play it straight from disk with full seeking.
+    if (res.headers.get("X-Proxy-Cached") === "1") {
+      res.body?.cancel().catch(() => {});
+      setPreviewSrc(fileUrl);
+      setProgress(1);
+      setState("ready");
+      return;
+    }
 
     // Fallback: drain the whole stream, then play the finished file.
     if (!mseSupported()) {

@@ -201,8 +201,14 @@ export function createServer(port: number, hostname?: string, distDir?: string, 
           return new Response("File not found", { status: 404 });
         }
         const file = Bun.file(filePath);
+        // Accept-Ranges lets the desktop WKWebView <video> play the original
+        // file (e.g. ProRes .mov) straight off disk with seeking — Bun.serve
+        // answers Range requests on Bun.file bodies automatically.
         return new Response(file, {
-          headers: { "Content-Type": file.type || "application/octet-stream" },
+          headers: {
+            "Content-Type": file.type || "application/octet-stream",
+            "Accept-Ranges": "bytes",
+          },
         });
       }
 
@@ -331,9 +337,10 @@ export function createServer(port: number, hostname?: string, distDir?: string, 
       if (url.pathname === "/api/export" && req.method === "POST") {
         const formData = await req.formData();
         const file = formData.get("file") as File | null;
+        const sourcePathRaw = formData.get("sourcePath");
         const paramsJson = formData.get("params") as string | null;
-        if (!file || !paramsJson) {
-          return new Response("file and params required", { status: 400 });
+        if ((!file && typeof sourcePathRaw !== "string") || !paramsJson) {
+          return new Response("file or sourcePath, and params required", { status: 400 });
         }
 
         const params: PresetData = JSON.parse(paramsJson);
@@ -354,8 +361,19 @@ export function createServer(port: number, hostname?: string, distDir?: string, 
         const pixelFormat = codec === "prores" ? "yuv422p10le" : "yuv420p";
         const tempDir = join(tmpdir(), "hance-export");
         if (!existsSync(tempDir)) mkdirSync(tempDir, { recursive: true });
-        const inputPath = join(tempDir, file.name);
-        await Bun.write(inputPath, file);
+        // Desktop path lane: export reads the vetted local file in place, so
+        // the source is never uploaded or copied into the temp dir.
+        let inputPath: string;
+        if (typeof sourcePathRaw === "string") {
+          const p = resolve(sourcePathRaw);
+          if (!allowedFilePaths.has(p) || !existsSync(p)) {
+            return new Response("File not found", { status: 404 });
+          }
+          inputPath = p;
+        } else {
+          inputPath = join(tempDir, file!.name);
+          await Bun.write(inputPath, file!);
+        }
 
         const probeResult = await probe(inputPath);
 
@@ -480,6 +498,65 @@ export function createServer(port: number, hostname?: string, distDir?: string, 
         });
 
         return new Response(body, {
+          headers: {
+            "Content-Type": "video/mp4",
+            "Cache-Control": "no-store",
+            "X-Proxy-Duration": String(proxy.durationSec),
+            "X-Proxy-Path": outputPath,
+            "X-Proxy-Cache-Bytes": String(proxyCacheBytes(proxyDir)),
+          },
+        });
+      }
+
+      // Desktop path lane: transcode straight from a vetted local path, so a
+      // file already on disk is never uploaded (or copied) before ffmpeg
+      // reads it. Same cache key/dir as /api/proxy, so both lanes share hits.
+      if (url.pathname === "/api/proxy/from-path" && req.method === "POST") {
+        let body: { path?: unknown };
+        try { body = await req.json(); } catch {
+          return new Response("invalid JSON", { status: 400 });
+        }
+        if (typeof body.path !== "string") {
+          return new Response("path required", { status: 400 });
+        }
+        const inputPath = resolve(body.path);
+        // Same vetting as /api/local-file: only paths from the native picker,
+        // CLI initial file, or stored recents may be read.
+        if (!allowedFilePaths.has(inputPath) || !existsSync(inputPath)) {
+          return new Response("File not found", { status: 404 });
+        }
+
+        const proxyDir = join(tmpdir(), "hance-proxy");
+        mkdirSync(proxyDir, { recursive: true });
+        const stat = statSync(inputPath);
+        const outputPath = join(
+          proxyDir,
+          `proxy_${proxyKey(basename(inputPath), stat.size, Math.floor(stat.mtimeMs))}.mp4`,
+        );
+        const donePath = proxyDonePath(outputPath);
+        if (existsSync(outputPath) && existsSync(donePath)) {
+          const cachedDuration = readFileSync(donePath, "utf8").trim();
+          return new Response(Bun.file(outputPath), {
+            headers: {
+              "Content-Type": "video/mp4",
+              "Cache-Control": "no-store",
+              "X-Proxy-Duration": cachedDuration || "0",
+              "X-Proxy-Path": outputPath,
+              "X-Proxy-Cached": "1",
+              "X-Proxy-Cache-Bytes": String(proxyCacheBytes(proxyDir)),
+            },
+          });
+        }
+
+        let proxy;
+        try {
+          proxy = await streamFragmentedMp4(inputPath, outputPath);
+        } catch (err) {
+          return new Response((err as Error).message, { status: 500 });
+        }
+        // No input cleanup here: the input is the user's own file, not an
+        // uploaded temp copy.
+        return new Response(proxy.stream, {
           headers: {
             "Content-Type": "video/mp4",
             "Cache-Control": "no-store",

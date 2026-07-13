@@ -47,6 +47,7 @@ const defaultDeps: ExportDeps = {
 // from the injected fetch/download side effects, so it's unit-testable.
 export async function runExport(
   file: File,
+  sourcePath: string | null,
   params: PreviewParams,
   opts: ExportOpts,
   setProgress: (next: ExportProgress | ((prev: ExportProgress) => ExportProgress)) => void,
@@ -54,7 +55,13 @@ export async function runExport(
 ): Promise<void> {
   setProgress({ state: "uploading", progress: 0, downloadUrl: null, error: null });
   const formData = new FormData();
-  formData.append("file", file);
+  // Desktop path lane: the server exports from the vetted local path in
+  // place; the File is an empty stub then, so it must not be uploaded.
+  if (sourcePath) {
+    formData.append("sourcePath", sourcePath);
+  } else {
+    formData.append("file", file);
+  }
   formData.append("params", JSON.stringify(params));
   formData.append("codec", opts.codec);
   formData.append("crf", String(opts.crf));
@@ -76,13 +83,13 @@ export async function runExport(
   }
 }
 
-export function useExport(file: File | null, params: PreviewParams) {
+export function useExport(file: File | null, sourcePath: string | null, params: PreviewParams) {
   const [exportProgress, setExportProgress] = useState<ExportProgress>(EXPORT_IDLE);
 
   const startExport = useCallback(async (opts: ExportOpts) => {
     if (!file) return;
-    await runExport(file, params, opts, setExportProgress);
-  }, [file, params]);
+    await runExport(file, sourcePath, params, opts, setExportProgress);
+  }, [file, sourcePath, params]);
 
   const resetExport = useCallback(() => setExportProgress(EXPORT_IDLE), []);
 
