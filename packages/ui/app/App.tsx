@@ -81,19 +81,28 @@ export function App() {
   const [isBuffering, setIsBuffering] = useState(false);
   useEffect(() => {
     if (!videoElement) return;
-    const stall = () => setIsBuffering(true);
+    // WebKit fires "stalled" whenever it stops fetching — including when it
+    // has intentionally paused a Range download because its buffer is full
+    // (constant with large native files). Only count a stall when the decoder
+    // truly lacks the data to keep playing, and clear it as soon as the
+    // playhead advances, since no "playing"/"canplay" follows a false stall.
+    const stall = () => {
+      if (videoElement.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) setIsBuffering(true);
+    };
     const resume = () => setIsBuffering(false);
     videoElement.addEventListener("waiting", stall);
     videoElement.addEventListener("stalled", stall);
     videoElement.addEventListener("playing", resume);
     videoElement.addEventListener("canplay", resume);
     videoElement.addEventListener("pause", resume);
+    videoElement.addEventListener("timeupdate", resume);
     return () => {
       videoElement.removeEventListener("waiting", stall);
       videoElement.removeEventListener("stalled", stall);
       videoElement.removeEventListener("playing", resume);
       videoElement.removeEventListener("canplay", resume);
       videoElement.removeEventListener("pause", resume);
+      videoElement.removeEventListener("timeupdate", resume);
     };
   }, [videoElement]);
 
