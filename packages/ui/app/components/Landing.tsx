@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { pickNativeFile, fetchLocalFile } from "../lib/openFile";
+import { pickNativeFile } from "../lib/openFile";
 
 export interface RecentEntry {
   path: string;
@@ -10,12 +10,15 @@ export interface RecentEntry {
 
 interface Props {
   onFile: (file: File, sourcePath?: string) => void;
+  // Path lane for natively picked / recent files: the media stays on disk and
+  // is served (and later transcoded/exported) by path, never downloaded.
+  onPath: (path: string, name: string) => void;
   onError: (message: string) => void;
 }
 
 const NLE_IMPORTS = ["DaVinci Resolve", "Premiere Pro", "Final Cut Pro"];
 
-export function Landing({ onFile, onError }: Props) {
+export function Landing({ onFile, onPath, onError }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [recents, setRecents] = useState<RecentEntry[]>([]);
@@ -31,11 +34,11 @@ export function Landing({ onFile, onError }: Props) {
 
   const loadPath = useCallback(async (path: string, name: string) => {
     try {
-      onFile(await fetchLocalFile(path, name), path);
+      onPath(path, name);
     } catch (err) {
       onError(`Failed to open "${name}": ${(err as Error).message}`);
     }
-  }, [onFile, onError]);
+  }, [onPath, onError]);
 
   // Prefer the native OS picker (desktop shell) because it yields a real path
   // for the recents list; fall back to the browser file input elsewhere.

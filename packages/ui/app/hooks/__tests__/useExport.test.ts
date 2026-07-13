@@ -29,7 +29,7 @@ describe("runExport", () => {
   test("uploading → rendering → progress → done, and triggers download", async () => {
     const t = tracker();
     const downloads: string[] = [];
-    await runExport(file, {}, opts, t.set, deps((h) => {
+    await runExport(file, null, {}, opts, t.set, deps((h) => {
       h.onProgress?.(0.5);
       h.onDone?.({ downloadUrl: "/dl/out.mp4" });
     }, downloads));
@@ -42,7 +42,7 @@ describe("runExport", () => {
 
   test("server error event lands in error state with the message", async () => {
     const t = tracker();
-    await runExport(file, {}, opts, t.set, deps((h) => h.onError?.("boom"), []));
+    await runExport(file, null, {}, opts, t.set, deps((h) => h.onError?.("boom"), []));
     expect(t.current.state).toBe("error");
     expect(t.current.error).toBe("boom");
   });
@@ -54,7 +54,7 @@ describe("runExport", () => {
       consumeSSE: async () => {},
       download: () => {},
     };
-    await runExport(file, {}, opts, t.set, failing);
+    await runExport(file, null, {}, opts, t.set, failing);
     expect(t.current.state).toBe("error");
     expect(t.current.error).toBe("offline");
   });
