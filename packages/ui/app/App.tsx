@@ -358,7 +358,7 @@ export function App() {
         try {
           const picked = await pickNativeFile();
           if (!picked || picked === "unsupported") return;
-          openPath(picked.path, picked.name);
+          await openPath(picked.path, picked.name);
         } catch (err) {
           setOpenError(`Failed to open file: ${(err as Error).message}`);
         }

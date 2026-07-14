@@ -194,7 +194,7 @@ export function createServer(port: number, hostname?: string, distDir?: string, 
         return Response.json(entries);
       }
 
-      if (url.pathname === "/api/local-file" && req.method === "GET") {
+      if (url.pathname === "/api/local-file" && (req.method === "GET" || req.method === "HEAD")) {
         const rawPath = url.searchParams.get("path");
         const filePath = rawPath ? resolve(rawPath) : null;
         if (!filePath || !allowedFilePaths.has(filePath) || !existsSync(filePath)) {
