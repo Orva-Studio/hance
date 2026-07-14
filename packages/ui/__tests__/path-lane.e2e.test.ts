@@ -70,6 +70,36 @@ describe("path lane e2e", () => {
     expect(await res.text()).toBe("cde");
   });
 
+  test("HEAD /api/local-file returns Content-Type for MIME sniffing", async () => {
+    allowFilePath(clipPath);
+    const res = await fetch(`${base}/api/local-file?path=${encodeURIComponent(clipPath)}`, {
+      method: "HEAD",
+    });
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toBe("video/quicktime");
+  });
+
+  test("POST /api/export exports in place from a vetted sourcePath", async () => {
+    allowFilePath(clipPath);
+    const formData = new FormData();
+    formData.append("sourcePath", clipPath);
+    formData.append("params", "{}");
+    formData.append("codec", "h264");
+    formData.append("crf", "23");
+    const res = await fetch(`${base}/api/export`, { method: "POST", body: formData });
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toBe("text/event-stream");
+    const events = (await res.text())
+      .split("\n\n")
+      .filter(Boolean)
+      .map((l) => JSON.parse(l.replace(/^data: /, "")));
+    const done = events.find((e) => e.done);
+    expect(done?.downloadUrl).toMatch(/^\/api\/download\?path=/);
+    expect(events.some((e) => e.error)).toBe(false);
+    // The source is the user's own file — must survive the export.
+    expect(existsSync(clipPath)).toBe(true);
+  }, 60000);
+
   test("POST /api/proxy/from-path transcodes in place and caches", async () => {
     allowFilePath(clipPath);
     const first = await fetch(`${base}/api/proxy/from-path`, {
