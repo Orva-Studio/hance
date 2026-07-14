@@ -12,7 +12,7 @@ interface Props {
   onFile: (file: File, sourcePath?: string) => void;
   // Path lane for natively picked / recent files: the media stays on disk and
   // is served (and later transcoded/exported) by path, never downloaded.
-  onPath: (path: string, name: string) => void;
+  onPath: (path: string, name: string) => Promise<void>;
   onError: (message: string) => void;
 }
 
@@ -34,7 +34,7 @@ export function Landing({ onFile, onPath, onError }: Props) {
 
   const loadPath = useCallback(async (path: string, name: string) => {
     try {
-      onPath(path, name);
+      await onPath(path, name);
     } catch (err) {
       onError(`Failed to open "${name}": ${(err as Error).message}`);
     }

@@ -51,12 +51,22 @@ export function useUpload() {
   // The File here is an empty stub that only carries name/type for UI gates
   // (filename display, export button); every byte-consuming flow must use
   // sourcePath instead (proxy from-path, export sourcePath).
-  const openPath = useCallback((path: string, name: string) => {
+  const openPath = useCallback(async (path: string, name: string) => {
+    let type = mimeFromName(name);
+    if (type === "application/octet-stream") {
+      // Extension not in the local table (e.g. .mxf): ask the server, which
+      // types the real file, so exotic videos don't render as <img>.
+      try {
+        const head = await fetch(localFileUrl(path), { method: "HEAD" });
+        if (head.ok) type = head.headers.get("Content-Type") ?? type;
+      } catch {
+        // Keep the extension-based guess; playback will surface real errors.
+      }
+    }
     if (prevUrlRef.current) {
       URL.revokeObjectURL(prevUrlRef.current);
       prevUrlRef.current = null;
     }
-    const type = mimeFromName(name);
     const stub = new File([], name, { type });
     setState({
       file: stub,
