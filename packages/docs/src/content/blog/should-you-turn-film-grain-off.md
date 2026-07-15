@@ -1,81 +1,144 @@
 ---
-title: "Should You Turn Film Grain Off? A Game-by-Game Guide"
-description: "Film grain looks cinematic in some games and muddy in others. Here's when to leave it on, when to turn it off, and how to tell the difference."
+title: "Should You Turn Film Grain Off? Game-by-Game Performance & Visual Guide"
+description: "Film grain is everywhere in AAA games right now, but it is not always the right call. We break down when to keep it on, when to switch it off, and how it affects performance across Expedition 33, 007 First Light, Hogwarts Legacy, Star Wars Outlaws, Battlefield 6, and more."
 pubDate: 2026-07-15
 author: "Richard Oliver Bray"
 heroImage: "/blog/film-grain-guide-hero.webp"
-heroAlt: "Close-up of film grain texture on a cinematic background"
-about: "A practical guide to film grain in video games - when it helps, when it hurts, and what to do about it."
-faq:
-  - q: "Does film grain lower FPS?"
-    a: "Usually no. Most grain is a post-process overlay, so the GPU cost is tiny - often under 0.5 ms per frame. The bigger issue is clarity, not performance."
-  - q: "Why do developers add film grain?"
-    a: "It hides temporal artifacts, unifies lighting that doesn't quite match, and signals 'cinematic' to the player. Sometimes it's also covering up aggressive compression or low-res effects."
-  - q: "Should I turn film grain off for competitive multiplayer?"
-    a: "Yes. Any overlay that breaks edge definition can cost you a split-second read on an enemy at distance. Clean image wins."
-  - q: "Does film grain matter in photo mode?"
-    a: "Only if the game actually renders it into the captured frame. Some photo modes strip post-process effects automatically. If it stays in, you may want it off for a sharper export."
+heroAlt: "Cinematic film grain overlay on a video game screenshot"
+about: "A game-by-game guide to turning film grain on or off in AAA titles, weighing performance, clarity, and visual intent."
 ---
 
-Every new AAA release ships with film grain on by default. Sometimes it is subtle, sometimes it looks like someone threw sand at the screen. The real question is not whether grain looks "cinematic" - it is whether it is helping the game you are actually playing.
+Film grain has become the default finishing touch in modern blockbuster games. What started as a niche post-process effect in horror titles is now baked into everything from wizarding open worlds to galactic smuggling sims. Sometimes it sells the fantasy. Sometimes it just gets in the way.
 
-Here is how to decide, title by title, and what to look for when a new game drops.
+This guide answers the most common question players ask: **should you turn film grain off?**
 
-## When film grain actually helps
+We look at what the effect actually costs in performance, when it helps versus hurts readability, and how to set it game-by-game on the biggest releases of 2026.
 
-Film grain works best when the art direction is already going for a specific analog look - 1970s espionage, war photography, or stylised horror. In those contexts the grain masks digital sharpness and sells the fiction. It also helps when a game's lighting is inconsistent; a uniform texture layer can trick your eye into reading the image as cohesive.
+---
 
-Developers sometimes use grain to cover up aggressive temporal anti-aliasing or low-resolution transparent effects. That is not necessarily bad engineering - it is a trade-off - but it means turning grain off can expose artefacts you did not know were there.
+## What Film Grain Does (and Does Not Do)
 
-## When to turn it off immediately
+Film grain is a procedural noise layer that simulates the texture of photochemical film stock. Developers use it to:
 
-- **Competitive or fast-paced multiplayer.** Grain breaks up edges. At a distance, a slightly fuzzy player model is harder to spot. In a single-player campaign that does not matter. In a multiplayer lobby it does.
-- **Games with heavy UI or small text.** Grain noise across dialogue boxes, inventory screens, or HUD elements makes reading uncomfortable over time. If you find yourself squinting at menus, the grain is the culprit.
-- **HDR displays with aggressive brightness.** Film grain is usually generated in SDR and then stretched into HDR space. The result can look like static floating in the highlights, especially on OLED screens where bright points already pop.
-- **Photo mode or capture work.** If you are taking clean screenshots for editing or sharing, post-process grain is one more variable to remove. Most photo modes strip it anyway, but not all.
+- **Unify disparate art assets.** Grain can hide minor lighting mismatches between characters and environments.
+- **Mask temporal artifacts.** TAA and upscaling (DLSS, FSR, XeSS) sometimes leave ghosting or shimmering. A light grain pass can perceptually smooth those out.
+- **Signal genre and mood.** Horror and noir studios lean on heavy grain because it feels raw and live-action.
 
-## Game-by-game notes
+What it does **not** do is make a game look "more realistic." Real life does not have film grain - it is a property of analog film, not human vision.
 
-These are observations from the current crop of titles driving the "film grain on or off" search trend.
+---
+
+## The Performance Cost
+
+In most engines, film grain is a cheap fullscreen pass. On a modern GPU you are looking at **less than 0.1 ms** of frame time - essentially free.
+
+The catch is implementation quality:
+
+- **Temporal grain** that updates every frame can interact badly with dynamic-resolution scaling, causing extra pixel churn.
+- **Heavy grain overlays** on base consoles (PS5/Xbox Series S in 1080p mode) can muddy fine detail that is already scarce.
+- **Recording and streaming** add a second layer of compression. Grain is entropy-heavy, which means it eats more bitrate on YouTube and Twitch and can turn into macro-block soup.
+
+So while your FPS meter might not move, your image quality can still suffer.
+
+---
+
+## When to Turn Film Grain Off
+
+**Competitive multiplayer.** If you need to spot an enemy head behind foliage at 150 meters, grain makes that harder. Turn it off.
+
+**Fast-paced FPS and stealth titles.** Grain adds visual noise during rapid camera movement. If the game is about precision, clarity wins.
+
+**Open-world busywork.** When you are scanning the HUD for loot icons, quest markers, and minimap pings, film grain is just static between you and the information.
+
+**OLED displays.** Premium OLED panels deliver inky blacks. Film grain brightens shadows with noise and can undermine the contrast you paid for.
+
+**Content creation.** If you record gameplay, grain in the source plus grain added by your encoder equals uglier uploads. Capture clean and add grain later if you want the look.
+
+---
+
+## When to Keep Film Grain On
+
+**Cinematic third-person narratives.** Story-driven games often use grain because the developers want the whole experience to feel like a Panavision print. In titles with fixed camera angles, letterboxing, or film-stock color grading, grain fits.
+
+**Horror and psychological thrillers.** Grain raises baseline tension. It makes safe rooms feel less safe and corridors feel longer.
+
+**Retro-styled indies and period pieces.** If the game is deliberately evoking 1970s grindhouse or 1990s VHS, the grain is part of the art direction.
+
+**Photography mode enthusiasts.** If you spend more time in photo mode than in gameplay, a tasteful grain pass can sell the analog aesthetic - just make sure it does not hide the details you framed.
+
+---
+
+## Game-by-Game Guide
 
 ### Expedition 33
+**Recommendation: Keep it on.**
 
-The grain here is light - more texture than noise - and matched to the vintage media aesthetic. It holds up at 4K because the overlay is high-resolution. If you are playing on a smaller 1080p screen it can still read as subtle film texture. Competitive players will want it off, but for the campaign it is harmless and flavour-appropriate.
+This turn-based RPG is built around a painterly, Belle Epoque art style. The grain reinforces the illusion that you are watching a film print of a lost world. Because combat is tactical and turn-based, readability is less urgent than mood. On OLED, you may still want to dial it down slightly in the settings, but do not disable it entirely - it is doing thematic heavy lifting.
 
 ### 007 First Light
+**Recommendation: Turn it off.**
 
-Heavier grain, especially in the night levels. The intent is clearly analog surveillance and print stock. It works in cutscenes but can obscure enemy silhouettes in dark corridors. Recommendation: on for story, off for stealth or action sequences if the slider allows it. If not, off globally once you are past the opening act.
+A stealth-action hybrid that leans into split-second headshots and shadow infiltration. Grain in dark corners makes it harder to parse guard patrol patterns, especially on lower-end panels. For multiplayer modes, disable every post-process that does not give you an advantage.
 
 ### Hogwarts Legacy
+**Recommendation: On for story, off for open-world roaming.**
 
-Grain was patched in after launch and sits on top of an already soft TAA implementation. At 1080p the combination makes distant architecture muddy. On a 1440p or 4K display it is less offensive. If you are struggling to read distant enemies or collectible sparkles, turn it off.
+The grain in Hogwarts Legacy is subtle during cutscenes and heavier in the castle interiors. It looks cinematic when you are walking to Divination, but it can obscure enemy spell tells during combat. If you are primarily exploring and collecting, disabling grain makes the castle textures pop.
 
 ### Star Wars Outlaws
+**Recommendation: Keep it on - but reduce intensity.**
 
-Uses grain selectively - more in cantinas and desert shots, less in space. The dynamic application means it rarely gets in the way. Leave it on unless you are playing on an OLED where the bright desert sky + grain combo creates visible noise in the sunlight.
+Outlaws borrows its visual language from 1970s film stock on purpose. The grain, gate weave, and halation are part of the Star Wars identity. That said, the default setting is aggressive. Drop the intensity slider by 30-40% so you still get the filmic texture without losing the sweet detail on alien terrain.
 
 ### Battlefield 6
+**Recommendation: Turn it off.**
 
-Aggressive grain in the campaign, none in multiplayer (by default). That tells you everything: the developers know it hurts readability in competitive play. For the campaign, it is a stylistic choice. If you prefer a cleaner image, turn it off.
+Battlefield is a sandbox of long sightlines, vehicle combat, and chaotic destruction. Grain does not help you spot a sniper glint across a sand dune. For the campaign, you can switch it back on if you want a cinematic war-movie feel, but in multiplayer it is a liability.
 
-## How to disable it
+### Bonus: Alan Wake 2, The Last of Us Part II Remastered, Resident Evil 9
+**Alan Wake 2:** Keep it on. The grain is inseparable from the live-action television aesthetic. It is not an option - it is the thesis.
 
-Most games bury the toggle under Display, Graphics, or Post-Processing. Look for:
+**The Last of Us Part II Remastered:** On for Grounded permadeath runs - the extra grit sells the stakes. Off if you are just sightseeing in Photo Mode.
 
-- Film Grain / Film Noise
-- Post-Process Effects
-- Cinematic Effects
-- Advanced Graphics
+**Resident Evil 9:** Keep it on. Capcom uses grain dynamically - it thickens in damp, fungal corridors and thins in safe rooms. It is adaptive, which means it is doing real work.
 
-Some titles lock the option on PC behind an .ini edit. A quick web search for `[game name] disable film grain ini` usually surfaces the exact line. On console you are at the mercy of the developer; if there is no toggle, there is no toggle.
+---
 
-## A note on "cinematic" presets
+## Quick Decision Table
 
-Some games bundle grain with chromatic aberration, lens distortion, and motion blur into a single "cinematic" toggle. If you only want to remove grain but keep motion blur, you may need to edit config files or wait for a mod. NexusMods and PCGamingWiki are good resources for per-title instructions.
+| Scenario | Grain Setting | Why |
+|----------|---------------|-----|
+| Competitive multiplayer | **Off** | Clarity beats aesthetics |
+| Stealth / tactical FPS | **Off** | Shadow parsing matters |
+| Cinematic narrative | **On** | Supports directorial intent |
+| Horror / thriller | **On** | Actively builds tension |
+| Open-world looting | **Off** | Reduces HUD fatigue |
+| Recording for YouTube | **Off** | Cleaner source, add grain in post |
+| OLED gaming | **Off or reduced** | Preserves shadow detail |
+| Retro / period art style | **On** | Consistent with art direction |
 
-## The honest bottom line
+---
 
-Film grain is a stylistic choice, not a technical upgrade. It does not make a game run better or look objectively higher quality. It makes it look *different* - and sometimes that difference is exactly what the art team intended. My rule: play the first hour with grain on, then turn it off and play another hour. Whichever image your eyes stop noticing is the right one. If you are still thinking about the grain after two hours, it is in the way.
+## What If You Want the Film Look in Post?
 
-Happy grading 👋
+Disabling grain in-game does not mean your gameplay videos have to look sterile.
 
+[Hance](https://hance.video) is a CLI film-emulation tool that lets you add photochemical grain, halation, and stock-specific color shifts to your recordings after the fact. Because you apply it in post:
+
+- You control the intensity per clip.
+- You can batch-process an entire folder of gameplay captures with one command.
+- You preserve a clean master if YouTube ever changes its compression again.
+
+```bash
+hance gameplay.mp4 --preset kodak-vision-3 --grain 0.6 --halation 0.3
+```
+
+This keeps your source clean and your output cinematic - without asking the game engine to do two jobs at once.
+
+---
+
+## The Bottom Line
+
+Film grain is not a settings-menu afterthought anymore. It is a creative decision that some developers intend you to keep on, and others throw in because it is trendy. Use the table above, trust your eyes, and remember: the best film look is the one you chose deliberately - not the one that shipped by default.
+
+*Last updated: July 2026.*
