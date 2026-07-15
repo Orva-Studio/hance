@@ -4,7 +4,7 @@ description: "Compare the top film emulation tools for video and photography - f
 pubDate: 2026-06-29
 author: "Richard Oliver Bray"
 heroImage: "/blog/film-emulation-plugins-hero.webp"
-heroAlt: "Film reel and cinematic color grading setup"
+heroAlt: "Color grading wheel on a dark control surface"
 about: "A complete listicle of the best film emulation plugins, with honest comparisons of price, quality, and workflow fit."
 ---
 
