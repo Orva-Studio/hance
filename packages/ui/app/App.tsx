@@ -176,25 +176,6 @@ export function App() {
     if (objectUrl) setOpenError(null);
   }, [objectUrl]);
 
-  // The loaded media's first frame becomes the source image for the look
-  // thumbnails in the left panel, and (when the file has a real path, i.e.
-  // desktop native picker) the recents entry.
-  useFirstFrame({ objectUrl, isVideo, videoElement, firstFrameReady }, frame => {
-    setThumbnailSource(frame);
-    refreshLooks();
-    if (file && sourcePath) {
-      fetch("/api/recents", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ path: sourcePath, name: file.name, thumbnail: frame }),
-      }).catch(() => {});
-    }
-  });
-
-  const hasChanges = activeLookParams !== null && Object.keys(activeLookParams).some(
-    key => activeLookParams[key] !== params[key]
-  );
-
   // History tracks {params, activeLook}. Only these are undoable — file
   // uploads, look CRUD, hover previews, scrub, and resizing are not.
   const history = useHistory<{ params: PreviewParams; activeLook: string | null }>(
@@ -205,6 +186,36 @@ export function App() {
   const historyRef = useRef(history);
   useEffect(() => { activeLookRef.current = activeLook; }, [activeLook]);
   useEffect(() => { historyRef.current = history; }, [history]);
+
+  // The loaded media's first frame becomes the source image for the look
+  // thumbnails in the left panel, and (when the file has a real path, i.e.
+  // desktop native picker) the recents entry.
+  useFirstFrame({ objectUrl, isVideo, videoElement, firstFrameReady }, frame => {
+    setThumbnailSource(frame);
+    refreshLooks();
+    if (file && sourcePath) {
+      fetch("/api/recents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: sourcePath, name: file.name, thumbnail: frame, activeLook: activeLookRef.current ?? undefined }),
+      }).catch(() => {});
+    }
+  });
+
+  const hasChanges = activeLookParams !== null && Object.keys(activeLookParams).some(
+    key => activeLookParams[key] !== params[key]
+  );
+
+  // When activeLook changes, update the recents entry with the new look.
+  useEffect(() => {
+    if (file && sourcePath) {
+      fetch("/api/recents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: sourcePath, name: file.name, activeLook: activeLook ?? undefined }),
+      }).catch(() => {});
+    }
+  }, [activeLook, file, sourcePath]);
 
   // Reading from setParams' updater guarantees we see pending state from
   // the same event — a toggle's onChange + onCommit run before React
