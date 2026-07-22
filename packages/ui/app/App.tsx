@@ -322,6 +322,14 @@ export function App() {
     }
   }, [loadLook, clearLooksError]);
 
+  // Reopening a recent file that had a look applied: open the media, then
+  // reapply the same look (the recents entry only remembers its name, not a
+  // full param snapshot — reuses the same reusable-look path as the sidebar).
+  const openRecentPath = useCallback(async (path: string, name: string, activeLook?: string) => {
+    await openPath(path, name);
+    if (activeLook) await handleLookSelect(activeLook);
+  }, [openPath, handleLookSelect]);
+
   const handleLookHover = useCallback((name: string) => {
     if (!renderer) return;
     if (!hoverParamsRef.current) {
@@ -428,7 +436,7 @@ export function App() {
           onSaveAsNew={() => {}}
           onExportClick={() => {}}
         />
-        <Landing onFile={upload} onPath={openPath} onError={setOpenError} />
+        <Landing onFile={upload} onPath={openRecentPath} onError={setOpenError} />
         {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
         {(uploadError || openError) && (
           <div className="absolute left-1/2 -translate-x-1/2 bottom-8 flex items-center gap-3 bg-zinc-900 border border-danger/50 px-4 py-2 rounded-md text-xs text-danger">

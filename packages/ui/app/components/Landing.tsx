@@ -13,7 +13,8 @@ interface Props {
   onFile: (file: File, sourcePath?: string) => void;
   // Path lane for natively picked / recent files: the media stays on disk and
   // is served (and later transcoded/exported) by path, never downloaded.
-  onPath: (path: string, name: string) => Promise<void>;
+  // activeLook is set when reopening a recent entry that had a look applied.
+  onPath: (path: string, name: string, activeLook?: string) => Promise<void>;
   onError: (message: string) => void;
 }
 
@@ -33,9 +34,9 @@ export function Landing({ onFile, onPath, onError }: Props) {
     return () => { cancelled = true; };
   }, []);
 
-  const loadPath = useCallback(async (path: string, name: string) => {
+  const loadPath = useCallback(async (path: string, name: string, activeLook?: string) => {
     try {
-      await onPath(path, name);
+      await onPath(path, name, activeLook);
     } catch (err) {
       onError(`Failed to open "${name}": ${(err as Error).message}`);
     }
@@ -99,7 +100,7 @@ export function Landing({ onFile, onPath, onError }: Props) {
             {recents.slice(0, 6).map(r => (
               <button
                 key={r.path}
-                onClick={() => loadPath(r.path, r.name)}
+                onClick={() => loadPath(r.path, r.name, r.activeLook)}
                 title={r.path}
                 className="group relative aspect-[4/3] rounded-lg overflow-hidden border border-zinc-800 hover:border-zinc-600 bg-zinc-900"
               >
