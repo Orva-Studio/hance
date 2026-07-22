@@ -63,14 +63,30 @@ export function TopBar({
   return (
     <div
       className={`flex items-center justify-between border-b border-zinc-800 bg-zinc-900 ${
-        isDesktop
+        isDesktop()
           ? "h-[38px] pl-[84px] pr-3 electrobun-webkit-app-region-drag"
           : "px-4 py-2.5"
       }`}
     >
-      <span className="text-xs text-zinc-300 truncate max-w-xs">
-        {filename || ""}
-      </span>
+      <div className="flex items-center gap-2 electrobun-webkit-app-region-no-drag">
+        {isDesktop() && file && onHome && (
+          <button
+            onClick={onHome}
+            aria-label="Home"
+            title="Back to library"
+            className="p-1.5 text-zinc-400 rounded-sm hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9.5L12 3l9 6.5" />
+              <path d="M5 10v10h14V10" />
+            </svg>
+          </button>
+        )}
+
+        <span className="text-xs text-zinc-300 truncate max-w-xs">
+          {filename || ""}
+        </span>
+      </div>
 
       <span />
 
@@ -123,20 +139,6 @@ export function TopBar({
               Retry
             </button>
           </div>
-        )}
-
-        {file && onHome && (
-          <button
-            onClick={onHome}
-            aria-label="Home"
-            title="Back to library"
-            className="p-1.5 text-zinc-400 rounded-sm hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9.5L12 3l9 6.5" />
-              <path d="M5 10v10h14V10" />
-            </svg>
-          </button>
         )}
       </div>
     </div>
