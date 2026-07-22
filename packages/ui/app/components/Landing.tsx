@@ -5,6 +5,7 @@ export interface RecentEntry {
   path: string;
   name: string;
   thumbnail?: string;
+  activeLook?: string;
   openedAt: number;
 }
 
@@ -112,8 +113,9 @@ export function Landing({ onFile, onPath, onError }: Props) {
                 ) : (
                   <span className="absolute inset-0 flex items-center justify-center text-2xl text-zinc-700">▶</span>
                 )}
-                <span className="absolute inset-x-0 bottom-0 bg-black/60 text-[11px] text-zinc-200 py-1 px-1.5 truncate">
-                  {r.name}
+                <span className="absolute inset-x-0 bottom-0 bg-black/60 py-1 px-1.5 flex flex-col gap-0.5">
+                  <span className="text-[11px] text-zinc-200 truncate">{r.name}</span>
+                  {r.activeLook && <span className="text-[10px] text-zinc-400 truncate">{r.activeLook}</span>}
                 </span>
               </button>
             ))}

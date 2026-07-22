@@ -84,6 +84,42 @@ describe("recents & pick-file API", () => {
     const list = await (await fetch(`${base}/api/recents`)).json();
     expect(list.map((e: { name: string }) => e.name)).toEqual(["clip.mp4"]);
   });
+
+  test("POST /api/recents preserves thumbnail when activeLook update omits thumbnail", async () => {
+    const newMediaPath = join(fakeHome, "clip2.mp4");
+    writeFileSync(newMediaPath, "fake video bytes 2");
+    allowFilePath(newMediaPath);
+
+    // POST with thumbnail but no activeLook
+    const res1 = await fetch(`${base}/api/recents`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: newMediaPath, name: "clip2.mp4", thumbnail: "data:image/jpeg;base64,abc123" }),
+    });
+    expect(res1.status).toBe(200);
+    const list1 = await res1.json();
+    const entry1 = list1.find((e: { path: string }) => e.path === newMediaPath);
+    expect(entry1).toBeDefined();
+    expect(entry1.thumbnail).toBe("data:image/jpeg;base64,abc123");
+    expect(entry1.activeLook).toBeUndefined();
+
+    // POST again for the same path with activeLook but no thumbnail field
+    // The server should preserve the previous thumbnail
+    const res2 = await fetch(`${base}/api/recents`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: newMediaPath, name: "clip2.mp4", activeLook: "sunset-cool" }),
+    });
+    expect(res2.status).toBe(200);
+    const list2 = await res2.json();
+    const entry2 = list2.find((e: { path: string }) => e.path === newMediaPath);
+    expect(entry2).toBeDefined();
+    // activeLook should be set from this request
+    expect(entry2.activeLook).toBe("sunset-cool");
+    // thumbnail should be preserved from the previous request
+    expect(entry2.thumbnail).toBe("data:image/jpeg;base64,abc123");
+  });
+
 });
 
 describe("host header check", () => {

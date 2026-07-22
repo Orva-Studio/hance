@@ -76,6 +76,7 @@ export interface RecentEntry {
   path: string;
   name: string;
   thumbnail?: string;
+  activeLook?: string;
   openedAt: number;
 }
 
@@ -177,7 +178,7 @@ export function createServer(port: number, hostname?: string, distDir?: string, 
       }
 
       if (url.pathname === "/api/recents" && req.method === "POST") {
-        let body: { path?: unknown; name?: unknown; thumbnail?: unknown };
+        let body: { path?: unknown; name?: unknown; thumbnail?: unknown; activeLook?: unknown };
         try { body = await req.json(); } catch {
           return new Response("invalid JSON", { status: 400 });
         }
@@ -194,8 +195,9 @@ export function createServer(port: number, hostname?: string, distDir?: string, 
         const thumbnail =
           typeof body.thumbnail === "string" && body.thumbnail.length <= MAX_THUMBNAIL_CHARS
             ? body.thumbnail
-            : undefined;
-        const entry: RecentEntry = { path, name: body.name, thumbnail, openedAt: Date.now() };
+            : readRecents().find(e => resolve(e.path) === path)?.thumbnail;
+        const activeLook = typeof body.activeLook === "string" ? body.activeLook : undefined;
+        const entry: RecentEntry = { path, name: body.name, thumbnail, activeLook, openedAt: Date.now() };
         const entries = [entry, ...readRecents().filter(e => resolve(e.path) !== path)].slice(0, MAX_RECENTS);
         writeRecents(entries);
         return Response.json(entries);
