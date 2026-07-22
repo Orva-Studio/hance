@@ -5,6 +5,9 @@ import { join, extname, basename, resolve, dirname } from "node:path";
 import { existsSync, readdirSync, mkdirSync, writeFileSync, readFileSync, unlinkSync, renameSync, rmSync, statSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
 import { streamFragmentedMp4, proxyDonePath } from "./lib/transcode";
+import pkg from "./package.json";
+
+const pkgVersion: string = pkg.version;
 
 // Cache key from cheap file metadata (name + size + mtime), so a cache hit can
 // be detected from a tiny lookup request without uploading or hashing the whole
@@ -136,6 +139,10 @@ export function createServer(port: number, hostname?: string, distDir?: string, 
       if (url.pathname === "/api/license") {
         const tier = process.env.HANCE_LICENSE === "pro" ? "pro" : "free";
         return Response.json({ tier });
+      }
+
+      if (url.pathname === "/api/version") {
+        return Response.json({ version: pkgVersion });
       }
 
       if (url.pathname === "/api/initial-file" && req.method === "GET") {

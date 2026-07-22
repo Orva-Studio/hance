@@ -39,12 +39,13 @@ test("application menu includes quit and the standard edit roles", () => {
   }
 });
 
-test("File menu exposes every custom action with an accelerator", () => {
+test("File menu exposes every custom action, each with an accelerator except About", () => {
   const items = buildApplicationMenu()
     .flatMap(item => ("submenu" in item ? item.submenu ?? [] : []))
     .filter((item): item is { action: string; accelerator?: string } => "action" in item && !!item.action);
   expect(items.map(i => i.action).sort()).toEqual(Object.values(MENU_ACTIONS).sort());
   for (const item of items) {
+    if (item.action === MENU_ACTIONS.about) continue;
     expect(item.accelerator).toBeTruthy();
   }
 });
