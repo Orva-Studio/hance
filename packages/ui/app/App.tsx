@@ -325,10 +325,27 @@ export function App() {
   // Reopening a recent file that had a look applied: open the media, then
   // reapply the same look (the recents entry only remembers its name, not a
   // full param snapshot — reuses the same reusable-look path as the sidebar).
+  // Always resolves the look one way or the other (reapply or clear) so a
+  // previous file's activeLook can never leak onto this one via the
+  // recents-tracking effect below.
   const openRecentPath = useCallback(async (path: string, name: string, activeLook?: string) => {
     await openPath(path, name);
     if (activeLook) await handleLookSelect(activeLook);
-  }, [openPath, handleLookSelect]);
+    else clearLook();
+  }, [openPath, handleLookSelect, clearLook]);
+
+  // A brand-new file (native picker, menu "Open File", drag & drop) has no
+  // known look yet — clear whatever the previous file had active so it can't
+  // leak onto this one via the recents-tracking effect below.
+  const openFreshPath = useCallback(async (path: string, name: string) => {
+    clearLook();
+    await openPath(path, name);
+  }, [openPath, clearLook]);
+
+  const uploadFresh = useCallback((file: File, sourcePath?: string) => {
+    clearLook();
+    upload(file, sourcePath);
+  }, [upload, clearLook]);
 
   const handleLookHover = useCallback((name: string) => {
     if (!renderer) return;
@@ -380,7 +397,7 @@ export function App() {
         try {
           const picked = await pickNativeFile();
           if (!picked || picked === "unsupported") return;
-          await openPath(picked.path, picked.name);
+          await openFreshPath(picked.path, picked.name);
         } catch (err) {
           setOpenError(`Failed to open file: ${(err as Error).message}`);
         }
@@ -436,7 +453,7 @@ export function App() {
           onSaveAsNew={() => {}}
           onExportClick={() => {}}
         />
-        <Landing onFile={upload} onPath={openRecentPath} onError={setOpenError} />
+        <Landing onFile={uploadFresh} onPath={openRecentPath} onError={setOpenError} />
         {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
         {(uploadError || openError) && (
           <div className="absolute left-1/2 -translate-x-1/2 bottom-8 flex items-center gap-3 bg-zinc-900 border border-danger/50 px-4 py-2 rounded-md text-xs text-danger">
