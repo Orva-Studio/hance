@@ -1,0 +1,458 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+const title = 'Halation Effect: Add Cinematic Glow to Your Videos';
+const description =
+  'Add authentic halation glow effects to videos. Learn what halation is, how to create halation effects in DaVinci Resolve, Premiere Pro, and Lightroom, and how to use Hance to add halation to your footage.';
+
+const features = [
+  {
+    title: 'Authentic film halation',
+    body: 'Recreates the natural red-orange halo that occurs in analog film photography when light scatters through film layers.',
+  },
+  {
+    title: 'Fully customizable',
+    body: 'Control halation strength, size, range, and color tint to match your creative vision and specific scenes.',
+  },
+  {
+    title: 'Precise control',
+    body: 'Target specific brightness ranges. Apply subtle halation to just the brightest highlights or broader glow across high-key areas.',
+  },
+  {
+    title: 'Works with any footage',
+    body: 'Backlit portraits, neon cityscapes, golden hour landscapes, artificial lights—halation enhances any scene with bright highlights.',
+  },
+];
+
+const useCases = [
+  { scenario: 'Backlit portraits', why: 'Creates dreamy separation between subject and background; adds emotional warmth' },
+  { scenario: 'Sunset and golden hour', why: 'Amplifies natural warmth; adds cinematic depth to warm tones' },
+  { scenario: 'Night cityscapes', why: 'Makes neon signs and streetlights glow naturally; adds vintage film character' },
+  { scenario: 'Bright windows/interiors', why: 'Prevents blown-out highlights; adds organic light bloom' },
+  { scenario: 'Artificial lighting', why: 'Creates vintage aesthetic; softens harsh artificial light sources' },
+  { scenario: 'Vintage film emulation', why: 'Essential component of period film stock looks (Cinestill, Kodachrome, Fujifilm)' },
+];
+
+const faqs = [
+  {
+    q: 'What exactly is halation in photography and video?',
+    a: 'Halation is a natural optical phenomenon that occurs in analog film photography. Light enters the film emulsion, scatters and refracts inside the film layers, and bounces off the anti-halation backing, creating a distinctive red or orange halo around bright light sources. This characteristic is often considered desirable in cinematography and photography, adding warmth and organic character to images.',
+  },
+  {
+    q: 'What causes halation in film?',
+    a: 'Halation occurs because film emulsion is made of light-sensitive layers. When bright light hits the film, some of it reflects off the back of the film base and scatters through the red-sensitive layer, creating a characteristic warm glow. The anti-halation backing absorbs some of this light, but in bright conditions—especially with color film—enough light bounces back to create visible halation.',
+  },
+  {
+    q: 'How is halation different from bloom?',
+    a: 'Halation is a characteristic warm (red/orange) halo specific to analog film, caused by light scattering within film layers. Bloom is a softer, whiter glow that diffuses light outward more generally. Halation is more localized and colored; bloom is more ethereal and diffuse. Both are useful, but they create different moods.',
+  },
+  {
+    q: 'How do I add halation in DaVinci Resolve?',
+    a: 'DaVinci Resolve includes a native halation effect in the color grading panel. Go to Color > Highlights or use the Glow controls. You can also add halation through third-party plugins. With Hance, simply apply the halation effect via the CLI: hance your-video.mp4 --halation 0.5 for subtle warmth.',
+  },
+  {
+    q: 'How do I add halation in Premiere Pro?',
+    a: 'Premiere Pro doesn't have a built-in halation effect, but you can achieve it with third-party plugins (FilmConvert Halation, Sapphire Glow, etc.) or by layering adjustment layers with glow and warmth. Alternatively, export from Premiere and process through Hance to add halation, then re-import.',
+  },
+  {
+    q: 'Can I add halation in Lightroom?',
+    a: 'Lightroom doesn\'t have a dedicated halation tool, but you can approximate it using the Glow slider in newer versions, or by creating a warm overlay on highlights. For true halation in photo editing, use Photoshop with plugins or dedicated halation filters (VSCO, FilmConvert). Hance can also process exported video frames.',
+  },
+  {
+    q: 'How do I add halation in Photoshop?',
+    a: 'In Photoshop, use Camera Raw Filter > Effects > Glow, or layer a warm color overlay on a duplicate layer set to Screen mode. Use layer masks to target highlights. For more control, use plugins like FilmConvert or VSCO filters, which include dedicated halation presets.',
+  },
+  {
+    q: 'What is halation in DaVinci Resolve specifically?',
+    a: 'In DaVinci Resolve, halation refers to the Halation effect in the Color page, under the Glow controls or Highlights section. It simulates the warm halo that happens in analog film. You can adjust strength and size to match your grade.',
+  },
+  {
+    q: 'How do I use halation in color grading?',
+    a: 'Apply halation selectively to enhance bright areas in your grade. Start subtle (0.2–0.4 on a 0–1 scale) and increase for stronger vintage effect. Use it to add warmth to golden hour footage, create separation in backlit shots, or emulate specific film stocks like Cinestill or Kodachrome.',
+  },
+  {
+    q: 'Why is halation always red or orange?',
+    a: 'Halation appears red/orange in film because the red-sensitive emulsion layer is on top, and light that bounces back through it produces a warm color cast. This is a physical property of how color film is layered. In digital effects, you can customize the halation tint to match your creative intent.',
+  },
+  {
+    q: 'Is halation normal in photographs?',
+    a: 'Yes. In analog photography, halation is a natural occurrence, especially with bright backlighting or high-contrast scenes. It\'s more noticeable in certain film stocks (Cinestill 800T, Fujifilm Superia) and less so in others. Many photographers embrace it as a desirable characteristic.',
+  },
+  {
+    q: 'Can I use halation on any scene or is it only for certain conditions?',
+    a: 'Halation works best on scenes with bright highlights—backlighting, golden hour, neon lights, or bright windows. It won't have much visible effect on evenly lit or dark scenes. Use it selectively on high-key areas for the strongest, most cinematic results.',
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: f.a,
+    },
+  })),
+};
+---
+
+<Base title={title} description={description}>
+  <Nav />
+
+  <!-- HERO -->
+  <section class="px-6 sm:px-10 lg:px-16 pt-16 sm:pt-24 lg:pt-28 pb-20 sm:pb-28">
+    <div class="max-w-[1280px] mx-auto">
+      <span class="inline-flex items-center rounded-full border border-accent/70 bg-accent/10 px-3 py-1 font-mono text-[11px] text-accent uppercase tracking-[0.14em]">
+        Film Effect Guide
+      </span>
+      <h1 class="mt-6 font-sans font-medium tracking-tightest-2 leading-[1.05] text-ink text-balance"
+          style="font-size: clamp(1.95rem, 4.2vw, 3.85rem); max-width: 26ch">
+        Halation Effect.
+        <span class="text-ink-muted">Add cinematic glow to any footage.</span>
+      </h1>
+      <p class="mt-8 max-w-[56ch] text-ink-muted leading-relaxed">
+        Halation is the warm, red-orange halo that occurs naturally in analog film photography. Learn what causes halation, how to create halation effects in your favorite editors, and how Hance makes it effortless.
+      </p>
+      <div class="mt-10 flex flex-wrap items-center gap-4">
+        <a href="#what-is-halation" class="inline-flex items-center gap-2 rounded-full border border-accent/70 hover:border-accent px-5 py-2.5 font-mono text-[13px] text-ink transition-colors duration-300 ease-out-quart">Learn what halation is</a>
+        <a href="#how-to-add-halation" class="inline-flex items-center gap-2 rounded-full border border-surface-3/70 hover:border-accent px-5 py-2.5 font-mono text-[13px] text-ink transition-colors duration-300 ease-out-quart">See tutorials</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEFORE/AFTER VISUAL PLACEHOLDER -->
+  <section class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28 border-t border-surface-3/70">
+    <div class="max-w-[1280px] mx-auto">
+      <p class="font-mono text-[12px] sm:text-[13px] text-ink-dim uppercase tracking-[0.18em] mb-6">
+        Halation before and after comparison
+      </p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <figure class="rounded-md ring-1 ring-surface-3 overflow-hidden bg-surface-2 aspect-video flex items-center justify-center">
+          <div class="text-center text-ink-muted">
+            <p class="font-mono text-[13px] mb-2">[VIDEO PLACEHOLDER]</p>
+            <p class="text-sm">Before: Original footage</p>
+          </div>
+        </figure>
+        <figure class="rounded-md ring-1 ring-surface-3 overflow-hidden bg-surface-2 aspect-video flex items-center justify-center">
+          <div class="text-center text-ink-muted">
+            <p class="font-mono text-[13px] mb-2">[VIDEO PLACEHOLDER]</p>
+            <p class="text-sm">After: With halation glow</p>
+          </div>
+        </figure>
+      </div>
+      <p class="mt-4 font-mono text-[11px] sm:text-[12px] text-ink-dim/80 tracking-[0.04em]">
+        Halation adds a warm, cinematic glow around bright highlights, enhancing the vintage film aesthetic.
+      </p>
+    </div>
+  </section>
+
+  <!-- WHAT IS HALATION -->
+  <section id="what-is-halation" class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28 border-t border-surface-3/70">
+    <div class="max-w-[1280px] mx-auto">
+      <h2 class="font-sans font-medium text-ink tracking-tightest-2 leading-[0.95]" style="font-size: clamp(2.25rem, 5.5vw, 4.25rem)">
+        What is halation?
+      </h2>
+      <div class="mt-12 grid gap-8 max-w-3xl">
+        <div>
+          <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink mb-3">The physics behind halation</h3>
+          <p class="text-ink-muted leading-relaxed">
+            Halation occurs in analog film photography when light enters the film emulsion, scatters through multiple layers, and bounces off the anti-halation backing on the back of the film. This reflected light re-enters the red-sensitive emulsion layer, creating a characteristic warm, red-orange halo around bright light sources. The effect is strongest in high-contrast scenes with intense backlighting.
+          </p>
+        </div>
+        <div>
+          <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink mb-3">Why filmmakers love halation</h3>
+          <p class="text-ink-muted leading-relaxed">
+            Halation adds organic, tactile warmth to images that digital color grading alone can't replicate. It's especially prized in cinematography for creating separation between subjects and backgrounds, adding emotional depth to backlit scenes, and evoking the vintage aesthetic of classic film stocks. Modern photographers and videographers often seek halation as a desirable quality in their work.
+          </p>
+        </div>
+        <div>
+          <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink mb-3">Halation in different film stocks</h3>
+          <p class="text-ink-muted leading-relaxed">
+            Different film stocks produce different amounts of halation. Cinestill 800T (a modified Kodak motion picture film) is famous for its strong, characteristic halation halo. Fujifilm stocks like Superia and Velvia show moderate halation. Kodachrome and Portra films exhibit more subtle halation. Digital halation effects aim to recreate these specific film stock characteristics.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HALATION VS OTHER EFFECTS -->
+  <section class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28 border-t border-surface-3/70">
+    <div class="max-w-[1280px] mx-auto">
+      <h2 class="font-sans font-medium text-ink tracking-tightest-2 leading-[0.95]" style="font-size: clamp(2.25rem, 5.5vw, 4.25rem)">
+        Halation vs. similar effects
+      </h2>
+      <div class="mt-14 sm:mt-20 overflow-x-auto">
+        <table class="w-full text-left text-sm sm:text-base">
+          <thead>
+            <tr class="border-b border-surface-3/70">
+              <th class="font-sans font-medium text-ink pb-4 pr-4">Effect</th>
+              <th class="font-sans font-medium text-ink pb-4 pr-4">Appearance</th>
+              <th class="font-sans font-medium text-ink pb-4">Best for</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-3/70">
+            <tr>
+              <td class="py-4 pr-4 text-ink font-medium">Halation</td>
+              <td class="py-4 pr-4 text-ink-muted">Warm (red/orange) halo around bright highlights</td>
+              <td class="py-4 text-ink-muted">Vintage film aesthetic, backlit scenes</td>
+            </tr>
+            <tr>
+              <td class="py-4 pr-4 text-ink font-medium">Bloom</td>
+              <td class="py-4 pr-4 text-ink-muted">Soft, diffuse white glow spreading outward</td>
+              <td class="py-4 text-ink-muted">Dreamy, ethereal effect; soft romance</td>
+            </tr>
+            <tr>
+              <td class="py-4 pr-4 text-ink font-medium">Lens Flare</td>
+              <td class="py-4 pr-4 text-ink-muted">Streaks, rays, or orbs from bright light</td>
+              <td class="py-4 text-ink-muted">Cinematic punch; light source dramatization</td>
+            </tr>
+            <tr>
+              <td class="py-4 pr-4 text-ink font-medium">Glow (general)</td>
+              <td class="py-4 pr-4 text-ink-muted">Broad luminous halo (color-neutral)</td>
+              <td class="py-4 text-ink-muted">Softening highlights; reducing harshness</td>
+            </tr>
+            <tr>
+              <td class="py-4 pr-4 text-ink font-medium">Chromatic Aberration</td>
+              <td class="py-4 pr-4 text-ink-muted">Color fringing (red/cyan) on edges</td>
+              <td class="py-4 text-ink-muted">Vintage lens simulation; analog character</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW TO ADD HALATION -->
+  <section id="how-to-add-halation" class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28 border-t border-surface-3/70">
+    <div class="max-w-[1280px] mx-auto">
+      <h2 class="font-sans font-medium text-ink tracking-tightest-2 leading-[0.95]" style="font-size: clamp(2.25rem, 5.5vw, 4.25rem)">
+        How to add halation
+      </h2>
+      <p class="mt-6 max-w-[56ch] text-ink-muted leading-relaxed">
+        Halation is available in multiple editing tools. Here's how to add it in the most popular software:
+      </p>
+
+      <div class="mt-14 sm:mt-20 grid gap-5 sm:gap-6 sm:grid-cols-2">
+        <!-- DaVinci Resolve -->
+        <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8">
+          <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink">DaVinci Resolve</h3>
+          <p class="mt-3 text-ink-muted leading-relaxed text-sm">
+            Go to Color → Highlights panel → enable Glow. Adjust Halation strength and size. DaVinci Resolve Free includes halation controls; Pro adds more advanced options.
+          </p>
+          <a href="#faq" class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent hover:underline underline-offset-4">
+            Full tutorial →
+          </a>
+        </div>
+
+        <!-- Premiere Pro -->
+        <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8">
+          <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink">Premiere Pro</h3>
+          <p class="mt-3 text-ink-muted leading-relaxed text-sm">
+            Premiere Pro doesn't include native halation, but use third-party plugins like FilmConvert Halation or Boris FX Sapphire Glow. Alternatively, process clips through Hance then re-import.
+          </p>
+          <a href="#faq" class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent hover:underline underline-offset-4">
+            See plugin options →
+          </a>
+        </div>
+
+        <!-- Lightroom -->
+        <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8">
+          <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink">Lightroom</h3>
+          <p class="mt-3 text-ink-muted leading-relaxed text-sm">
+            Lightroom lacks a dedicated halation tool, but newer versions include Glow under Effects. For true halation, use VSCO filters or FilmConvert Halation plugin, or export and process through Hance.
+          </p>
+          <a href="#faq" class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent hover:underline underline-offset-4">
+            Alternatives →
+          </a>
+        </div>
+
+        <!-- Photoshop -->
+        <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8">
+          <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink">Photoshop</h3>
+          <p class="mt-3 text-ink-muted leading-relaxed text-sm">
+            Use Camera Raw Filter → Effects → Glow, or create a warm overlay on highlights. Use FilmConvert or VSCO plugins for dedicated halation presets with more control.
+          </p>
+          <a href="#faq" class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent hover:underline underline-offset-4">
+            Step-by-step guide →
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HANCE HALATION -->
+  <section class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28 border-t border-surface-3/70">
+    <div class="max-w-[1280px] mx-auto">
+      <h2 class="font-sans font-medium text-ink tracking-tightest-2 leading-[0.95]" style="font-size: clamp(2.25rem, 5.5vw, 4.25rem)">
+        Add halation with Hance
+      </h2>
+      <p class="mt-6 max-w-[56ch] text-ink-muted leading-relaxed">
+        Hance makes halation instant and automatic. No plugins, no round-trips through different software.
+      </p>
+
+      <div class="mt-14 sm:mt-20 grid gap-5 sm:gap-6 sm:grid-cols-2">
+        {features.map((f) => (
+          <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8">
+            <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink">{f.title}</h3>
+            <p class="mt-3 max-w-[44ch] text-ink-muted leading-relaxed">{f.body}</p>
+          </div>
+        ))}
+      </div>
+
+      <!-- Code example -->
+      <div class="mt-14 sm:mt-20 rounded-lg border border-surface-3/70 p-6 sm:p-8">
+        <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink mb-4">Quick start</h3>
+        <p class="text-ink-muted leading-relaxed mb-5">
+          Add halation to any video with one command:
+        </p>
+        <div class="bg-surface rounded-md p-4 font-mono text-[12px] text-ink-muted overflow-x-auto mb-4">
+          <div class="whitespace-nowrap">
+            <span class="text-accent">$</span> hance your-video.mp4 --halation 0.5
+          </div>
+        </div>
+        <p class="text-ink-muted text-sm leading-relaxed">
+          Or use Hance in your CI/CD pipeline, motion graphics pipeline, or as an OFX plugin (Pro tier).
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEST USE CASES -->
+  <section class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28 border-t border-surface-3/70">
+    <div class="max-w-[1280px] mx-auto">
+      <h2 class="font-sans font-medium text-ink tracking-tightest-2 leading-[0.95]" style="font-size: clamp(2.25rem, 5.5vw, 4.25rem)">
+        When to use halation
+      </h2>
+      <p class="mt-6 max-w-[56ch] text-ink-muted leading-relaxed">
+        Halation works best in specific creative scenarios. Here's when it shines:
+      </p>
+
+      <div class="mt-14 sm:mt-20 grid gap-5 sm:gap-6 sm:grid-cols-2">
+        {useCases.map((uc) => (
+          <div class="rounded-lg border border-surface-3/70 p-6 sm:p-8">
+            <h3 class="font-sans text-lg font-medium tracking-tight text-ink">{uc.scenario}</h3>
+            <p class="mt-2 text-ink-muted leading-relaxed text-sm">{uc.why}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- HALATION SETTINGS & CUSTOMIZATION -->
+  <section class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28 border-t border-surface-3/70">
+    <div class="max-w-[1280km] mx-auto">
+      <h2 class="font-sans font-medium text-ink tracking-tightest-2 leading-[0.95]" style="font-size: clamp(2.25rem, 5.5vw, 4.25rem)">
+        Halation customization
+      </h2>
+      <div class="mt-12 grid gap-8 max-w-3xl">
+        <div>
+          <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink mb-3">Strength</h3>
+          <p class="text-ink-muted leading-relaxed">
+            Controls how vivid and pronounced the halation glow becomes. Start at 0.3–0.4 for subtle vintage warmth, increase to 0.6–0.8 for dramatic vintage effect, or use 1.0+ for extreme Cinestill-style halation.
+          </p>
+        </div>
+        <div>
+          <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink mb-3">Size</h3>
+          <p class="text-ink-muted leading-relaxed">
+            Determines the spread of the halo from the bright source. Smaller values create tight, localized halos (sharp fringe). Larger values create diffuse, softer halos (broader flare). Match the intensity of the light source.
+          </p>
+        </div>
+        <div>
+          <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink mb-3">Range</h3>
+          <p class="text-ink-muted leading-relaxed">
+            Controls which brightness levels are affected. Lower values affect only the brightest spots (careful isolation). Higher values broaden the effect to mid-tones (broader warm glow). Adjust based on scene contrast.
+          </p>
+        </div>
+        <div>
+          <h3 class="font-sans text-xl sm:text-2xl font-medium tracking-tight text-ink mb-3">Tint</h3>
+          <p class="text-ink-muted leading-relaxed">
+            Changes the color of the halo from pure red to orange to pink, matching your creative intent and specific film stock aesthetic. Red for classic Cinestill, orange for warm Fuji stocks, pink for softer romance.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BLOG POSTS SECTION (placeholder for linking related content) -->
+  <section class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28 border-t border-surface-3/70">
+    <div class="max-w-[1280px] mx-auto">
+      <h2 class="font-sans font-medium text-ink tracking-tightest-2 leading-[0.95]" style="font-size: clamp(2.25rem, 5.5vw, 4.25rem)">
+        Learn more about halation
+      </h2>
+      <p class="mt-6 max-w-[56ch] text-ink-muted leading-relaxed">
+        Dive deeper into halation effect techniques and film aesthetics:
+      </p>
+
+      <div class="mt-14 sm:mt-20 grid gap-5 sm:gap-6 sm:grid-cols-3">
+        <a href="/blog/" class="rounded-lg border border-surface-3/70 p-6 sm:p-8 hover:border-accent/70 transition-colors">
+          <h3 class="font-sans text-lg font-medium tracking-tight text-ink">Halation vs Bloom</h3>
+          <p class="mt-3 text-ink-muted leading-relaxed text-sm">
+            Understand the difference between halation and bloom, and when to use each effect in your color grading workflow.
+          </p>
+          <span class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent">Read article →</span>
+        </a>
+        <a href="/blog/" class="rounded-lg border border-surface-3/70 p-6 sm:p-8 hover:border-accent/70 transition-colors">
+          <h3 class="font-sans text-lg font-medium tracking-tight text-ink">Film Stock Guide</h3>
+          <p class="mt-3 text-ink-muted leading-relaxed text-sm">
+            Explore halation characteristics across classic and modern film stocks: Cinestill, Kodachrome, Portra, and more.
+          </p>
+          <span class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent">Read article →</span>
+        </a>
+        <a href="/blog/" class="rounded-lg border border-surface-3/70 p-6 sm:p-8 hover:border-accent/70 transition-colors">
+          <h3 class="font-sans text-lg font-medium tracking-tight text-ink">Cinematic Glow Effects</h3>
+          <p class="mt-3 text-ink-muted leading-relaxed text-sm">
+            Master halation, bloom, glow, and lens flare to add cinematic depth and emotion to your footage.
+          </p>
+          <span class="mt-5 inline-flex items-center gap-1.5 font-mono text-[13px] text-accent">Read article →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />
+  <section id="faq" class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28 border-t border-surface-3/70">
+    <div class="max-w-[1100px] mx-auto">
+      <h2 class="font-sans font-medium text-ink tracking-tightest-2 leading-[0.95]" style="font-size: clamp(2.25rem, 5.5vw, 4.25rem)">
+        Halation questions answered.
+      </h2>
+      <div class="mt-14 sm:mt-20 divide-y divide-surface-3/80 border-y border-surface-3/80">
+        {faqs.map((f) => (
+          <details class="group py-6 sm:py-8 transition-colors hover:bg-surface-2/30 rounded-sm">
+            <summary class="flex items-baseline justify-between gap-6 cursor-pointer list-none">
+              <h3 class="font-sans text-lg sm:text-2xl text-ink font-medium tracking-tight pr-4">{f.q}</h3>
+              <span class="font-mono text-3xl sm:text-4xl leading-none text-accent shrink-0 transition-transform duration-300 ease-out-quart group-open:rotate-45">+</span>
+            </summary>
+            <p class="mt-4 max-w-[68ch] text-ink-muted leading-relaxed text-[15px] sm:text-base">{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="px-6 sm:px-10 lg:px-16 py-20 sm:py-28 border-t border-surface-3/70">
+    <div class="max-w-[1280px] mx-auto text-center">
+      <h2 class="font-sans font-medium text-ink tracking-tightest-2 leading-[1.05]" style="font-size: clamp(1.95rem, 4.2vw, 3.85rem); max-width: 28ch; margin-left: auto; margin-right: auto;">
+        Ready to add halation to your footage?
+      </h2>
+      <p class="mt-6 max-w-[52ch] text-ink-muted leading-relaxed mx-auto">
+        Try Hance free. Add halation, bloom, grain, and 40+ film looks with one command.
+      </p>
+      <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+        <a href="/" class="inline-flex items-center gap-2 rounded-full border border-accent/70 hover:border-accent px-5 py-2.5 font-mono text-[13px] text-ink transition-colors duration-300 ease-out-quart">
+          Get started with Hance
+        </a>
+        <a href="/docs/browser-ui/" class="inline-flex items-center gap-2 rounded-full border border-surface-3/70 hover:border-accent px-5 py-2.5 font-mono text-[13px] text-ink transition-colors duration-300 ease-out-quart">
+          Tour the UI
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</Base>
