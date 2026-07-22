@@ -297,6 +297,22 @@ export function App() {
     historyRef.current.commit({ params: disableAll, activeLook: null });
   }, [clearLook, schema]);
 
+  // Discard the loaded file and return to Landing. Also drops the proxy
+  // stream (otherwise its previewSrc/state from the old file would shadow
+  // the next upload) and resets grading state to defaults, so a second file
+  // opened via Home doesn't inherit the first file's effect params.
+  const handleHome = useCallback(() => {
+    proxy.reset();
+    reset();
+    clearLook();
+    const disableAll: PreviewParams = seedDefaults();
+    for (const group of schema) {
+      disableAll[group.enableKey] = true;
+    }
+    setParams(disableAll);
+    historyRef.current.replace({ params: disableAll, activeLook: null });
+  }, [proxy, reset, clearLook, schema]);
+
   const handleLookSelect = useCallback(async (name: string) => {
     try {
       const lookParams = await loadLook(name);
@@ -449,7 +465,7 @@ export function App() {
         onSave={handleSave}
         onSaveAsNew={handleSaveAsNew}
         onExportClick={() => setShowExportModal(true)}
-        onHome={reset}
+        onHome={handleHome}
         exportProgress={exportProgress}
         onExportDone={resetExport}
       />
