@@ -21,13 +21,14 @@ interface Props {
   onSave: () => void;
   onSaveAsNew: () => void;
   onExportClick: () => void;
+  onHome?: () => void;
   exportProgress?: ExportProgress;
   onExportDone?: () => void;
 }
 
 export function TopBar({
   filename, file, renderer, isVideo,
-  hasChanges, onSave, onSaveAsNew, onExportClick,
+  hasChanges, onSave, onSaveAsNew, onExportClick, onHome,
   exportProgress, onExportDone,
 }: Props) {
   const state: ExportState = exportProgress?.state ?? "idle";
@@ -122,6 +123,20 @@ export function TopBar({
               Retry
             </button>
           </div>
+        )}
+
+        {file && onHome && (
+          <button
+            onClick={onHome}
+            aria-label="Home"
+            title="Back to library"
+            className="p-1.5 text-zinc-400 rounded-sm hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9.5L12 3l9 6.5" />
+              <path d="M5 10v10h14V10" />
+            </svg>
+          </button>
         )}
       </div>
     </div>

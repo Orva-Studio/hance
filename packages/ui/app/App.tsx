@@ -36,7 +36,7 @@ import { pickNativeFile } from "./lib/openFile";
 const PROXY_CACHE_WARN_BYTES = 5 * 1024 ** 3;
 
 export function App() {
-  const { file, objectUrl, sourcePath, isVideo, upload, openPath, error: uploadError, clearError } = useUpload();
+  const { file, objectUrl, sourcePath, isVideo, upload, openPath, error: uploadError, clearError, reset } = useUpload();
   const proxy = useProxyStream();
   const previewSrc = proxy.previewSrc ?? objectUrl;
   const [previewError, setPreviewError] = useState<Error | null>(null);
@@ -449,6 +449,7 @@ export function App() {
         onSave={handleSave}
         onSaveAsNew={handleSaveAsNew}
         onExportClick={() => setShowExportModal(true)}
+        onHome={reset}
         exportProgress={exportProgress}
         onExportDone={resetExport}
       />
