@@ -6,6 +6,7 @@ import type { ApplicationMenuItemConfig } from "electrobun/bun";
 // Custom menu actions forwarded into the webview as a "hance:menu"
 // CustomEvent (see index.ts); the React app maps them to handlers.
 export const MENU_ACTIONS = {
+  about: "about",
   openFile: "open-file",
   saveLook: "save-look",
   saveLookAsNew: "save-look-as-new",
@@ -18,6 +19,11 @@ export function buildApplicationMenu(): ApplicationMenuItemConfig[] {
   return [
     {
       submenu: [
+        // Custom action, not the "about" role: the role opens macOS's native
+        // panel (name/version only), and we want our own view so the pro
+        // license section (added in a later ticket) can live alongside it.
+        { label: "About Hance", action: MENU_ACTIONS.about },
+        { type: "separator" },
         { role: "hide" },
         { role: "hideOthers" },
         { role: "showAll" },

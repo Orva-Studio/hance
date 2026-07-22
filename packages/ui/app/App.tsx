@@ -17,6 +17,7 @@ import { Landing } from "./components/Landing";
 import { Timeline } from "./components/Timeline";
 import { ResizeDivider } from "./components/ResizeDivider";
 import { NewLookModal } from "./components/NewLookModal";
+import { AboutModal } from "./components/AboutModal";
 import { ExportModal } from "./components/ExportModal";
 import { ViewModeToolbar, type ViewMode } from "./components/ViewModeToolbar";
 import { CompareOverlay } from "./components/CompareOverlay";
@@ -118,6 +119,7 @@ export function App() {
   const getStartTime = useCallback(() => resumeRef.current ?? 0, []);
 
   const [animating, setAnimating] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const [showSaveAsNew, setShowSaveAsNew] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("normal");
@@ -353,6 +355,7 @@ export function App() {
 
   // Native menu actions from the desktop shell (File/Edit menus).
   useMenuActions({
+    "about": () => setShowAbout(true),
     "open-file": () => {
       void (async () => {
         try {
@@ -415,6 +418,7 @@ export function App() {
           onExportClick={() => {}}
         />
         <Landing onFile={upload} onPath={openPath} onError={setOpenError} />
+        {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
         {(uploadError || openError) && (
           <div className="absolute left-1/2 -translate-x-1/2 bottom-8 flex items-center gap-3 bg-zinc-900 border border-danger/50 px-4 py-2 rounded-md text-xs text-danger">
             <span>{uploadError ?? openError}</span>
@@ -592,6 +596,8 @@ export function App() {
           >×</button>
         </div>
       )}
+
+      {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
 
       {showSaveAsNew && (
         <NewLookModal
