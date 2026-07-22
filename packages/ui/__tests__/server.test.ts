@@ -61,6 +61,13 @@ describe("API server", () => {
     }
   });
 
+  test("GET /api/version returns the package version", async () => {
+    const res = await fetch(`${base}/api/version`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.version).toBe((await import("../package.json")).version);
+  });
+
   test("GET /api/initial-file returns 404 when no file set", async () => {
     setInitialFile(null);
     const res = await fetch(`${base}/api/initial-file`);
