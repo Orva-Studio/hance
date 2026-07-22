@@ -26,6 +26,7 @@ export interface ProxyStreamApi {
   errorMsg: string | null;
   cacheBytes: number;   // total size of the on-disk proxy cache, from the server
   start: (file: File, sourcePath?: string | null) => Promise<void>;
+  reset: () => void;
 }
 
 export function useProxyStream(): ProxyStreamApi {
@@ -205,5 +206,19 @@ export function useProxyStream(): ProxyStreamApi {
     }, { once: true });
   }, [revokeBlob]);
 
-  return { previewSrc, state, progress, durationHint, errorMsg, cacheBytes, start };
+  // Invalidate any in-flight run so its async callbacks become no-ops, drop
+  // the blob, and go back to idle — used when the file being previewed is
+  // discarded (e.g. the Home button) so a later start() isn't shadowed by a
+  // stale previewSrc/state from the old file.
+  const reset = useCallback(() => {
+    runRef.current++;
+    revokeBlob();
+    setPreviewSrc(null);
+    setState("idle");
+    setProgress(0);
+    setDurationHint(0);
+    setErrorMsg(null);
+  }, [revokeBlob]);
+
+  return { previewSrc, state, progress, durationHint, errorMsg, cacheBytes, start, reset };
 }
