@@ -81,5 +81,15 @@ export function useUpload() {
     setState(s => ({ ...s, error: null }));
   }, []);
 
-  return { ...state, upload, openPath, clearError };
+  // Discard the loaded file and return to the Landing screen (App renders
+  // Landing whenever objectUrl is null). Revoke the blob URL to avoid a leak.
+  const reset = useCallback(() => {
+    if (prevUrlRef.current) {
+      URL.revokeObjectURL(prevUrlRef.current);
+      prevUrlRef.current = null;
+    }
+    setState({ file: null, objectUrl: null, sourcePath: null, isVideo: false, error: null });
+  }, []);
+
+  return { ...state, upload, openPath, clearError, reset };
 }
