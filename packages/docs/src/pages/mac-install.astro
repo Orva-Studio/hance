@@ -1,0 +1,187 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+const REPO = 'https://github.com/Orva-Studio/hance';
+const UNQUARANTINE_CMD = 'xattr -d com.apple.quarantine /Applications/Hance.app';
+---
+<Base title="Hance — Install the Mac app (beta)" description="How to download, install, and open the Hance desktop app beta on macOS.">
+  <Nav />
+
+  <main class="px-6 sm:px-10 lg:px-16 pt-16 sm:pt-24 pb-24">
+    <div class="max-w-[68ch] mx-auto">
+      <p class="font-mono text-[12px] text-ink-dim uppercase tracking-[0.18em]">Desktop app · Beta</p>
+      <h1 class="mt-4 font-sans font-medium tracking-tightest-2 leading-[0.95] text-ink text-[clamp(2.5rem,8vw,4rem)]">
+        Install Hance for Mac
+      </h1>
+      <p class="mt-5 text-ink-muted leading-relaxed">
+        The desktop app is in beta and not yet notarized by Apple, so macOS will warn you the
+        first time you open it. That's expected: follow the steps below and it only takes a
+        few seconds.
+      </p>
+
+      <ol class="mt-14 space-y-14">
+        <li>
+          <div class="flex items-baseline gap-3">
+            <span class="font-mono text-accent text-sm">01</span>
+            <h2 class="font-sans text-xl font-medium text-ink">Download for your Mac</h2>
+          </div>
+          <p class="mt-2 text-ink-muted leading-relaxed">
+            Pick the version that matches your Mac. Most Macs sold since late 2020 are Apple silicon.
+          </p>
+          <div class="mt-4 flex flex-wrap gap-3">
+            <a href={`${REPO}/releases/latest/download/hance-macos-arm64.dmg`} class="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2 font-mono text-[12px] uppercase tracking-wide text-surface-1 transition-transform duration-300 ease-out-quart hover:-translate-y-px">
+              Apple Silicon (M1/M2/M3/M4)
+            </a>
+            <a href={`${REPO}/releases/latest/download/hance-macos-x64.dmg`} class="inline-flex items-center gap-2 rounded-full border border-surface-3/70 px-5 py-2 font-mono text-[12px] uppercase tracking-wide text-ink transition-transform duration-300 ease-out-quart hover:-translate-y-px">
+              Intel
+            </a>
+          </div>
+          <p class="mt-2 text-[13px] text-ink-dim">
+            Not sure which? Apple menu → About This Mac → Chip/Processor. "Apple M-something" means Apple silicon.
+          </p>
+        </li>
+
+        <li>
+          <div class="flex items-baseline gap-3">
+            <span class="font-mono text-accent text-sm">02</span>
+            <h2 class="font-sans text-xl font-medium text-ink">Open the .dmg and drag Hance to Applications</h2>
+          </div>
+          <p class="mt-2 text-ink-muted leading-relaxed">
+            Double-click the downloaded file, then drag the Hance icon into the Applications folder shown in the same window.
+          </p>
+        </li>
+
+        <li>
+          <div class="flex items-baseline gap-3">
+            <span class="font-mono text-accent text-sm">03</span>
+            <h2 class="font-sans text-xl font-medium text-ink">First launch: clear the security warning</h2>
+          </div>
+          <p class="mt-2 text-ink-muted leading-relaxed">
+            Open Hance from Applications. macOS will say it "could not verify" the app and offer
+            only "Done" or "Move to Bin" - this is normal for a beta build. Open Terminal
+            (⌘Space, type "Terminal") and run:
+          </p>
+          <div class="cb-block mt-4">
+            <div class="cb">
+              <div class="cb-row"><span class="cb-glyph">$</span><span class="cb-cmd">{UNQUARANTINE_CMD}</span></div>
+            </div>
+            <button type="button" class="cb-copy" data-copy={UNQUARANTINE_CMD} aria-label="Copy command"><span data-label>Copy</span></button>
+          </div>
+        </li>
+
+        <li>
+          <div class="flex items-baseline gap-3">
+            <span class="font-mono text-accent text-sm">04</span>
+            <h2 class="font-sans text-xl font-medium text-ink">Open Hance again</h2>
+          </div>
+          <p class="mt-2 text-ink-muted leading-relaxed">
+            Launch it from Applications (or Spotlight) once more. It opens normally from now on -
+            you only need to do this once per download.
+          </p>
+        </li>
+      </ol>
+
+      <p class="mt-14 text-[14px] text-ink-dim leading-relaxed">
+        Prefer the terminal-only CLI, or want the full feature tour? See the
+        <a href="/docs/desktop-app/" class="text-accent hover:underline underline-offset-4">desktop app docs</a>
+        or <a href={`${REPO}/releases`} class="text-accent hover:underline underline-offset-4">all releases</a>.
+      </p>
+    </div>
+  </main>
+
+  <Footer />
+
+  <script is:inline>
+    function initCommandBlocks() {
+      const buttons = document.querySelectorAll('.cb-copy');
+      buttons.forEach((btn) => {
+        const labelEl = btn.querySelector('[data-label]');
+        const original = labelEl ? labelEl.textContent : 'Copy';
+        btn.addEventListener('click', async () => {
+          const txt = btn.getAttribute('data-copy') || '';
+          try {
+            await navigator.clipboard.writeText(txt);
+            if (labelEl) labelEl.textContent = 'Copied ✓';
+            btn.classList.add('is-copied');
+            setTimeout(() => {
+              if (labelEl) labelEl.textContent = original;
+              btn.classList.remove('is-copied');
+            }, 1500);
+          } catch {}
+        });
+      });
+    }
+    initCommandBlocks();
+  </script>
+</Base>
+
+<style>
+  .cb-block {
+    position: relative;
+  }
+  .cb-copy {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: oklch(0.74 0.18 55);
+    background: oklch(0.17 0.013 220 / 0.85);
+    border: 1px solid oklch(0.74 0.18 55 / 0.45);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 240ms cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 240ms cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .cb-block:hover .cb-copy,
+  .cb-copy:focus-visible {
+    opacity: 1;
+  }
+  .cb-copy:hover {
+    background: oklch(0.74 0.18 55 / 0.15);
+    border-color: oklch(0.74 0.18 55);
+  }
+  .cb-copy.is-copied {
+    color: oklch(0.94 0.015 80);
+    border-color: oklch(0.74 0.18 55);
+  }
+  @media (hover: none) {
+    .cb-copy { opacity: 1; }
+  }
+
+  .cb {
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 14px;
+    color: oklch(0.94 0.015 80);
+    background: oklch(0.17 0.013 220 / 0.5);
+    border: 1px solid oklch(0.22 0.014 220 / 0.7);
+    border-radius: 6px;
+    padding: 18px 22px;
+    overflow-x: auto;
+    line-height: 1.55;
+  }
+  .cb-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 14px;
+    align-items: baseline;
+    white-space: nowrap;
+  }
+  .cb-glyph {
+    color: oklch(0.74 0.18 55 / 0.85);
+    user-select: none;
+    font-weight: 500;
+  }
+  .cb-cmd {
+    color: oklch(0.94 0.015 80);
+  }
+</style>
