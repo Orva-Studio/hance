@@ -47,3 +47,4 @@ docs/superpowers/
 
 # Electrobun build output
 packages/desktop/build/
+packages/desktop/artifacts/
