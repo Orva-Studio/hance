@@ -61,3 +61,18 @@ bun run --cwd packages/desktop build      # produce the packaged app
 ```
 
 `dev`/`dev:watch` always run `build:ui` first (from repo root) so the desktop shell serves a fresh `packages/ui/dist`.
+
+## Code signing & notarization
+
+The app is currently distributed ad-hoc-signed and unnotarized. When launching a downloaded .app, macOS Gatekeeper will show a warning dialog. On macOS Sequoia and later, right-click "Open" no longer bypasses this. Users need to go to System Settings > Privacy & Security, scroll to the bottom, and click "Open Anyway" after the first blocked launch attempt (or run `xattr -d com.apple.quarantine /path/to/Hance.app`).
+
+To enable automatic code signing and notarization, set the following environment variables before building:
+
+**Developer ID:** Required for codesigning.
+- ELECTROBUN_DEVELOPER_ID (e.g. "Developer ID Application: Your Name (TEAMID)")
+
+**Notarization credentials:** Required for notarization (choose one set).
+- Set A (Apple ID): ELECTROBUN_APPLEID, ELECTROBUN_APPLEIDPASS, ELECTROBUN_TEAMID
+- Set B (API key): ELECTROBUN_APPLEAPIISSUER, ELECTROBUN_APPLEAPIKEY, ELECTROBUN_APPLEAPIKEYPATH
+
+Once the env vars are set, run bun run build or electrobun build --env=stable and the build will automatically sign and notarize the app with no additional configuration needed.
