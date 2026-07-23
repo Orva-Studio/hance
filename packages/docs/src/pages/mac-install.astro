@@ -28,18 +28,15 @@ const UNQUARANTINE_CMD = 'xattr -d com.apple.quarantine /Applications/Hance.app'
             <h2 class="font-sans text-xl font-medium text-ink">Download for your Mac</h2>
           </div>
           <p class="mt-2 text-ink-muted leading-relaxed">
-            Pick the version that matches your Mac. Most Macs sold since late 2020 are Apple silicon.
+            Apple silicon only for now (Intel build coming soon).
           </p>
           <div class="mt-4 flex flex-wrap gap-3">
             <a href={`${REPO}/releases/latest/download/hance-macos-arm64.dmg`} class="inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2 font-mono text-[12px] uppercase tracking-wide text-surface-1 transition-transform duration-300 ease-out-quart hover:-translate-y-px">
               Apple Silicon (M1/M2/M3/M4)
             </a>
-            <a href={`${REPO}/releases/latest/download/hance-macos-x64.dmg`} class="inline-flex items-center gap-2 rounded-full border border-surface-3/70 px-5 py-2 font-mono text-[12px] uppercase tracking-wide text-ink transition-transform duration-300 ease-out-quart hover:-translate-y-px">
-              Intel
-            </a>
           </div>
           <p class="mt-2 text-[13px] text-ink-dim">
-            Not sure which? Apple menu → About This Mac → Chip/Processor. "Apple M-something" means Apple silicon.
+            Check yours: Apple menu → About This Mac → Chip/Processor. "Apple M-something" means Apple silicon.
           </p>
         </li>
 
