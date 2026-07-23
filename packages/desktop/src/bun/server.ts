@@ -17,13 +17,17 @@ async function pickFile(): Promise<string | null> {
   return paths.find(p => p.length > 0) ?? null;
 }
 
-// Electrobun bundles src/bun/*.ts and runs the bundle from inside the built
-// .app (Contents/Resources/app/bun), so neither process.cwd() nor
-// import.meta.dir points at packages/desktop directly. The bundle does live
-// under the repo, though, so walk up from both candidates until a sibling
-// packages/ui/dist appears, and pass it through explicitly. Without this the
-// ui server silently falls back to a stale ~/.hance/ui copy (or 404s).
+// electrobun.config.ts copies packages/ui/dist into the packaged .app as a
+// sibling of the bun bundle (Contents/Resources/app/ui-dist, next to
+// Contents/Resources/app/bun where this file runs from). A packaged app on
+// an end-user machine has no repo checkout to fall back to, so this must be
+// checked first; without it the ui server has nothing to serve and 404s.
 function resolveUiDistDir(): string | undefined {
+  const bundled = join(import.meta.dir, "..", "ui-dist");
+  if (existsSync(bundled)) return bundled;
+
+  // Dev mode: the bundle still lives under the repo checkout, so walk up
+  // from both candidates until a sibling packages/ui/dist appears.
   for (const start of [import.meta.dir, process.cwd()]) {
     let dir = start;
     while (true) {

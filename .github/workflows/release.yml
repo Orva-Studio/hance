@@ -74,6 +74,9 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
+      # Note: packages/desktop (macOS native app) is built and released manually out-of-band.
+      # CI code signing support is wired up in packages/desktop/electrobun.config.ts, pending ELECTROBUN_DEVELOPER_ID and notarization secrets.
+
       - name: Build
         env:
           HANCE_VERSION: ${{ steps.v.outputs.version }}
