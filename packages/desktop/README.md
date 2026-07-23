@@ -60,7 +60,7 @@ bun run --cwd packages/desktop dev:watch  # same, with watch mode
 bun run --cwd packages/desktop build      # produce the packaged app
 ```
 
-`dev`/`dev:watch` always run `build:ui` first (from repo root) so the desktop shell serves a fresh `packages/ui/dist`.
+`dev`/`dev:watch`/`build` all run `build:ui` first (from repo root) so the desktop shell serves a fresh `packages/ui/dist`.
 
 ## Code signing & notarization
 

@@ -8,7 +8,7 @@
     "dev": "bun run clean:webkit-cache && bun run --cwd ../.. build:ui && electrobun dev",
     "dev:watch": "bun run clean:webkit-cache && bun run --cwd ../.. build:ui && electrobun dev --watch",
     "start": "electrobun dev",
-    "build": "electrobun build"
+    "build": "bun run --cwd ../.. build:ui && electrobun build"
   },
   "dependencies": {
     "@hance/ui": "workspace:*",
