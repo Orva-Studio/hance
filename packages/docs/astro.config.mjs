@@ -67,6 +67,7 @@ export default defineConfig({
           ],
         },
         { label: "Browser UI", slug: "docs/browser-ui" },
+        { label: "Desktop App", slug: "docs/desktop-app" },
         { label: "Free vs Pro", slug: "docs/free-vs-pro" },
         {
           label: "CLI Reference",

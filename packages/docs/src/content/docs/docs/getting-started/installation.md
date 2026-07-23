@@ -70,3 +70,7 @@ Windows is not currently supported; hance ships binaries for macOS (arm64/x64) a
 ```bash
 hance --version
 ```
+
+## Desktop app (macOS, beta)
+
+If you're on macOS, you can also run hance as a native [Desktop App](/docs/desktop-app/) instead of the CLI plus browser editor. It's currently in beta; download it from the [GitHub Releases page](https://github.com/Orva-Studio/hance/releases).

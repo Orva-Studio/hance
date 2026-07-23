@@ -18,6 +18,8 @@ hance ui --no-open            # start the server without opening a browser
 
 Using an AI agent? The [`/hance ui`](/docs/agent/overview/) skill command opens the editor too: `/hance ui my-video.mp4`.
 
+On macOS, this same editor is also available as a native [Desktop App](/docs/desktop-app/) (currently in beta), with a native file picker, application menu, and a recents screen.
+
 ## Upload & preview
 
 Drag and drop a video or image into the editor, or pass a file path when launching. The preview updates in real-time as you adjust parameters.
