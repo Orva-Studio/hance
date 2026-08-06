@@ -151,12 +151,14 @@ export function useLooks() {
     }
   }, []);
 
-  const importLook = useCallback(async (file: File) => {
+  const importLook = useCallback(async (file: File): Promise<{ name: string; overwritten: boolean }> => {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      await fetchOk("/api/look/import", { method: "POST", body: formData });
+      const res = await fetchOk("/api/look/import", { method: "POST", body: formData });
+      const { name, overwritten } = await res.json();
       refreshLooks();
+      return { name, overwritten: Boolean(overwritten) };
     } catch (err) {
       setError(`Import failed: ${(err as Error).message}`);
       throw err;

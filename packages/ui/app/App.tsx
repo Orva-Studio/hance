@@ -169,6 +169,7 @@ export function App() {
   } = useLooks();
   const [schemaError, setSchemaError] = useState<string | null>(null);
   const [openError, setOpenError] = useState<string | null>(null);
+  const [importNotice, setImportNotice] = useState<string | null>(null);
 
   // A stale open error would otherwise linger in the editor's toast stack
   // after a later file loads successfully.
@@ -337,6 +338,19 @@ export function App() {
       setSchemaError(`Failed to load look "${name}": ${(err as Error).message}`);
     }
   }, [loadLook, clearLooksError]);
+
+  // Importing selects the look it just wrote, so a successful import is
+  // visible on the canvas rather than being a no-op the user has to hunt for
+  // in the grid — and says so when it replaced a look of the same name.
+  const handleImportLook = useCallback(async (file: File) => {
+    const { name, overwritten } = await importLook(file);
+    setImportNotice(
+      overwritten
+        ? `Replaced existing look "${name}" with the imported one`
+        : `Imported look "${name}"`,
+    );
+    await handleLookSelect(name);
+  }, [importLook, handleLookSelect]);
 
   // Reopening a recent file that had a look applied: open the media, then
   // reapply the same look (the recents entry only remembers its name, not a
@@ -519,7 +533,7 @@ export function App() {
             onCreateLook={handleCreateLook}
             onDeleteLook={deleteLook}
             onRenameLook={renameLook}
-            onImportLook={importLook}
+            onImportLook={handleImportLook}
             onGetLookInfo={async (name) => await fetchJson(`/api/look/info?name=${encodeURIComponent(name)}`)}
           />
         </div>
@@ -718,8 +732,14 @@ export function App() {
         </>
       )}
 
-      {(schemaError || looksError || openError) && (
+      {(schemaError || looksError || openError || importNotice) && (
         <div className="absolute left-1/2 -translate-x-1/2 bottom-8 flex flex-col gap-2 z-40">
+          {importNotice && (
+            <div className="flex items-center gap-3 bg-zinc-900 border border-zinc-600 px-4 py-2 rounded-md text-xs text-zinc-300">
+              <span>{importNotice}</span>
+              <button onClick={() => setImportNotice(null)} className="text-zinc-400 hover:text-zinc-200">×</button>
+            </div>
+          )}
           {openError && (
             <div className="flex items-center gap-3 bg-zinc-900 border border-danger/50 px-4 py-2 rounded-md text-xs text-danger">
               <span>{openError}</span>

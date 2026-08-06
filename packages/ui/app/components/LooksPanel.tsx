@@ -17,7 +17,7 @@ interface Props {
   onCreateLook: (name: string, metadata: { description: string; keywords: string[]; characteristics: string[] }) => void;
   onDeleteLook: (name: string) => void;
   onRenameLook: (oldName: string, newName: string) => void;
-  onImportLook: (file: File) => void;
+  onImportLook: (file: File) => Promise<void>;
   onGetLookInfo: (name: string) => Promise<{ name: string; description?: string; keywords?: string[]; characteristics?: string[]; params?: Record<string, string | number | boolean> }>;
 }
 
@@ -45,7 +45,9 @@ export function LooksPanel({
   function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
-      onImportLook(file);
+      // Failures already surface as a toast via useLooks' error state; catch
+      // here only so the rejection isn't reported as unhandled.
+      void onImportLook(file).catch(() => {});
       e.target.value = "";
     }
   }
