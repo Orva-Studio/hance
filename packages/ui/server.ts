@@ -337,10 +337,16 @@ export function createServer(port: number, hostname?: string, distDir?: string, 
         }
         const dir = userPresetsDir();
         if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+        // The look is stored under its internal `name`, not the filename, so
+        // importing clay_new.hlook whose name is "clay" replaces an existing
+        // "clay". Report that back — silently overwriting looks identical to
+        // the import doing nothing at all.
         const name = (parsed.name as string) || file.name.replace(".hlook", "");
-        writeFileSync(join(dir, `${name}.hlook`), JSON.stringify(parsed, null, 2));
+        const target = join(dir, `${name}.hlook`);
+        const overwritten = existsSync(target);
+        writeFileSync(target, JSON.stringify(parsed, null, 2));
         safeRebuildIndex();
-        return Response.json({ ok: true, name });
+        return Response.json({ ok: true, name, overwritten });
       }
 
       if (url.pathname === "/api/export" && req.method === "POST") {
