@@ -20,6 +20,9 @@ export default {
     // app's local server has nothing to serve and 404s on every request.
     copy: {
       "../ui/dist": "ui-dist",
+      // The Rust GPU renderer every export shells out to. Without it the
+      // packaged app fails on the first export with "GPU sidecar not found".
+      "../wgpu/target/release/hance-gpu": "hance-gpu",
     },
     mac: {
       icons: "icon.iconset",
