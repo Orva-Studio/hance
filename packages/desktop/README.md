@@ -62,6 +62,41 @@ bun run --cwd packages/desktop build      # produce the packaged app
 
 `dev`/`dev:watch`/`build` all run `build:ui` first (from repo root) so the desktop shell serves a fresh `packages/ui/dist`.
 
+## Releasing
+
+The desktop app is **not** built by CI.
+`.github/workflows/release.yml` builds and publishes the CLI only; the `.app` and its `.dmg` are built and uploaded by hand, out of band from the CLI's tag-triggered release.
+
+The download button on the site points at `${REPO}/releases/latest/download/hance-macos-arm64.dmg` (see `packages/docs/src/pages/mac-install.astro`).
+It always resolves to whatever `.dmg` is attached to the newest published release, so replacing that asset changes what users get with no site rebuild.
+
+```
+cd packages/desktop
+
+# 1. Build the stable-channel bundle. Note --env=stable: `bun run build`
+#    defaults to the dev channel and produces Hance-dev.app, which is not
+#    what you want to ship.
+bun run --cwd ../.. build:wgpu && bun run --cwd ../.. build:ui
+bunx electrobun build --env=stable
+
+# 2. Package it.
+hdiutil create -volname Hance -srcfolder build/stable-macos-arm64/Hance.app \
+  -ov -format UDZO hance-macos-arm64.dmg
+
+# 3. Attach it to the release the site points at. --clobber replaces the
+#    asset in place, so this immediately changes the live download.
+gh release upload v0.9.1 hance-macos-arm64.dmg --clobber
+```
+
+To ship under a new version instead of replacing the current asset, bump `version` in `electrobun.config.ts` and the `package.json` files, tag, and upload to the new release.
+The CLI workflow fires on the tag independently.
+
+Before uploading, launch the built `.app` and confirm an export completes.
+Two shipped builds have been broken by a missing bundled asset (first `ui-dist`, then the `hance-gpu` sidecar), and neither failure is visible until the first export.
+The `build` script chains `build:wgpu` and `build:ui` so both are fresh, but that only helps if you run it rather than reusing a stale `build/` directory.
+
+Runtime logs for a packaged app go to `~/Library/Logs/Hance/hance.log` - a Finder-launched app has no terminal, so that file is the only record of a crash.
+
 ## Code signing & notarization
 
 The app is currently distributed ad-hoc-signed and unnotarized. When launching a downloaded .app, macOS Gatekeeper will show a warning dialog. On macOS Sequoia and later, right-click "Open" no longer bypasses this. Users need to go to System Settings > Privacy & Security, scroll to the bottom, and click "Open Anyway" after the first blocked launch attempt (or run `xattr -d com.apple.quarantine /path/to/Hance.app`).
