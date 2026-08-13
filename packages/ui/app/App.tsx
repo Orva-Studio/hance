@@ -171,10 +171,14 @@ export function App() {
   const [openError, setOpenError] = useState<string | null>(null);
   const [importNotice, setImportNotice] = useState<string | null>(null);
 
-  // A stale open error would otherwise linger in the editor's toast stack
-  // after a later file loads successfully.
+  // A stale open error, or an import notice about a look the user has since
+  // moved on from, would otherwise linger in the editor's toast stack after a
+  // later file loads successfully.
   useEffect(() => {
-    if (objectUrl) setOpenError(null);
+    if (objectUrl) {
+      setOpenError(null);
+      setImportNotice(null);
+    }
   }, [objectUrl]);
 
   // History tracks {params, activeLook}. Only these are undoable — file
@@ -343,6 +347,9 @@ export function App() {
   // visible on the canvas rather than being a no-op the user has to hunt for
   // in the grid — and says so when it replaced a look of the same name.
   const handleImportLook = useCallback(async (file: File) => {
+    // Drop the previous import's notice up front, so a failing second import
+    // can't leave the first one's success message standing next to its error.
+    setImportNotice(null);
     const { name, overwritten } = await importLook(file);
     setImportNotice(
       overwritten

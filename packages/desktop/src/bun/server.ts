@@ -45,10 +45,24 @@ function resolveUiDistDir(): string | undefined {
 // electrobun.config.ts. @hance/gpu otherwise resolves it relative to a repo
 // checkout, which a packaged app on an end-user machine does not have — so
 // point it at the bundled copy via the HANCE_GPU override it already honours.
+// electrobun's build only warns and continues when a `copy` source is missing,
+// so a bundle built without `build:wgpu` ships with no sidecar at all and the
+// failure surfaces at the first export as a path that isn't there. Say so at
+// startup, where the log file records it, rather than at export time.
 function useBundledGpuSidecar(): void {
   if (process.env.HANCE_GPU) return;
   const bundled = join(import.meta.dir, "..", "hance-gpu");
-  if (existsSync(bundled)) process.env.HANCE_GPU = bundled;
+  if (existsSync(bundled)) {
+    process.env.HANCE_GPU = bundled;
+    return;
+  }
+  // Dev runs from the checkout, where @hance/gpu's own repo-relative resolution
+  // is correct; only a packaged app has no checkout to fall back to.
+  if (!existsSync(join(import.meta.dir, "..", "ui-dist"))) return;
+  console.error(
+    `No bundled GPU sidecar at ${bundled} — this app was packaged without ` +
+      `build:wgpu and every export will fail. Rebuild with 'bun run build'.`,
+  );
 }
 
 // Starts the @hance/ui Bun server in-process on an ephemeral port and returns

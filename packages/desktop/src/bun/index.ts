@@ -1,5 +1,5 @@
 import Electrobun, { BrowserWindow, ApplicationMenu } from "electrobun/bun";
-import { appendFileSync, mkdirSync } from "node:fs";
+import { appendFileSync, mkdirSync, renameSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { buildApplicationMenu } from "./menu";
@@ -9,36 +9,60 @@ import { startUiServer } from "./server";
 // and every crash goes to a void, so "the app just closed" is unreportable and
 // undebuggable. Mirror console output to a file under ~/Library/Logs/Hance and
 // record the uncaught failures that take the process (and the window) down.
-// ponytail: appends forever, no rotation — add one if a session ever writes
-// enough to matter, which per-export logging currently does not.
+const LOG_MAX_BYTES = 5 * 1024 * 1024;
+
+// One generation of history: hance.log.1 is the previous session's tail, which
+// is usually where the crash that made someone go looking actually happened.
+function rotateIfLarge(logPath: string): void {
+  try {
+    if (statSync(logPath).size < LOG_MAX_BYTES) return;
+    renameSync(logPath, `${logPath}.1`);
+  } catch {} // Missing file (first run) or an unrenamable one: keep appending.
+}
+
 function startLogging(): void {
   const logPath = join(homedir(), "Library", "Logs", "Hance", "hance.log");
+  let fileLogging = true;
   try {
     mkdirSync(join(homedir(), "Library", "Logs", "Hance"), { recursive: true });
   } catch {
-    return; // No log dir means no logging; never take the app down over it.
+    // No log dir means no file logging; never take the app down over it. The
+    // crash handlers below still matter — they are what turns "the app just
+    // closed" into a message on stderr for a terminal-launched run.
+    fileLogging = false;
   }
 
-  for (const level of ["log", "warn", "error"] as const) {
-    const original = console[level].bind(console);
-    console[level] = (...args: unknown[]) => {
-      original(...args);
-      const text = args.map(a => (typeof a === "string" ? a : Bun.inspect(a))).join(" ");
-      try {
-        appendFileSync(logPath, `${new Date().toISOString()} [${level}] ${text}\n`);
-      } catch {}
-    };
+  if (fileLogging) {
+    rotateIfLarge(logPath);
+    for (const level of ["log", "warn", "error"] as const) {
+      const original = console[level].bind(console);
+      console[level] = (...args: unknown[]) => {
+        original(...args);
+        if (!fileLogging) return;
+        const text = args.map(a => (typeof a === "string" ? a : Bun.inspect(a))).join(" ");
+        try {
+          appendFileSync(logPath, `${new Date().toISOString()} [${level}] ${text}\n`);
+        } catch {
+          // A log file that has become unwritable (ownership, full disk) would
+          // otherwise cost a failed syscall on every console call for the rest
+          // of the session. Give up on the file, keep the console.
+          fileLogging = false;
+        }
+      };
+    }
   }
 
-  // Log, then still die: swallowing these would leave a half-dead app whose
-  // window is up but whose server is gone, which is worse than closing.
+  // Log, then still die: swallowing an uncaught exception would leave a
+  // half-dead app whose window is up but whose server is gone, which is worse
+  // than closing.
   process.on("uncaughtException", err => {
     console.error("uncaughtException:", err);
     process.exit(1);
   });
+  // A rejection is not the same: one missed `await` anywhere in the UI server
+  // should not close the user's window mid-export. Record it and stay up.
   process.on("unhandledRejection", reason => {
     console.error("unhandledRejection:", reason);
-    process.exit(1);
   });
 
   console.log(`Hance starting (pid ${process.pid}, bun ${Bun.version})`);
