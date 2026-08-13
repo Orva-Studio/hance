@@ -2,7 +2,7 @@ import { describe, expect, test, afterAll } from "bun:test";
 import { createServer, setInitialFile } from "../server";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { writeFileSync, unlinkSync } from "node:fs";
+import { writeFileSync, unlinkSync, existsSync } from "node:fs";
 
 describe("API server", () => {
   const server = createServer(0);
@@ -58,6 +58,67 @@ describe("API server", () => {
       expect(data["exposure"]).toBe(0.5);
     } finally {
       unlinkSync(file);
+    }
+  });
+
+  async function importLook(name: string, filename = "probe.hlook"): Promise<Response> {
+    const form = new FormData();
+    form.append("file", new File([JSON.stringify({ name, params: {} })], filename));
+    return await fetch(`${base}/api/look/import`, { method: "POST", body: form });
+  }
+
+  test("POST /api/look/import reports overwritten:false for a new look", async () => {
+    const { userPresetsDir } = await import("@hance/core");
+    const name = `__import_probe_${Date.now()}`;
+    const file = join(userPresetsDir(), `${name}.hlook`);
+    try {
+      const data = await (await importLook(name)).json();
+      expect(data.name).toBe(name);
+      expect(data.overwritten).toBe(false);
+    } finally {
+      try { unlinkSync(file); } catch {}
+    }
+  });
+
+  test("POST /api/look/import reports overwritten:true when it replaces a look", async () => {
+    const { userPresetsDir } = await import("@hance/core");
+    const name = `__import_probe_dup_${Date.now()}`;
+    const file = join(userPresetsDir(), `${name}.hlook`);
+    try {
+      await importLook(name);
+      const data = await (await importLook(name)).json();
+      expect(data.overwritten).toBe(true);
+    } finally {
+      try { unlinkSync(file); } catch {}
+    }
+  });
+
+  test("POST /api/look/import stores under the look's name, not the filename", async () => {
+    // The overwrite report is only meaningful if it names the file actually
+    // written: importing clay_new.hlook whose internal name is "clay" replaces
+    // the existing "clay".
+    const { userPresetsDir } = await import("@hance/core");
+    const name = `__import_probe_named_${Date.now()}`;
+    const file = join(userPresetsDir(), `${name}.hlook`);
+    try {
+      const data = await (await importLook(name, "something_else.hlook")).json();
+      expect(data.name).toBe(name);
+      expect(existsSync(file)).toBe(true);
+    } finally {
+      try { unlinkSync(file); } catch {}
+    }
+  });
+
+  test("POST /api/look/import rejects a name that escapes the presets dir", async () => {
+    // `name` is read out of the uploaded file, so it is attacker-chosen.
+    const { userPresetsDir } = await import("@hance/core");
+    const escaped = join(userPresetsDir(), "..", "__traversal_probe.hlook");
+    try {
+      const res = await importLook("../__traversal_probe");
+      expect(res.status).toBe(400);
+      expect(existsSync(escaped)).toBe(false);
+    } finally {
+      try { unlinkSync(escaped); } catch {}
     }
   });
 

@@ -342,6 +342,12 @@ export function createServer(port: number, hostname?: string, distDir?: string, 
         // "clay". Report that back — silently overwriting looks identical to
         // the import doing nothing at all.
         const name = (parsed.name as string) || file.name.replace(".hlook", "");
+        // `name` comes from inside the uploaded file, so it is attacker-chosen:
+        // a look named "../../evil" would write outside the presets dir. Only a
+        // single plain path segment names a look.
+        if (typeof name !== "string" || name !== basename(name) || name === "." || name === "..") {
+          return new Response("Invalid look name", { status: 400 });
+        }
         const target = join(dir, `${name}.hlook`);
         const overwritten = existsSync(target);
         writeFileSync(target, JSON.stringify(parsed, null, 2));
