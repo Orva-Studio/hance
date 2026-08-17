@@ -99,10 +99,30 @@ export function useExport(file: File | null, sourcePath: string | null, params: 
 
   const startExport = useCallback(async (opts: ExportOpts) => {
     if (!file) return;
+    // A second export can be started while one is in flight (the File → Export
+    // menu item ignores export state). Stop the previous render rather than
+    // leaving two pipelines competing for the GPU and for the same output path
+    // in the temp dir, where one run's cancel would delete the other's file.
+    abortRef.current?.abort();
+
     const controller = new AbortController();
     abortRef.current = controller;
+    // Only the run that still owns abortRef may report progress or download.
+    // Without this a superseded run's late `done` frame would save its file and
+    // flip the bar to "Exported ✓" over the top of the run that replaced it.
+    const owns = () => abortRef.current === controller;
+    const setIfCurrent: typeof setExportProgress = (next) => {
+      if (owns()) setExportProgress(next);
+    };
+    const deps: ExportDeps = {
+      ...defaultDeps,
+      download: (url, filename) => {
+        if (owns()) defaultDeps.download(url, filename);
+      },
+    };
+
     try {
-      await runExport(file, sourcePath, params, opts, setExportProgress, defaultDeps, controller.signal);
+      await runExport(file, sourcePath, params, opts, setIfCurrent, deps, controller.signal);
     } finally {
       if (abortRef.current === controller) abortRef.current = null;
     }
@@ -113,6 +133,9 @@ export function useExport(file: File | null, sourcePath: string | null, params: 
   // actual work, not just the progress display.
   const cancelExport = useCallback(() => {
     abortRef.current?.abort();
+    // Disowning the run keeps its in-flight callbacks from writing state back
+    // over the idle bar or downloading a file the user just cancelled.
+    abortRef.current = null;
     setExportProgress(EXPORT_IDLE);
   }, []);
 

@@ -108,22 +108,44 @@ export class ExportCancelledError extends Error {
   }
 }
 
-// The pipeline runs as `sh -c 'ffmpeg | hance-gpu | ffmpeg'`, so killing the
-// shell alone orphans all three children and the render keeps burning GPU with
-// nothing reading its output. The pipeline members are the shell's direct
-// children, so pkill -P reaps them; the shell is killed after, once its
-// children are gone.
-export function killPipeline(pid: number, kill: () => void): void {
+// Direct children of the given pid, or [] if pgrep is unavailable.
+function childPids(pid: number): number[] {
   try {
-    Bun.spawnSync(["pkill", "-P", String(pid)]);
+    const out = Bun.spawnSync(["pgrep", "-P", String(pid)]);
+    return new TextDecoder().decode(out.stdout)
+      .split("\n")
+      .map(line => Number(line.trim()))
+      .filter(n => Number.isInteger(n) && n > 0);
   } catch {
-    // pkill missing or nothing to reap — still kill the shell below.
+    return [];
   }
+}
+
+// The pipeline runs as `sh -c 'ffmpeg | hance-gpu | ffmpeg'`, so killing the
+// shell alone orphans all three children: they are reparented to init and keep
+// rendering into a pipe nobody reads, with the GPU still pegged. The members
+// are the shell's direct children, so they are signalled by pid first, then the
+// shell. macOS has no setsid, so the pipeline cannot be put in its own process
+// group to be killed as one — hence the sweep, run again after the shell dies
+// to catch any member forked during the first pass.
+export function killPipeline(pid: number, kill: () => void): void {
+  const signalChildren = () => {
+    for (const child of childPids(pid)) {
+      try {
+        process.kill(child, "SIGKILL");
+      } catch {
+        // already exited, or not ours to signal
+      }
+    }
+  };
+
+  signalChildren();
   try {
     kill();
   } catch {
     // already exited
   }
+  signalChildren();
 }
 
 export async function runGpuExport(
@@ -195,6 +217,11 @@ export async function runGpuExport(
 
   const onAbort = () => killPipeline(proc.pid, () => proc.kill());
   signal?.addEventListener("abort", onAbort, { once: true });
+  // An abort raised during the awaits above (the init-JSON write, the encoder
+  // probe, which shells out to ffmpeg) fires before this listener exists, and
+  // AbortSignal does not replay it for a late subscriber. Without this re-check
+  // the pipeline would render to completion and only then notice the cancel.
+  if (signal?.aborted) onAbort();
 
   let stopPolling = false;
   const pollProgress = (async () => {
@@ -222,7 +249,10 @@ export async function runGpuExport(
     await pollProgress;
     // A cancel kills the pipeline, so it always exits non-zero. Report that as
     // a cancel rather than a failure, and bin the half-written output file.
-    if (signal?.aborted) {
+    // A zero exit means the encode had already finished before the cancel
+    // landed, so the file on disk is complete — keep it and report success
+    // rather than deleting work that is already done.
+    if (signal?.aborted && exitCode !== 0) {
       try { await unlink(output); } catch {}
       throw new ExportCancelledError();
     }

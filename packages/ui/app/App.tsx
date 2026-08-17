@@ -318,6 +318,10 @@ export function App() {
   // the next upload) and resets grading state to defaults, so a second file
   // opened via Home doesn't inherit the first file's effect params.
   const handleHome = useCallback(() => {
+    // Going Home hides the Cancel button, so an export left running here could
+    // never be stopped — and would download the previous clip minutes later,
+    // onto the landing screen or over whatever file was opened next.
+    cancelExport();
     proxy.reset();
     reset();
     clearLook();
@@ -327,7 +331,7 @@ export function App() {
     }
     setParams(disableAll);
     historyRef.current.replace({ params: disableAll, activeLook: null });
-  }, [proxy, reset, clearLook, schema]);
+  }, [cancelExport, proxy, reset, clearLook, schema]);
 
   const handleLookSelect = useCallback(async (name: string) => {
     try {
