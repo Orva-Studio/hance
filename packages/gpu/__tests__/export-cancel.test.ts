@@ -13,9 +13,32 @@ test("refuses to start when the signal is already aborted", async () => {
   ).rejects.toBeInstanceOf(ExportCancelledError);
 });
 
+function isAlive(pid: number): boolean {
+  try {
+    // Signal 0 tests for existence without touching the process.
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function childrenOf(pid: number): number[] {
+  const out = Bun.spawnSync(["pgrep", "-P", String(pid)]);
+  return new TextDecoder().decode(out.stdout)
+    .split("\n")
+    .map(l => Number(l.trim()))
+    .filter(n => Number.isInteger(n) && n > 0);
+}
+
 // Killing only the `sh` that owns the pipeline leaves ffmpeg and the GPU
 // sidecar orphaned and still rendering, so a cancel has to reap the shell's
 // children too. Stand in for the real pipeline with sleeps.
+//
+// The children must be identified BEFORE the kill and then checked by pid:
+// querying `pgrep -P <shell>` afterwards returns nothing either way, because a
+// dead shell has no children to report — orphans get reparented to init rather
+// than dying. That weaker check passes even with the reaping removed.
 test("killPipeline reaps the pipeline's child processes, not just the shell", async () => {
   const proc = Bun.spawn(["sh", "-c", "sleep 30 | sleep 30 | sleep 30"], {
     stdout: "ignore",
@@ -24,13 +47,14 @@ test("killPipeline reaps the pipeline's child processes, not just the shell", as
 
   // Give the shell a moment to actually fork its children.
   await Bun.sleep(300);
-  const childrenBefore = Bun.spawnSync(["pgrep", "-P", String(proc.pid)]);
-  expect(new TextDecoder().decode(childrenBefore.stdout).trim().split("\n").filter(Boolean).length).toBeGreaterThan(0);
+  const children = childrenOf(proc.pid);
+  expect(children.length).toBeGreaterThan(0);
+  expect(children.every(isAlive)).toBe(true);
 
   killPipeline(proc.pid, () => proc.kill());
   await proc.exited;
   await Bun.sleep(300);
 
-  const childrenAfter = Bun.spawnSync(["pgrep", "-P", String(proc.pid)]);
-  expect(new TextDecoder().decode(childrenAfter.stdout).trim()).toBe("");
+  const survivors = children.filter(isAlive);
+  expect(survivors).toEqual([]);
 });

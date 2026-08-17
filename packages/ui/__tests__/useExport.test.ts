@@ -57,6 +57,32 @@ test("returns to idle, not error, when the export is cancelled", async () => {
   expect(sink.last).toEqual(EXPORT_IDLE);
 });
 
+// The dangerous window is after the request is accepted, while the SSE stream
+// is open: a `done` frame arriving after the user cancelled must not save the
+// file they just cancelled, nor flip the bar back to "Exported ✓".
+test("ignores a done frame that lands after the export was cancelled", async () => {
+  const controller = new AbortController();
+  const downloads: string[] = [];
+  const sink = collect();
+  const deps: ExportDeps = {
+    fetch: (async () => new Response("")) as unknown as typeof fetch,
+    consumeSSE: (async (_res, handlers) => {
+      // Cancel arrives mid-stream, then the server's last frame races in.
+      controller.abort();
+      if (controller.signal.aborted) {
+        throw new DOMException("The operation was aborted.", "AbortError");
+      }
+      handlers.onDone?.({ downloadUrl: "/api/download?path=out.mp4" });
+    }) as ExportDeps["consumeSSE"],
+    download: (url) => downloads.push(url),
+  };
+
+  await runExport(new File([], "clip.mov"), null, params, opts, sink.set, deps, controller.signal);
+
+  expect(downloads).toEqual([]);
+  expect(sink.last).toEqual(EXPORT_IDLE);
+});
+
 test("still reports a genuine failure as an error", async () => {
   const sink = collect();
   const deps: ExportDeps = {
