@@ -136,7 +136,7 @@ export function App() {
   }, [canvasTransform.setZoom, canvasTransform.setPanMode]);
   const canvasRect = useCanvasRect(canvas);
   const hoverParamsRef = useRef<PreviewParams | null>(null);
-  const { exportProgress, startExport, resetExport } = useExport(file, sourcePath, params);
+  const { exportProgress, startExport, cancelExport, resetExport } = useExport(file, sourcePath, params);
 
   function chooseReferenceImage() {
     const input = document.createElement("input");
@@ -525,6 +525,7 @@ export function App() {
         onHome={handleHome}
         exportProgress={exportProgress}
         onExportDone={resetExport}
+        onCancelExport={cancelExport}
       />
 
       <div className="flex-1 flex overflow-hidden">

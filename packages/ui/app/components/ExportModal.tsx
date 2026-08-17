@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { isDesktop } from "../lib/isDesktop";
 
 export type Codec = "H.264" | "H.265" | "ProRes 422";
 export type Quality = "Visually Lossless" | "High" | "Medium" | "Low";
@@ -105,7 +106,11 @@ export function ExportModal({ defaultBasename, isPro, onCancel, onExport }: Prop
               onChange={e => setOutputPath(e.target.value)}
               className="w-full bg-zinc-900 border border-accent text-zinc-200 px-2 py-1.5 rounded-sm"
             />
-            <div className="text-zinc-500 text-[11px] mt-1">Saved to your browser's Downloads folder.</div>
+            <div className="text-zinc-500 text-[11px] mt-1">
+              {isDesktop()
+                ? "Saved to your Downloads folder when the export finishes."
+                : "Saved to your browser's Downloads folder."}
+            </div>
           </div>
         </div>
 
