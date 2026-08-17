@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { consumeSSE } from "../lib/sse";
 import type { PreviewParams } from "../gpu/renderer";
 
@@ -52,6 +52,7 @@ export async function runExport(
   opts: ExportOpts,
   setProgress: (next: ExportProgress | ((prev: ExportProgress) => ExportProgress)) => void,
   deps: ExportDeps = defaultDeps,
+  signal?: AbortSignal,
 ): Promise<void> {
   setProgress({ state: "uploading", progress: 0, downloadUrl: null, error: null });
   const formData = new FormData();
@@ -67,7 +68,7 @@ export async function runExport(
   formData.append("crf", String(opts.crf));
   formData.append("outputName", opts.outputPath);
   try {
-    const res = await deps.fetch("/api/export", { method: "POST", body: formData });
+    const res = await deps.fetch("/api/export", { method: "POST", body: formData, signal });
     setProgress(p => ({ ...p, state: "rendering" }));
     await deps.consumeSSE(res, {
       onProgress: (p) => setProgress(prev => ({ ...prev, progress: p })),
@@ -79,19 +80,43 @@ export async function runExport(
       onError: (msg) => setProgress({ state: "error", progress: 0, downloadUrl: null, error: msg }),
     });
   } catch (err) {
+    // A cancel aborts the in-flight fetch, which surfaces here as an
+    // AbortError. That is the user getting what they asked for, not a failure,
+    // so drop straight back to idle instead of showing an error.
+    if (signal?.aborted) {
+      setProgress(EXPORT_IDLE);
+      return;
+    }
     setProgress({ state: "error", progress: 0, downloadUrl: null, error: (err as Error).message });
   }
 }
 
 export function useExport(file: File | null, sourcePath: string | null, params: PreviewParams) {
   const [exportProgress, setExportProgress] = useState<ExportProgress>(EXPORT_IDLE);
+  // Held across renders so the Cancel button can abort the render that is
+  // actually in flight, not one from a superseded render pass.
+  const abortRef = useRef<AbortController | null>(null);
 
   const startExport = useCallback(async (opts: ExportOpts) => {
     if (!file) return;
-    await runExport(file, sourcePath, params, opts, setExportProgress);
+    const controller = new AbortController();
+    abortRef.current = controller;
+    try {
+      await runExport(file, sourcePath, params, opts, setExportProgress, defaultDeps, controller.signal);
+    } finally {
+      if (abortRef.current === controller) abortRef.current = null;
+    }
   }, [file, sourcePath, params]);
+
+  // Aborting the fetch drops the SSE connection, which the server sees as a
+  // request abort and uses to kill the render pipeline — so this stops the
+  // actual work, not just the progress display.
+  const cancelExport = useCallback(() => {
+    abortRef.current?.abort();
+    setExportProgress(EXPORT_IDLE);
+  }, []);
 
   const resetExport = useCallback(() => setExportProgress(EXPORT_IDLE), []);
 
-  return { exportProgress, startExport, resetExport };
+  return { exportProgress, startExport, cancelExport, resetExport };
 }

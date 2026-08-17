@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import type { Renderer } from "../gpu/renderer";
 import { SaveBar } from "./SaveBar";
 import { isDesktop } from "../lib/isDesktop";
@@ -24,17 +25,28 @@ interface Props {
   onHome?: () => void;
   exportProgress?: ExportProgress;
   onExportDone?: () => void;
+  onCancelExport?: () => void;
 }
+
+// How long the "Exported ✓" confirmation stays up before the bar returns to
+// idle. Nothing clicks the done state away any more, so without this the
+// Export button would never come back after the first export.
+export const EXPORT_DONE_LINGER_MS = 4000;
 
 export function TopBar({
   filename, file, renderer, isVideo,
   hasChanges, onSave, onSaveAsNew, onExportClick, onHome,
-  exportProgress, onExportDone,
+  exportProgress, onExportDone, onCancelExport,
 }: Props) {
   const state: ExportState = exportProgress?.state ?? "idle";
   const progress = exportProgress?.progress ?? 0;
-  const downloadUrl = exportProgress?.downloadUrl ?? null;
   const error = exportProgress?.error ?? null;
+
+  useEffect(() => {
+    if (state !== "done") return;
+    const timer = setTimeout(() => onExportDone?.(), EXPORT_DONE_LINGER_MS);
+    return () => clearTimeout(timer);
+  }, [state, onExportDone]);
 
   async function downloadImage() {
     if (!renderer) return;
@@ -115,18 +127,23 @@ export function TopBar({
                 style={{ width: `${progress * 100}%` }}
               />
             </div>
+            {onCancelExport && (
+              <button
+                onClick={onCancelExport}
+                title="Cancel export"
+                className="px-3 py-1 text-xs text-zinc-300 bg-zinc-700 hover:bg-zinc-600 transition-colors rounded-sm"
+              >
+                Cancel
+              </button>
+            )}
           </div>
         )}
 
-        {state === "done" && downloadUrl && (
-          <a
-            href={downloadUrl}
-            download
-            onClick={() => onExportDone?.()}
-            className="px-4 py-1.5 bg-success text-white text-xs font-medium rounded-sm"
-          >
-            Download
-          </a>
+        {/* The finished file saves itself (useExport downloads it on done), so
+            this only confirms where it went — a Download button here produced a
+            duplicate copy for anyone who clicked it. */}
+        {state === "done" && (
+          <span className="text-xs text-success">Exported ✓</span>
         )}
 
         {state === "error" && (

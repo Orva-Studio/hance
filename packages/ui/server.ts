@@ -422,12 +422,18 @@ export function createServer(port: number, hostname?: string, distDir?: string, 
                   controller.enqueue(encoder.encode(`data: ${JSON.stringify({ progress: ratio })}\n\n`));
                 },
                 { codec, crf, encodePreset: "medium", pixelFormat: pixelFormat as "yuv420p" | "yuv422p10le" },
+                req.signal,
               );
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true, downloadUrl: `/api/download?path=${encodeURIComponent(outputPath)}` })}\n\n`));
             } catch (err) {
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: (err as Error).message })}\n\n`));
+              // On cancel the client has already gone away, so there is no one
+              // to receive an error frame and enqueueing on the closed stream
+              // would itself throw. Stay silent and just close.
+              if (!req.signal.aborted) {
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: (err as Error).message })}\n\n`));
+              }
             }
-            controller.close();
+            try { controller.close(); } catch { /* stream already torn down by the abort */ }
           },
         });
 

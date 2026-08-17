@@ -99,6 +99,33 @@ function buildEncoderArgs(settings: EncoderSettings, width: number, height: numb
   return base;
 }
 
+// Thrown when the caller aborts mid-render, so callers can tell a deliberate
+// cancel apart from a genuine pipeline failure and stay quiet about it.
+export class ExportCancelledError extends Error {
+  constructor() {
+    super("Export cancelled");
+    this.name = "ExportCancelledError";
+  }
+}
+
+// The pipeline runs as `sh -c 'ffmpeg | hance-gpu | ffmpeg'`, so killing the
+// shell alone orphans all three children and the render keeps burning GPU with
+// nothing reading its output. The pipeline members are the shell's direct
+// children, so pkill -P reaps them; the shell is killed after, once its
+// children are gone.
+export function killPipeline(pid: number, kill: () => void): void {
+  try {
+    Bun.spawnSync(["pkill", "-P", String(pid)]);
+  } catch {
+    // pkill missing or nothing to reap — still kill the shell below.
+  }
+  try {
+    kill();
+  } catch {
+    // already exited
+  }
+}
+
 export async function runGpuExport(
   input: string,
   output: string,
@@ -106,7 +133,9 @@ export async function runGpuExport(
   probeResult: ProbeResult,
   onProgress: (ratio: number) => void,
   encoderSettings?: EncoderSettings,
+  signal?: AbortSignal,
 ): Promise<void> {
+  if (signal?.aborted) throw new ExportCancelledError();
   const { width, height, fps, duration } = probeResult;
   if (!width || !height || !fps || !duration) {
     throw new Error("Video metadata incomplete — need width, height, fps, duration");
@@ -164,6 +193,9 @@ export async function runGpuExport(
     throw err;
   }
 
+  const onAbort = () => killPipeline(proc.pid, () => proc.kill());
+  signal?.addEventListener("abort", onAbort, { once: true });
+
   let stopPolling = false;
   const pollProgress = (async () => {
     while (!stopPolling) {
@@ -188,12 +220,19 @@ export async function runGpuExport(
     const exitCode = await proc.exited;
     stopPolling = true;
     await pollProgress;
+    // A cancel kills the pipeline, so it always exits non-zero. Report that as
+    // a cancel rather than a failure, and bin the half-written output file.
+    if (signal?.aborted) {
+      try { await unlink(output); } catch {}
+      throw new ExportCancelledError();
+    }
     if (exitCode !== 0) {
       throw new Error(`Export pipeline failed (exit ${exitCode})`);
     }
     onProgress(1);
   } finally {
     stopPolling = true;
+    signal?.removeEventListener("abort", onAbort);
     try { await unlink(progressPath); } catch {}
     try { await unlink(initPath); } catch {}
   }
