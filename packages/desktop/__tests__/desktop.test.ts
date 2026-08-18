@@ -39,6 +39,27 @@ test("application menu includes quit and the standard edit roles", () => {
   }
 });
 
+test("role items that own a shortcut declare it — electrobun adds none by default", () => {
+  const byRole = new Map(
+    buildApplicationMenu()
+      .flatMap(item => ("submenu" in item ? item.submenu ?? [] : []))
+      .filter((item): item is { role: string; accelerator?: string } => "role" in item && !!item.role)
+      .map(item => [item.role, item.accelerator]),
+  );
+  const expected: Record<string, string> = {
+    quit: "CmdOrCtrl+Q",
+    hide: "CmdOrCtrl+H",
+    minimize: "CmdOrCtrl+M",
+    cut: "CmdOrCtrl+X",
+    copy: "CmdOrCtrl+C",
+    paste: "CmdOrCtrl+V",
+    selectAll: "CmdOrCtrl+A",
+  };
+  for (const [role, accelerator] of Object.entries(expected)) {
+    expect(byRole.get(role)).toBe(accelerator);
+  }
+});
+
 test("File menu exposes every custom action, each with an accelerator except About", () => {
   const items = buildApplicationMenu()
     .flatMap(item => ("submenu" in item ? item.submenu ?? [] : []))

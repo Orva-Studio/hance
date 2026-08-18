@@ -24,11 +24,13 @@ export function buildApplicationMenu(): ApplicationMenuItemConfig[] {
         // license section (added in a later ticket) can live alongside it.
         { label: "About Hance", action: MENU_ACTIONS.about },
         { type: "separator" },
-        { role: "hide" },
-        { role: "hideOthers" },
+        // electrobun does not attach key equivalents to roles, so every role
+        // item needs its accelerator spelled out or the shortcut does nothing.
+        { role: "hide", accelerator: "CmdOrCtrl+H" },
+        { role: "hideOthers", accelerator: "CmdOrCtrl+Alt+H" },
         { role: "showAll" },
         { type: "separator" },
-        { role: "quit" },
+        { role: "quit", accelerator: "CmdOrCtrl+Q" },
       ],
     },
     {
@@ -51,12 +53,12 @@ export function buildApplicationMenu(): ApplicationMenuItemConfig[] {
         { label: "Undo", action: MENU_ACTIONS.undo, accelerator: "CmdOrCtrl+Z" },
         { label: "Redo", action: MENU_ACTIONS.redo, accelerator: "CmdOrCtrl+Shift+Z" },
         { type: "separator" },
-        { role: "cut" },
-        { role: "copy" },
-        { role: "paste" },
-        { role: "pasteAndMatchStyle" },
+        { role: "cut", accelerator: "CmdOrCtrl+X" },
+        { role: "copy", accelerator: "CmdOrCtrl+C" },
+        { role: "paste", accelerator: "CmdOrCtrl+V" },
+        { role: "pasteAndMatchStyle", accelerator: "CmdOrCtrl+Shift+V" },
         { role: "delete" },
-        { role: "selectAll" },
+        { role: "selectAll", accelerator: "CmdOrCtrl+A" },
       ],
     },
     {
@@ -65,7 +67,7 @@ export function buildApplicationMenu(): ApplicationMenuItemConfig[] {
     },
     {
       label: "Window",
-      submenu: [{ role: "minimize" }, { role: "zoom" }],
+      submenu: [{ role: "minimize", accelerator: "CmdOrCtrl+M" }, { role: "zoom" }],
     },
   ];
 }
