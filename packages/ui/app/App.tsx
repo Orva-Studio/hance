@@ -450,6 +450,9 @@ export function App() {
     "save-look": () => { if (activeLook && hasChanges) saveLook(activeLook, params); },
     "save-look-as-new": () => setShowSaveAsNew(true),
     "export": () => { if (file) setShowExportModal(true); },
+    // Desktop-only by construction: the menu bridge never fires in a plain
+    // browser, so try/ and the web UI get no LUT export without an isDesktop check.
+    "export-lut": () => setShowLutModal(true),
     "undo": () => menuUndoRedo("undo"),
     "redo": () => menuUndoRedo("redo"),
   });
@@ -496,7 +499,6 @@ export function App() {
           onSave={() => {}}
           onSaveAsNew={() => {}}
           onExportClick={() => {}}
-          onExportLutClick={() => {}}
         />
         <Landing onFile={uploadFresh} onPath={openRecentPath} onError={setOpenError} />
         {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
@@ -530,7 +532,6 @@ export function App() {
         onSave={handleSave}
         onSaveAsNew={handleSaveAsNew}
         onExportClick={() => setShowExportModal(true)}
-        onExportLutClick={() => setShowLutModal(true)}
         onHome={handleHome}
         exportProgress={exportProgress}
         onExportDone={resetExport}

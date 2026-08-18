@@ -11,6 +11,7 @@ export const MENU_ACTIONS = {
   saveLook: "save-look",
   saveLookAsNew: "save-look-as-new",
   export: "export",
+  exportLut: "export-lut",
   undo: "undo",
   redo: "redo",
 } as const;
@@ -46,6 +47,9 @@ export function buildApplicationMenu(): ApplicationMenuItemConfig[] {
         { label: "Save As New Look…", action: MENU_ACTIONS.saveLookAsNew, accelerator: "CmdOrCtrl+Shift+S" },
         { type: "separator" },
         { label: "Export…", action: MENU_ACTIONS.export, accelerator: "CmdOrCtrl+E" },
+      // No accelerator: exporting a LUT is a rare, deliberate action and every
+      // obvious cmd+L-ish slot is worth leaving free.
+      { label: "Export LUT…", action: MENU_ACTIONS.exportLut },
       ],
     },
     {
