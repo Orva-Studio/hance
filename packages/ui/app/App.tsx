@@ -19,6 +19,8 @@ import { ResizeDivider } from "./components/ResizeDivider";
 import { NewLookModal } from "./components/NewLookModal";
 import { AboutModal } from "./components/AboutModal";
 import { ExportModal } from "./components/ExportModal";
+import { LutExportModal } from "./components/LutExportModal";
+import { bakeLutCube, downloadCube } from "./lib/bakeLut";
 import { ViewModeToolbar, type ViewMode } from "./components/ViewModeToolbar";
 import { CompareOverlay } from "./components/CompareOverlay";
 import type { Renderer, PreviewParams } from "./gpu/renderer";
@@ -122,6 +124,7 @@ export function App() {
   const [showAbout, setShowAbout] = useState(false);
   const [showSaveAsNew, setShowSaveAsNew] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showLutModal, setShowLutModal] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("normal");
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [splitPosition, setSplitPosition] = useState(0.5);
@@ -526,6 +529,7 @@ export function App() {
         onSave={handleSave}
         onSaveAsNew={handleSaveAsNew}
         onExportClick={() => setShowExportModal(true)}
+        onExportLutClick={() => setShowLutModal(true)}
         onHome={handleHome}
         exportProgress={exportProgress}
         onExportDone={resetExport}
@@ -685,6 +689,18 @@ export function App() {
             setShowSaveAsNew(false);
           }}
           onCancel={() => setShowSaveAsNew(false)}
+        />
+      )}
+
+      {showLutModal && (
+        <LutExportModal
+          lookName={activeLook}
+          params={params}
+          onCancel={() => setShowLutModal(false)}
+          onExport={async filename => {
+            downloadCube(await bakeLutCube(params, filename.replace(/\.cube$/i, "")), filename);
+            setShowLutModal(false);
+          }}
         />
       )}
 

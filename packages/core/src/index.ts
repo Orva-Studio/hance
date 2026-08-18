@@ -11,6 +11,12 @@ export {
   inputLutProfile, isInputLutActive, lutDataForParams,
 } from "./lut-profiles";
 
+export type { LossyEffect } from "./lut-export";
+export {
+  CUBE_SIZE, LOSSY_EFFECTS, activeLossyEffects, cubeBakeParams,
+  identityCubeImage, formatCube, cubeFilename,
+} from "./lut-export";
+
 export type { ExportPresetSettings } from "./export-presets";
 export { EXPORT_PRESETS, resolveExportPreset, requireCodecLicense } from "./export-presets";
 

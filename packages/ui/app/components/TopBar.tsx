@@ -22,6 +22,7 @@ interface Props {
   onSave: () => void;
   onSaveAsNew: () => void;
   onExportClick: () => void;
+  onExportLutClick: () => void;
   onHome?: () => void;
   exportProgress?: ExportProgress;
   onExportDone?: () => void;
@@ -35,7 +36,7 @@ export const EXPORT_DONE_LINGER_MS = 4000;
 
 export function TopBar({
   filename, file, renderer, isVideo,
-  hasChanges, onSave, onSaveAsNew, onExportClick, onHome,
+  hasChanges, onSave, onSaveAsNew, onExportClick, onExportLutClick, onHome,
   exportProgress, onExportDone, onCancelExport,
 }: Props) {
   const state: ExportState = exportProgress?.state ?? "idle";
@@ -105,6 +106,16 @@ export function TopBar({
       <div className="flex items-center gap-2 electrobun-webkit-app-region-no-drag">
         {file && (
           <SaveBar hasChanges={hasChanges} onSave={onSave} onSaveAsNew={onSaveAsNew} />
+        )}
+
+        {state === "idle" && file && (
+          <button
+            onClick={onExportLutClick}
+            title="Save the colour grade as a .cube LUT"
+            className="px-3 py-1.5 bg-zinc-700 text-zinc-200 text-xs font-medium rounded-sm hover:bg-zinc-600 transition-colors"
+          >
+            LUT
+          </button>
         )}
 
         {state === "idle" && file && (
