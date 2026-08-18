@@ -1,6 +1,6 @@
 import { EFFECT_SCHEMA, seedDefaults, loadPreset, builtinPresetsDir, userPresetsDir, listPresetNames, probe, rebuildPresetIndex, requireCodecLicense } from "@hance/core";
 import type { PresetData, LicenseContext } from "@hance/core";
-import { runGpuExport } from "@hance/gpu";
+import { runGpuExport, bakeLutCube } from "@hance/gpu";
 import { join, extname, basename, resolve, dirname } from "node:path";
 import { existsSync, readdirSync, mkdirSync, writeFileSync, readFileSync, unlinkSync, renameSync, rmSync, statSync } from "node:fs";
 import { tmpdir, homedir } from "node:os";
@@ -140,6 +140,27 @@ export function createServer(port: number, hostname?: string, distDir?: string, 
       if (url.pathname === "/api/license") {
         const tier = process.env.HANCE_LICENSE === "pro" ? "pro" : "free";
         return Response.json({ tier });
+      }
+
+      // Bakes the current look into a .cube 3D LUT. Runs in the GPU sidecar
+      // rather than the webview so the LUT comes from the same renderer as a
+      // real export. Reached only from the desktop app's File menu.
+      if (url.pathname === "/api/lut" && req.method === "POST") {
+        let body: { params?: Record<string, string | number | boolean>; title?: string };
+        try {
+          body = await req.json() as typeof body;
+        } catch {
+          return new Response("Invalid JSON body", { status: 400 });
+        }
+        if (!body.params || typeof body.params !== "object") {
+          return new Response("Missing params", { status: 400 });
+        }
+        try {
+          const cube = await bakeLutCube(body.params, body.title || "Hance");
+          return new Response(cube, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
+        } catch (err) {
+          return new Response(`LUT bake failed: ${(err as Error).message}`, { status: 500 });
+        }
       }
 
       if (url.pathname === "/api/version") {

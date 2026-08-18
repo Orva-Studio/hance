@@ -20,7 +20,7 @@ import { NewLookModal } from "./components/NewLookModal";
 import { AboutModal } from "./components/AboutModal";
 import { ExportModal } from "./components/ExportModal";
 import { LutExportModal } from "./components/LutExportModal";
-import { bakeLutCube, downloadCube } from "./lib/bakeLut";
+import { fetchLutCube, downloadCube } from "./lib/bakeLut";
 import { ViewModeToolbar, type ViewMode } from "./components/ViewModeToolbar";
 import { CompareOverlay } from "./components/CompareOverlay";
 import type { Renderer, PreviewParams } from "./gpu/renderer";
@@ -700,7 +700,7 @@ export function App() {
           params={params}
           onCancel={() => setShowLutModal(false)}
           onExport={async filename => {
-            downloadCube(await bakeLutCube(params, filename.replace(/\.cube$/i, "")), filename);
+            downloadCube(await fetchLutCube(params, filename.replace(/\.cube$/i, "")), filename);
             setShowLutModal(false);
           }}
         />
