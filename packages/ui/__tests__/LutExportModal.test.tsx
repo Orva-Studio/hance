@@ -40,3 +40,4 @@ test("reports nothing dropped when the look is colour-only", () => {
 test("falls back to a default filename with no active look", () => {
   expect(render({}, null)).toContain("Hance.cube");
 });
+
