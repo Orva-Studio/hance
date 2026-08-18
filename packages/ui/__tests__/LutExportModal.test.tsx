@@ -30,10 +30,10 @@ test("lists only the effects actually in use", () => {
   expect(html).not.toContain("Vignette");
 });
 
-test("says the LUT is exact when the look is colour-only", () => {
+test("reports nothing dropped when the look is colour-only", () => {
   const allOff = Object.fromEntries(LOSSY_EFFECTS.map(e => [e.enableKey, true]));
   const html = render(allOff);
-  expect(html).toContain("will match it exactly");
+  expect(html).toContain("the whole grade is included");
   expect(html).not.toContain("won&#x27;t be included");
 });
 
