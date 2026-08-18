@@ -3,5 +3,6 @@ export { createHeadlessRenderer } from "./wgpu-renderer";
 export type { HeadlessRenderer } from "./wgpu-renderer";
 export { sidecarPath, resolveSidecarPath } from "./sidecar-path";
 export type { ResolveOpts } from "./sidecar-path";
+export { bakeLutCube } from "./lut-bake";
 export { runGpuExport } from "./export";
 export type { EncoderSettings } from "./export";
