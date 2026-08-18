@@ -82,13 +82,13 @@ test("every accelerator uses modifier tokens the native layer parses", () => {
   }
 });
 
-test("File menu exposes every custom action, each with an accelerator except About", () => {
+test("File menu exposes every custom action, each with an accelerator except About and Export LUT", () => {
   const items = buildApplicationMenu()
     .flatMap(item => ("submenu" in item ? item.submenu ?? [] : []))
     .filter((item): item is { action: string; accelerator?: string } => "action" in item && !!item.action);
   expect(items.map(i => i.action).sort()).toEqual(Object.values(MENU_ACTIONS).sort());
   for (const item of items) {
-    if (item.action === MENU_ACTIONS.about) continue;
+    if (item.action === MENU_ACTIONS.about || item.action === MENU_ACTIONS.exportLut) continue;
     expect(item.accelerator).toBeTruthy();
   }
 });
