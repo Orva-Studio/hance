@@ -24,10 +24,14 @@ export function buildApplicationMenu(): ApplicationMenuItemConfig[] {
         // license section (added in a later ticket) can live alongside it.
         { label: "About Hance", action: MENU_ACTIONS.about },
         { type: "separator" },
-        // electrobun does not attach key equivalents to roles, so every role
-        // item needs its accelerator spelled out or the shortcut does nothing.
+        // The native layer defaults key equivalents for the *edit* roles only
+        // (cut/copy/paste/selectAll/undo/redo); application and window roles
+        // get none, so those need their accelerator spelled out or the
+        // shortcut does nothing. Only the tokens libNativeWrapper parses work
+        // — "option", not "alt"; "command", not "cmd" — and an unrecognised
+        // token is dropped silently rather than erroring.
         { role: "hide", accelerator: "CmdOrCtrl+H" },
-        { role: "hideOthers", accelerator: "CmdOrCtrl+Alt+H" },
+        { role: "hideOthers", accelerator: "CmdOrCtrl+Option+H" },
         { role: "showAll" },
         { type: "separator" },
         { role: "quit", accelerator: "CmdOrCtrl+Q" },
@@ -53,17 +57,21 @@ export function buildApplicationMenu(): ApplicationMenuItemConfig[] {
         { label: "Undo", action: MENU_ACTIONS.undo, accelerator: "CmdOrCtrl+Z" },
         { label: "Redo", action: MENU_ACTIONS.redo, accelerator: "CmdOrCtrl+Shift+Z" },
         { type: "separator" },
-        { role: "cut", accelerator: "CmdOrCtrl+X" },
-        { role: "copy", accelerator: "CmdOrCtrl+C" },
-        { role: "paste", accelerator: "CmdOrCtrl+V" },
-        { role: "pasteAndMatchStyle", accelerator: "CmdOrCtrl+Shift+V" },
+        // No accelerators here on purpose: the native layer already binds the
+        // standard equivalents for these roles, and spelling one out overrides
+        // that default — which is how pasteAndMatchStyle briefly lost its
+        // ⌥⇧⌘V and got plain ⇧⌘V.
+        { role: "cut" },
+        { role: "copy" },
+        { role: "paste" },
+        { role: "pasteAndMatchStyle" },
         { role: "delete" },
-        { role: "selectAll", accelerator: "CmdOrCtrl+A" },
+        { role: "selectAll" },
       ],
     },
     {
       label: "View",
-      submenu: [{ role: "toggleFullScreen" }],
+      submenu: [{ role: "toggleFullScreen", accelerator: "Control+Command+F" }],
     },
     {
       label: "Window",

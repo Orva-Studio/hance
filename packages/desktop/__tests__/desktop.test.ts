@@ -39,7 +39,7 @@ test("application menu includes quit and the standard edit roles", () => {
   }
 });
 
-test("role items that own a shortcut declare it — electrobun adds none by default", () => {
+test("application and window roles declare accelerators; edit roles leave the native defaults alone", () => {
   const byRole = new Map(
     buildApplicationMenu()
       .flatMap(item => ("submenu" in item ? item.submenu ?? [] : []))
@@ -49,14 +49,36 @@ test("role items that own a shortcut declare it — electrobun adds none by defa
   const expected: Record<string, string> = {
     quit: "CmdOrCtrl+Q",
     hide: "CmdOrCtrl+H",
+    hideOthers: "CmdOrCtrl+Option+H",
     minimize: "CmdOrCtrl+M",
-    cut: "CmdOrCtrl+X",
-    copy: "CmdOrCtrl+C",
-    paste: "CmdOrCtrl+V",
-    selectAll: "CmdOrCtrl+A",
+    toggleFullScreen: "Control+Command+F",
   };
   for (const [role, accelerator] of Object.entries(expected)) {
     expect(byRole.get(role)).toBe(accelerator);
+  }
+  // The edit roles are bound natively; declaring an accelerator would override
+  // that default, so they must stay bare.
+  for (const role of ["cut", "copy", "paste", "pasteAndMatchStyle", "selectAll"]) {
+    expect(byRole.get(role)).toBeUndefined();
+  }
+});
+
+// Every accelerator has to be spelled in tokens libNativeWrapper actually
+// parses; it drops an unrecognised modifier silently, so "Alt"/"Cmd" bind a
+// weaker shortcut instead of failing loudly.
+test("every accelerator uses modifier tokens the native layer parses", () => {
+  const NATIVE_MODIFIERS = new Set([
+    "commandorcontrol", "cmdorctrl", "command", "control", "ctrl", "option", "shift", "super", "meta",
+  ]);
+  const accelerators = buildApplicationMenu()
+    .flatMap(item => ("submenu" in item ? item.submenu ?? [] : []))
+    .map(item => ("accelerator" in item ? item.accelerator : undefined))
+    .filter((value): value is string => !!value);
+  expect(accelerators.length).toBeGreaterThan(0);
+  for (const accelerator of accelerators) {
+    for (const modifier of accelerator.split("+").slice(0, -1)) {
+      expect(NATIVE_MODIFIERS.has(modifier.toLowerCase())).toBe(true);
+    }
   }
 });
 
