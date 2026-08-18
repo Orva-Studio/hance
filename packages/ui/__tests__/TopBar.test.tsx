@@ -11,6 +11,7 @@ const baseProps = {
   onSave: () => {},
   onSaveAsNew: () => {},
   onExportClick: () => {},
+  onExportLutClick: () => {},
 };
 
 // isDesktop reads the global `location` directly, so simulate the desktop

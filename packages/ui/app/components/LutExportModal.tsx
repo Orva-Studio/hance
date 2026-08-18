@@ -62,7 +62,7 @@ export function LutExportModal({ lookName, params, onCancel, onExport }: Props) 
           </div>
         ) : (
           <p className="text-xs text-zinc-400 mb-4">
-            This look uses only colour adjustments, so the LUT will match it exactly.
+            This look uses only colour adjustments, so the whole grade is included.
           </p>
         )}
 

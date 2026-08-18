@@ -496,6 +496,7 @@ export function App() {
           onSave={() => {}}
           onSaveAsNew={() => {}}
           onExportClick={() => {}}
+          onExportLutClick={() => {}}
         />
         <Landing onFile={uploadFresh} onPath={openRecentPath} onError={setOpenError} />
         {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
