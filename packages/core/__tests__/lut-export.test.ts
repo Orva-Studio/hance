@@ -3,6 +3,7 @@ import {
   CUBE_SIZE, LOSSY_EFFECTS, activeLossyEffects, cubeBakeParams,
   identityCubeImage, formatCube, cubeFilename,
 } from "../src/lut-export";
+import { EFFECT_SCHEMA } from "../src/schema";
 
 describe("identityCubeImage", () => {
   it("emits every colour once, R fastest and B slowest", () => {
@@ -59,8 +60,27 @@ describe("formatCube", () => {
     expect(formatCube(data, 2, '""').split("\n")[0]).toBe('TITLE "Hance"');
   });
 
-  it("rejects a readback that is too short for the cube size", () => {
-    expect(() => formatCube(new Uint8Array(16), 33)).toThrow(/Expected/);
+  // Endpoints alone survive a channel swap or a transposed walk, so assert
+  // lines that move one axis at a time: entry 1 advances R, entry `size`
+  // advances G, entry `size^2` advances B. This is the assertion that catches a
+  // cube serialised BGR or walked B-first.
+  it("keeps R fastest and B slowest in the emitted entries", () => {
+    const size = 4;
+    const { data } = identityCubeImage(size);
+    const entries = formatCube(data, size).trim().split("\n").slice(5);
+
+    expect(entries[0]).toBe("0.000000 0.000000 0.000000");
+    expect(entries[1]).toBe("0.333333 0.000000 0.000000");
+    expect(entries[size]).toBe("0.000000 0.333333 0.000000");
+    expect(entries[size * size]).toBe("0.000000 0.000000 0.333333");
+  });
+
+  it("rejects a readback that is not exactly the cube size", () => {
+    expect(() => formatCube(new Uint8Array(16), 33)).toThrow(/Expected exactly/);
+    // A 256-aligned readback is longer, not shorter — the failure mode that
+    // would silently shift every entry past the first row.
+    const padded = new Uint8Array(33 ** 3 * 4 + 252 * 33);
+    expect(() => formatCube(padded, 33)).toThrow(/Expected exactly/);
   });
 });
 
@@ -92,6 +112,29 @@ describe("activeLossyEffects", () => {
 
   it("treats an unset flag as the effect being on", () => {
     expect(activeLossyEffects({}).length).toBe(LOSSY_EFFECTS.length);
+  });
+});
+
+// LOSSY_EFFECTS is only correct relative to the effects that exist. If a new
+// group lands in EFFECT_SCHEMA, someone has to decide whether a colour->colour
+// mapping can carry it; this fails until they do.
+describe("LOSSY_EFFECTS vs EFFECT_SCHEMA", () => {
+  const BAKEABLE = [
+    "no-input-lut", "no-color-settings", "no-film-density",
+    "no-split-tone", "no-color-wheels",
+  ];
+
+  it("classifies every effect in the schema as bakeable or not", () => {
+    const schemaKeys = EFFECT_SCHEMA.map(group => group.enableKey).sort();
+    const classified = [...BAKEABLE, ...LOSSY_EFFECTS.map(e => e.enableKey)].sort();
+    expect(classified).toEqual(schemaKeys);
+  });
+
+  it("names effects that actually exist", () => {
+    const schemaKeys = new Set(EFFECT_SCHEMA.map(group => group.enableKey));
+    for (const effect of LOSSY_EFFECTS) {
+      expect(schemaKeys.has(effect.enableKey)).toBe(true);
+    }
   });
 });
 

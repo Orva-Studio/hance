@@ -74,8 +74,11 @@ export function identityCubeImage(size: number = CUBE_SIZE): { data: Uint8Array;
  */
 export function formatCube(pixels: Uint8Array, size: number = CUBE_SIZE, title = "Hance"): string {
   const entries = size * size * size;
-  if (pixels.length < entries * 4) {
-    throw new Error(`Expected ${entries * 4} bytes for a ${size}^3 cube, got ${pixels.length}`);
+  // Exact, not minimum: a row-padded readback (copyTextureToBuffer aligns
+  // bytesPerRow to 256) is *longer* than the cube and would otherwise be
+  // accepted, shifting every entry after the first row into the wrong colour.
+  if (pixels.length !== entries * 4) {
+    throw new Error(`Expected exactly ${entries * 4} bytes for a ${size}^3 cube, got ${pixels.length}`);
   }
   // .cube titles are quoted single-line; a stray quote or newline would produce
   // a file the parser rejects.

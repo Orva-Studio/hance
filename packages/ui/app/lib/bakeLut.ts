@@ -6,10 +6,13 @@ import { createRenderer, type PreviewParams } from "../gpu/renderer";
 // renderer stays the single source of truth for what a look looks like, so an
 // exported LUT cannot drift from the preview.
 //
-// The chain's final blit adds +/-0.5 LSB of dither, so entries can land one
-// 8-bit step off the exact mapping. That is well inside the interpolation error
-// of a 33^3 LUT and invisible in use; a dither-free readback path would be the
-// fix if a LUT ever needs to be bit-exact.
+// Precision: the readback here is undithered — blit.frag.wgsl's TPDF dither is
+// wired only into the Rust sidecar, while this path blits through an identity
+// color-settings pass. The real limit is that an 8-bit identity cube cannot sit
+// exactly on the 33^3 lattice: 0.5 grey stores as 128/255, so grid points are
+// sampled up to 0.5 LSB (~6% of a lattice cell) off true. Feeding a float source
+// texture would be the fix if a LUT ever needs to be exact; at 8-bit output the
+// error stays under one output step for any smooth grade.
 export async function bakeLutCube(params: PreviewParams, title: string): Promise<string> {
   const { data, width, height } = identityCubeImage(CUBE_SIZE);
 
