@@ -19,6 +19,8 @@ import { ResizeDivider } from "./components/ResizeDivider";
 import { NewLookModal } from "./components/NewLookModal";
 import { AboutModal } from "./components/AboutModal";
 import { ExportModal } from "./components/ExportModal";
+import { LutExportModal } from "./components/LutExportModal";
+import { fetchLutCube, downloadCube } from "./lib/bakeLut";
 import { ViewModeToolbar, type ViewMode } from "./components/ViewModeToolbar";
 import { CompareOverlay } from "./components/CompareOverlay";
 import type { Renderer, PreviewParams } from "./gpu/renderer";
@@ -122,6 +124,7 @@ export function App() {
   const [showAbout, setShowAbout] = useState(false);
   const [showSaveAsNew, setShowSaveAsNew] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showLutModal, setShowLutModal] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("normal");
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [splitPosition, setSplitPosition] = useState(0.5);
@@ -447,6 +450,9 @@ export function App() {
     "save-look": () => { if (activeLook && hasChanges) saveLook(activeLook, params); },
     "save-look-as-new": () => setShowSaveAsNew(true),
     "export": () => { if (file) setShowExportModal(true); },
+    // Desktop-only by construction: the menu bridge never fires in a plain
+    // browser, so try/ and the web UI get no LUT export without an isDesktop check.
+    "export-lut": () => setShowLutModal(true),
     "undo": () => menuUndoRedo("undo"),
     "redo": () => menuUndoRedo("redo"),
   });
@@ -685,6 +691,18 @@ export function App() {
             setShowSaveAsNew(false);
           }}
           onCancel={() => setShowSaveAsNew(false)}
+        />
+      )}
+
+      {showLutModal && (
+        <LutExportModal
+          lookName={activeLook}
+          params={params}
+          onCancel={() => setShowLutModal(false)}
+          onExport={async filename => {
+            downloadCube(await fetchLutCube(params, filename.replace(/\.cube$/i, "")), filename);
+            setShowLutModal(false);
+          }}
         />
       )}
 
