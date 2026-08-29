@@ -9,7 +9,7 @@ export default {
   app: {
     name: "Hance",
     identifier: "studio.orva.hance",
-    version: "0.9.2",
+    version: "0.10.0",
   },
   build: {
     bun: {
