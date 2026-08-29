@@ -9,6 +9,13 @@ import pkg from "./package.json";
 
 const pkgVersion: string = pkg.version;
 
+// Throwing a non-Error is legal in JS, and `(err as Error).message` on one
+// reads back as the string "undefined" — worse than useless in a message the
+// user is meant to act on.
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
 // Cache key from cheap file metadata (name + size + mtime), so a cache hit can
 // be detected from a tiny lookup request without uploading or hashing the whole
 // multi-GB source. A different file sharing all three is vanishingly unlikely.
@@ -152,14 +159,17 @@ export function createServer(port: number, hostname?: string, distDir?: string, 
         } catch {
           return new Response("Invalid JSON body", { status: 400 });
         }
-        if (!body.params || typeof body.params !== "object") {
+        if (!body.params || typeof body.params !== "object" || Array.isArray(body.params)) {
           return new Response("Missing params", { status: 400 });
+        }
+        if (body.title !== undefined && typeof body.title !== "string") {
+          return new Response("title must be a string", { status: 400 });
         }
         try {
           const cube = await bakeLutCube(body.params, body.title || "Hance");
           return new Response(cube, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
         } catch (err) {
-          return new Response(`LUT bake failed: ${(err as Error).message}`, { status: 500 });
+          return new Response(`LUT bake failed: ${errorMessage(err)}`, { status: 500 });
         }
       }
 

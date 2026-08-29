@@ -1,10 +1,12 @@
 @group(0) @binding(0) var src: texture_2d<f32>;
 @group(0) @binding(1) var samp: sampler;
 
-// Final blit carries one parameter: the frame counter, used to decorrelate the
-// dither noise across frames so video does not show a frozen grain overlay.
+// Final blit carries the frame counter, used to decorrelate the dither noise
+// across frames so video does not show a frozen grain overlay, and the dither
+// strength, so a caller that is not producing an image can turn it off.
 struct Blit {
-  // x = frame_count; y/z/w unused (kept for the std 16-byte uniform layout).
+  // x = frame_count; y = dither strength (1 = on, 0 = off); z/w unused (kept
+  // for the std 16-byte uniform layout).
   frame: vec4f,
 };
 @group(0) @binding(2) var<uniform> blit: Blit;
@@ -35,6 +37,6 @@ fn fs(@location(0) uv: vec2f, @builtin(position) frag: vec4f) -> @location(0) ve
   // 11.7 / 3.1 just decorrelate the second sample from the first.
   let r1 = hash12(frag.xy + vec2f(o, o));
   let r2 = hash12(frag.xy + vec2f(o + 11.7, o + 3.1));
-  let dither = ((r1 - r2) * 0.5) / 255.0;
+  let dither = ((r1 - r2) * 0.5) / 255.0 * blit.frame.y;
   return vec4f(c + vec3f(dither), 1.0);
 }

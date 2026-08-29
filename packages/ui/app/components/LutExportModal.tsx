@@ -26,7 +26,7 @@ export function LutExportModal({ lookName, params, onCancel, onExport }: Props) 
     try {
       await onExport(withExt);
     } catch (err) {
-      setError((err as Error).message);
+      setError(err instanceof Error ? err.message : String(err));
       setBusy(false);
     }
   }
