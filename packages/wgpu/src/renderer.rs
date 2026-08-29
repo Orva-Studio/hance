@@ -618,7 +618,14 @@ impl GpuRenderer {
         {
             // Feed the frame counter to the dither so its noise decorrelates
             // across frames instead of sitting frozen on top of the video.
-            self.write_uniform(&self.blit_ub, &[self.frame_count as f32, 0.0, 0.0, 0.0]);
+            //
+            // no-dither turns it off for callers whose output is not an image:
+            // baking a LUT pushes an identity colour cube through this pipeline,
+            // where every texel is a lattice point rather than a pixel, so +/-0.5
+            // LSB of noise is not masked by neighbouring detail — it is quantized
+            // into the .cube and replayed on every frame the LUT ever touches.
+            let dither = if self.params.bool("no-dither", false) { 0.0 } else { 1.0 };
+            self.write_uniform(&self.blit_ub, &[self.frame_count as f32, dither, 0.0, 0.0]);
             let bg = passes::make_std_bind_group(
                 &self.device, &self.std_layout,
                 &current_tex!().create_view(&TextureViewDescriptor::default()),
