@@ -52,7 +52,7 @@ export function ComparePage() {
   return (
     <div className="h-screen bg-zinc-950 text-zinc-100 flex flex-col p-4 gap-3">
       <div className="rounded-lg bg-indigo-600 px-4 py-3 text-center text-sm font-medium text-white">
-        Tell your agent which option you'd like to use — A, B, or C.
+        Tell your agent which option you'd like to use - A, B, or C.
       </div>
       <div className="flex-1 grid grid-cols-2 grid-rows-2 gap-3 min-h-0">
         <Cell title="Original" src={fileUrl(original)} />

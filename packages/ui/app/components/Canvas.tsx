@@ -49,7 +49,7 @@ export function Canvas(props: Props) {
         const video = videoRef.current!;
         await new Promise<void>((resolve, reject) => {
           const timeout = setTimeout(() => {
-            reject(new Error("Video load timed out after 15s — file may be corrupt or use an unsupported codec"));
+            reject(new Error("Video load timed out after 15s - file may be corrupt or use an unsupported codec"));
           }, 15000);
           video.onloadeddata = () => { clearTimeout(timeout); resolve(); };
           video.onerror = () => {
@@ -112,7 +112,7 @@ export function Canvas(props: Props) {
           img.onload = () => { clearTimeout(timeout); resolve(); };
           img.onerror = () => {
             clearTimeout(timeout);
-            reject(new Error("Image failed to load — file may be corrupt or use an unsupported format"));
+            reject(new Error("Image failed to load - file may be corrupt or use an unsupported format"));
           };
           if (img.complete && img.naturalWidth > 0) { clearTimeout(timeout); resolve(); }
         });
