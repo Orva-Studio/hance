@@ -140,7 +140,7 @@ export function TopBar({
         )}
 
         {/* The finished file saves itself (useExport downloads it on done), so
-            this only confirms where it went — a Download button here produced a
+            this only confirms where it went - a Download button here produced a
             duplicate copy for anyone who clicked it. */}
         {state === "done" && (
           <span className="text-xs text-success">Exported ✓</span>

@@ -39,7 +39,7 @@ export function LutExportModal({ lookName, params, onCancel, onExport }: Props) 
       >
         <h3 className="text-sm font-semibold text-zinc-200 mb-2">Export LUT</h3>
         <p className="text-xs text-zinc-400 mb-4">
-          Saves the colour grade as a .cube file, for anything with a LUT slot —
+          Saves the colour grade as a .cube file, for anything with a LUT slot -
           Elgato Camera Hub, OBS, Resolve, Premiere.
         </p>
 
@@ -51,13 +51,13 @@ export function LutExportModal({ lookName, params, onCancel, onExport }: Props) 
             <ul className="text-xs text-zinc-400 space-y-1">
               {dropped.map(effect => (
                 <li key={effect.enableKey}>
-                  <span className="text-zinc-300">{effect.label}</span> — {effect.reason}
+                  <span className="text-zinc-300">{effect.label}</span> - {effect.reason}
                 </li>
               ))}
             </ul>
             <p className="text-xs text-zinc-500 mt-2">
-              Everything else — exposure, contrast, white balance, split tone,
-              colour wheels, film density — is baked in.
+              Everything else - exposure, contrast, white balance, split tone,
+              colour wheels, film density - is baked in.
             </p>
           </div>
         ) : (
