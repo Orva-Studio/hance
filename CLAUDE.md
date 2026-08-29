@@ -19,6 +19,7 @@ Single-binary CLI that applies cinematic film effects to video/images in one FFm
 - Effect modules are pure functions: `(inputLabel, options) => FilterResult`
 - No external dependencies beyond Bun and FFmpeg
 - TypeScript exclusively; function declarations over expressions
+- Never use em dashes in user-facing copy (UI labels, help text, error messages); use a plain dash `-`
 
 ## Architecture
 - Effects chain: grade → halation → aberration → weave
