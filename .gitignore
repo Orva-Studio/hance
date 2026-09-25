@@ -48,3 +48,6 @@ docs/superpowers/
 # Electrobun build output
 packages/desktop/build/
 packages/desktop/artifacts/
+
+# Hand-built release installer (uploaded to GitHub releases, not committed)
+*.dmg
