@@ -13,10 +13,10 @@ import type { RangeOption, SelectOption } from "@hance/core";
  */
 
 const ENDPOINT = "https://api.openai.com/v1/chat/completions";
-const MODEL = "gpt-5.6-luna";
+const MODEL = "gpt-6-luna";
 
-/** Only colour carries a look. Motion and optical effects are left alone. */
-const GROUPS = ["colorSettings", "splitTone", "colorWheels", "filmDensity"];
+/** Colour carries the look; vignette is framing people ask for alongside it. Motion and the other optical effects are left alone. */
+const GROUPS = ["colorSettings", "splitTone", "colorWheels", "filmDensity", "vignette"];
 
 export interface AiGradeRequest {
   /** Current slider values, so an instruction edits rather than replaces. */
@@ -29,6 +29,8 @@ export interface AiGradeRequest {
 
 export interface AiGradeResult {
   params: Record<string, number | string>;
+  /** Enable keys of the groups the proposal touches, which must be switched on for it to show. */
+  enable: string[];
   note: string;
 }
 
@@ -41,6 +43,17 @@ export function gradableOptions(): Array<RangeOption | SelectOption> {
     }
   }
   return out;
+}
+
+/**
+ * The UI opens with every effect group off, so a value set inside an off group
+ * changes the slider but not the picture.
+ */
+export function groupsToEnable(params: Record<string, unknown>): string[] {
+  const keys = Object.keys(params);
+  return EFFECT_SCHEMA
+    .filter(group => GROUPS.includes(group.key) && group.options.some(opt => keys.includes(opt.key)))
+    .map(group => group.enableKey);
 }
 
 /** The schema, rendered for the prompt so the model answers in Hance's own vocabulary. */
@@ -62,9 +75,13 @@ ${describeParams()}
 
 Rules:
 - white-balance is Kelvin. LOWER is warmer/orange, HIGHER is cooler/blue.
-- Return only the parameters you want to change. Omit anything that should stay as it is.
+- Return every parameter you want to change, and omit anything that should stay as it is.
+- Address every part of the request. "Brighter and add a vignette" needs both a tonal change and vignette values.
+- A single request often needs several parameters working together, e.g. brighter can mean exposure plus fade or highlights, warmer can mean white-balance plus split toning.
+- To add a vignette, set vignette-amount above 0 (0 is off). To remove one, set it to 0.
+- If the user asks for a new look or to start over, build it from neutral: set everything the look needs, and return defaults for current values that do not belong in it.
 - Respect every range. Never invent a parameter name that is not listed above.
-- Prefer a restrained grade. A film look is usually a small move, not a large one.
+- Keep each move tasteful: a film look is usually several moderate adjustments, not one extreme one.
 
 Reply with JSON only:
 {"params": {"<name>": <value>}, "note": "<one short sentence describing the look>"}`;
@@ -101,10 +118,16 @@ export async function proposeGrade(req: AiGradeRequest, apiKey: string): Promise
   const current = gradableOptions()
     .map(o => `${o.key}=${req.params[o.key] ?? o.default}`)
     .join(" ");
+  const off = EFFECT_SCHEMA
+    .filter(group => GROUPS.includes(group.key) && req.params[group.enableKey] === true)
+    .map(group => group.label);
+  const settings = off.length
+    ? `${current}\nSwitched off, so their values above have no effect yet: ${off.join(", ")}. Setting any of their parameters switches them on.`
+    : current;
 
   const task = req.instruction
-    ? `Current settings: ${current}\n\nThe user asks: "${req.instruction}"\nAdjust from the current settings.`
-    : `Current settings: ${current}\n\nPropose a cinematic film look for this footage as a starting point.`;
+    ? `Current settings: ${settings}\n\nThe user asks: "${req.instruction}"\nAdjust from the current settings.`
+    : `Current settings: ${settings}\n\nPropose a cinematic film look for this footage as a starting point.`;
 
   const content: unknown[] = [{ type: "text", text: task }];
   if (req.image) {
@@ -138,8 +161,10 @@ export async function proposeGrade(req: AiGradeRequest, apiKey: string): Promise
   try { parsed = JSON.parse(text); }
   catch { throw new Error("The grading model returned something that was not JSON"); }
 
+  const params = sanitizeParams(parsed.params);
   return {
-    params: sanitizeParams(parsed.params),
+    params,
+    enable: groupsToEnable(params),
     note: typeof parsed.note === "string" ? parsed.note : "",
   };
 }

@@ -11,16 +11,14 @@ interface Props {
   turns: AiTurn[];
   busy: boolean;
   error: string | null;
-  canRevert: boolean;
   onPropose: (instruction?: string) => void;
-  onRevert: () => void;
   onDismissError: () => void;
 }
 
 const SUGGESTIONS = ["Warmer", "More filmic", "Cooler shadows", "Lift the blacks", "Less saturated"];
 
 export function AiPanel(props: Props) {
-  const { turns, busy, error, canRevert, onPropose, onRevert, onDismissError } = props;
+  const { turns, busy, error, onPropose, onDismissError } = props;
   const [draft, setDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -51,7 +49,7 @@ export function AiPanel(props: Props) {
               Best guess
             </button>
             <p className="text-[11px] text-zinc-600 leading-relaxed">
-              Colour only. Grain, halation and the other optical effects stay where you left them.
+              Colour and vignette. Grain, halation and the other optical effects stay where you left them.
             </p>
           </div>
         )}
@@ -117,11 +115,6 @@ export function AiPanel(props: Props) {
             className="text-xs text-white bg-accent hover:bg-accent-hover disabled:opacity-40 rounded-sm px-3"
           >Send</button>
         </div>
-        <button
-          onClick={onRevert}
-          disabled={!canRevert}
-          className="text-[11px] text-zinc-400 hover:text-zinc-200 disabled:text-zinc-700 self-start"
-        >Revert to before AI</button>
       </div>
     </div>
   );

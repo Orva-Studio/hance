@@ -64,6 +64,8 @@ export function App() {
   }, [previewError, file, isVideo, sourcePath]);
 
   const [params, setParams] = useState<PreviewParams>({});
+  const paramsRef = useRef(params);
+  paramsRef.current = params;
   const [schema, setSchema] = useState<EffectGroup[]>([]);
   const [renderer, setRenderer] = useState<Renderer | null>(null);
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
@@ -134,7 +136,6 @@ export function App() {
   const [aiTurns, setAiTurns] = useState<AiTurn[]>([]);
   const [aiBusy, setAiBusy] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
-  const aiBaselineRef = useRef<PreviewParams | null>(null);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [splitPosition, setSplitPosition] = useState(0.5);
   const canvasTransform = useCanvasTransform();
@@ -317,19 +318,18 @@ export function App() {
         image = await captureFrame(isVideo && videoElement ? videoElement : previewSrc!);
       } catch { image = undefined; }
 
-      let current: PreviewParams = {};
-      setParams(p => { current = p; return p; });
-      if (!aiBaselineRef.current) aiBaselineRef.current = current;
+      const current = paramsRef.current;
 
       const res = await fetch("/api/ai-grade", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ params: current, image, instruction }),
       });
-      const data = await res.json() as { params?: Record<string, number | string>; note?: string; error?: string };
+      const data = await res.json() as { params?: Record<string, number | string>; enable?: string[]; note?: string; error?: string };
       if (!res.ok || data.error) throw new Error(data.error || `Request failed (${res.status})`);
 
-      const next = { ...current, ...(data.params ?? {}) };
+      const next: PreviewParams = { ...current, ...(data.params ?? {}) };
+      for (const enableKey of data.enable ?? []) next[enableKey] = false;
       setParams(next);
       historyRef.current.commit({ params: next, activeLook: activeLookRef.current });
       setAiTurns(t => [...t, {
@@ -343,15 +343,6 @@ export function App() {
       setAiBusy(false);
     }
   }, [isVideo, videoElement, previewSrc]);
-
-  const handleAiRevert = useCallback(() => {
-    const baseline = aiBaselineRef.current;
-    if (!baseline) return;
-    setParams(baseline);
-    historyRef.current.commit({ params: baseline, activeLook: activeLookRef.current });
-    aiBaselineRef.current = null;
-    setAiTurns([]);
-  }, []);
 
   const handleReset = useCallback(() => {
     if (!activeLookParams) return;
@@ -728,9 +719,7 @@ export function App() {
                   turns={aiTurns}
                   busy={aiBusy}
                   error={aiError}
-                  canRevert={aiBaselineRef.current !== null}
                   onPropose={handlePropose}
-                  onRevert={handleAiRevert}
                   onDismissError={() => setAiError(null)}
                 />
               )}

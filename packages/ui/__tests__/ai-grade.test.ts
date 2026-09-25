@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { sanitizeParams, gradableOptions, describeParams, buildSystemPrompt } from "../lib/ai-grade";
+import { sanitizeParams, gradableOptions, describeParams, buildSystemPrompt, groupsToEnable } from "../lib/ai-grade";
 
 describe("gradableOptions", () => {
   test("covers colour and excludes optical and motion effects", () => {
@@ -7,6 +7,7 @@ describe("gradableOptions", () => {
     expect(keys).toContain("exposure");
     expect(keys).toContain("white-balance");
     expect(keys).toContain("split-tone-amount");
+    expect(keys).toContain("vignette-amount");
     expect(keys).not.toContain("grain-iso");
     expect(keys).not.toContain("halation-amount");
     expect(keys).not.toContain("camera-shake-amount");
@@ -21,6 +22,17 @@ describe("prompt", () => {
   test("describes every gradable parameter", () => {
     const described = describeParams();
     for (const opt of gradableOptions()) expect(described).toContain(opt.key);
+  });
+});
+
+describe("groupsToEnable", () => {
+  test("switches on each group a proposal touches, once", () => {
+    expect(groupsToEnable({ exposure: 0.3, contrast: 1.1, "vignette-amount": 0.4 }).sort())
+      .toEqual(["no-color-settings", "no-vignette"]);
+  });
+
+  test("switches nothing on for an empty proposal", () => {
+    expect(groupsToEnable({})).toEqual([]);
   });
 });
 
