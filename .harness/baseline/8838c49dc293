@@ -1,0 +1,89 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+    → SplitToneControls.tsx → EffectGroup.tsx
+    :N ../skills.generated
+    :N ../src/probe
+    :N ../src/skills.generated
+    :N ../src/skills.generated
+    :N existsSync (caveat: incomplete import graph)
+    :N OptionAlias (caveat: incomplete import graph)
+    :N PRO_CODECS (caveat: incomplete import graph)
+    :N readdirSync (caveat: incomplete import graph)
+    :N readFileSync (caveat: incomplete import graph)
+    :N statSync (caveat: incomplete import graph)
+    :N writeFileSync (caveat: incomplete import graph)
+    ... and N more (--format json for full list)
+  (N more in files already reported as unused)
+  @playwright/test
+  autoprefixer (packages/try/package.json) (caveat: incomplete import graph)
+  autoprefixer (packages/ui/package.json) (caveat: incomplete import graph)
+  eNe/controls.spec.ts (caveat: incomplete import graph)
+  eNe/export.spec.ts (caveat: incomplete import graph)
+  eNe/helpers.ts (caveat: incomplete import graph)
+  eNe/presets.spec.ts (caveat: incomplete import graph)
+  eNe/ui-loads.spec.ts (caveat: incomplete import graph)
+  eNe/upload-and-preview.spec.ts (caveat: incomplete import graph)
+  Exported symbols with no known consumers
+  Files not reachable from any entry point
+  https://fallow.tools/docs/explanations/dead-code/#circular-dependencies
+  https://fallow.tools/docs/explanations/dead-code/#unlisted-dependencies
+  https://fallow.tools/docs/explanations/dead-code/#unresolved-imports
+  https://fallow.tools/docs/explanations/dead-code/#unused-dependencies
+  https://fallow.tools/docs/explanations/dead-code/#unused-dependencies
+  https://fallow.tools/docs/explanations/dead-code/#unused-exports
+  https://fallow.tools/docs/explanations/dead-code/#unused-files
+  https://fallow.tools/docs/explanations/dead-code/#unused-types
+  https://fallow.tools/docs/frameworks/built-in/
+  Import cycles that can cause initialization failures and prevent tree-shaking
+  Import paths that could not be resolved, check for missing packages or broken
+  Listed in dependencies but never imported
+  Listed in devDependencies but never imported or referenced
+  N entry points detected (N plugin, N package.json, N default index)
+  N in src, N in test files
+  oxfmt (caveat: incomplete import graph)
+  Packages imported in code but missing from package.json
+  packages/cli/__tests__/skills-guards.test.ts
+  packages/cli/__tests__/skills.test.ts
+  packages/cli/src/commands/skills.ts
+  packages/core/src/export-presets.ts
+  packages/core/src/schema.ts
+  packages/desktop/src/bun/index.ts (caveat: incomplete import graph)
+  packages/gpu/__tests__/export-cancel.test.ts
+  packages/try/src/node-stub.ts (N)
+  packages/ui/app/components/EffectGroup.tsx
+  paths. Framework-specific imports may need a plugin:
+  scripts/__tests__/gen-skills.test.ts (caveat: incomplete import graph)
+  scripts/__tests__/stage-release.test.ts (caveat: incomplete import graph)
+  scripts/build-preset-index.ts (caveat: incomplete import graph)
+  sharp (packages/docs/package.json) (caveat: incomplete import graph)
+  To suppress: // fallow-ignore-file unused-file
+  To suppress: // fallow-ignore-next-line unresolved-import
+  To suppress: // fallow-ignore-next-line unused-export
+  Type exports with no known consumers
+● Circular dependencies (N)
+── Dependencies ─────────────────────────────────────
+✗ N files · N exports · N type · N unused dependency · N dev/optional dependencies · N unresolved imports · N unlisted dependency · N circular dependency (N.Ns)
+── Structure ─────────────────────────────────────
+● Unlisted dependencies (N)
+● Unresolved imports (N)
+── Unused Code ─────────────────────────────────────
+● Unused dependencies (N)
+● Unused devDependencies (N)
+● Unused exports (N)
+● Unused files (N)
+● Unused type exports (N)
+[Nm   N.Ns[Nm [Nm WARN[Nm fallow: skipped N hidden directory that contains source files (.harness). Hidden directories are not traversed, so a file, export or dependency used only there can be reported as unused: add '!.harness/**' to ignorePatterns to analyze it, or add it to entry, ignoreExports or ignoreDependencies, or add '.harness/**' to ignorePatterns to silence this. fallow --root .harness analyzes it on its own and does not fix this run.
+<claude-code-hint v="N" type="plugin" value="fallow@claude-plugins-official" />
+loaded config: /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/.fallowrc.json
+Unused code: delete it, or import it from an entry point if it is meant to be used.

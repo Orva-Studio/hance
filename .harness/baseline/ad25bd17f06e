@@ -1,0 +1,40 @@
+
+
+
+
+
+
+
+
+
+      N lines  N instances  spread N  dup:cNbNabbNfNacdN-rN
+      N lines  N instances  spread N  dup:NcN
+     N lines  N instances  dup:cNbNabbNfNacdN-rN
+     N lines  N instances  dup:cNbNabbNfNacdN-rN
+     N lines  N instances  spread N  dup:cNbNabbNfNacdN-rN
+     N lines  N instances  spread N  dup:NbaN
+    packages/docs/src/pages/index.astro:N-N
+    packages/docs/src/pages/mac-install.astro:N-N
+    packages/docs/src/pages/privacy.astro:N-N
+    packages/docs/src/pages/terms.astro:N-N
+    packages/try/src/App.tsx:N-N
+    packages/ui/app/App.tsx:N-N
+    packages/ui/app/components/Canvas.tsx:N-N
+    packages/ui/app/components/Canvas.tsx:N-N
+    packages/ui/app/gpu/renderer.ts:N-N
+    packages/ui/app/gpu/renderer.ts:N-N
+    packages/ui/app/lib/fetchJson.ts:N-N
+    packages/ui/app/lib/fetchJson.ts:N-N
+  (--explain-skipped for the list)
+  (--no-ignore-imports to include it)
+  Duplicate code blocks
+  https://fallow.tools/docs/explanations/duplication/#clone-groups
+● Duplicates (N clone groups)
+✗ N lines (N.N%) duplicated across N files (N.Ns)
+[Nm   N.Ns[Nm [Nm WARN[Nm fallow: skipped N hidden directory that contains source files (.harness). Hidden directories are not traversed, so a file, export or dependency used only there can be reported as unused: add '!.harness/**' to ignorePatterns to analyze it, or add it to entry, ignoreExports or ignoreDependencies, or add '.harness/**' to ignorePatterns to silence this. fallow --root .harness analyzes it on its own and does not fix this run.
+<claude-code-hint v="N" type="plugin" value="fallow@claude-plugins-official" />
+Duplicated code: extract it into one shared function and reuse it.
+Duplication (N.N%) exceeds threshold (N.N%)
+loaded config: /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/.fallowrc.json
+note: module wiring excluded from clones
+note: skipped N files matching default duplicates ignores

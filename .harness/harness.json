@@ -1,0 +1,28 @@
+{
+  "edit": [
+    {
+      "match": "\\.(ts|tsx|mts|cts)$",
+      "format": "bunx oxfmt \"$1\"",
+      "lint": "bunx oxlint --type-aware --deny-warnings \"$1\""
+    },
+    {
+      "match": "^packages/wgpu/.*\\.rs$",
+      "format": "cd packages/wgpu && env -u RUSTUP_TOOLCHAIN cargo fmt",
+      "lint": "cd packages/wgpu && env -u RUSTUP_TOOLCHAIN cargo clippy -q --all-targets -- -D warnings -W clippy::pedantic -W clippy::unwrap_used -W clippy::expect_used -W clippy::dbg_macro -W clippy::todo -W clippy::unimplemented"
+    }
+  ],
+  "check": [
+    "if jq -e .scripts.typecheck package.json >/dev/null; then bun run typecheck; else bunx tsc --noEmit --strict --noUncheckedIndexedAccess; fi",
+    "bunx oxlint --type-aware --deny-warnings .",
+    "bunx fallow dead-code || { echo 'Unused code: delete it, or import it from an entry point if it is meant to be used.'; exit 1; }",
+    "bunx fallow dupes --threshold 0.01 || { echo 'Duplicated code: extract it into one shared function and reuse it.'; exit 1; }",
+    ".harness/check-pins.sh",
+    "cd packages/docs && \"$ROOT\"/.harness/hooks/check-og.sh",
+    "cd packages/try && \"$ROOT\"/.harness/hooks/check-og.sh",
+    "cd packages/ui && \"$ROOT\"/.harness/hooks/check-og.sh",
+    "cd packages/wgpu && env -u RUSTUP_TOOLCHAIN cargo fmt --check",
+    "cd packages/wgpu && env -u RUSTUP_TOOLCHAIN cargo clippy -q --all-targets -- -D warnings -W clippy::pedantic -W clippy::unwrap_used -W clippy::expect_used -W clippy::dbg_macro -W clippy::todo -W clippy::unimplemented",
+    "cd packages/wgpu && env -u RUSTUP_TOOLCHAIN cargo test -q",
+    "cd packages/wgpu && env -u RUSTUP_TOOLCHAIN cargo deny check -s"
+  ]
+}

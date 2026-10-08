@@ -21,6 +21,11 @@
     "test": "bun test"
   },
   "devDependencies": {
-    "@types/bun": "^1.3.11"
+    "@types/bun": "^1.3.11",
+    "fallow": "3.32.0",
+    "oxfmt": "0.72.0",
+    "oxlint": "1.87.0",
+    "oxlint-tsgolint": "7.0.2003",
+    "typescript": "7.0.2"
   }
 }

@@ -1,0 +1,1125 @@
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+                     bytes_per_row: Some(LUT_N * N * N),
+                     rows_per_image: Some(LUT_N),
+                     rows_per_image: Some(self.height),
+                 ..Default::default()
+                 },
+                 },
+                 &self.bloom_blend_ub,
+                 &self.combine_ub,
+                 &self.core_tex.create_view(&TextureViewDescriptor::default()),
+                 &self.half_a.create_view(&TextureViewDescriptor::default()),
+                 &self.half_a.create_view(&TextureViewDescriptor::default()),
+                 &self.sampler,
+                 &self.sampler,
+                 bytes_per_row: Some(self.width * N),
+                 dimension: TextureDimension::DN,
+                 label: Some("input-lut"),
+                 let bg = passes::make_std_bind_group(
+                 rows_per_image: Some(self.height),
+                 sample_count: N,
+                 self.write_uniform(&self.blur_ubN, &[N.N, N.N, N.N, N.N]);
+             ..Default::default()
+             .and_then(|v| v.as_str())
+             .expect("warm-classic film density preset must exist");
+             .unwrap_or("neutral");
+             );
+             );
+             }
+             },
+             },
+             },
+             });
+             // into the .cube and replayed on every frame the LUT ever touches.
+             // LSB of noise is not masked by neighbouring detail — it is quantized
+             // Per-channel H scatter: core_tex -> half_b
+             // Per-channel V scatter: half_b -> half_a
+             // Ring extraction + additive recombine: base + amount*max(scatter - ring*core, N)
+             // Threshold (or plain downsample) -> core_tex
+             // where every texel is a lattice point rather than a pixel, so +/-N.N
+             amount,
+             backends: Backends::all(),
+             current_is_b = true;
+             dimension: TextureDimension::DN,
+             eprintln!("GPU init failed: {e}");
+             if self.params.halation_highlights_only() {
+             label: Some("src"),
+             let amount = self.params.bloom_amount();
+             let amount = self.params.halation_amount();
+             let bg = passes::make_lut_bind_group(
+             let bg = passes::make_std_bind_group(
+             let bg = passes::make_std_bind_group(
+             let bg = passes::make_std_bind_group(
+             let bg = passes::make_std_bind_group(
+             let bg = passes::make_std_bind_group(
+             let bg = passes::make_std_bind_group(
+             let bg = passes::make_std_bind_group(
+             let bg = passes::make_std_bind_group(
+             let bg = passes::make_std_bind_group(
+             let blend_bg = passes::make_blend_bind_group(
+             let combine_bg = passes::make_combine_bind_group(
+             let consts = crate::render_constants::render_constants();
+             let cs = consts.halation_channel_sigma;
+             let ds_bg = passes::make_std_bind_group(
+             let offset = self.params.aberration_offset();
+             let radius = self.params.bloom_radius();
+             let radius = self.params.halation_radius();
+             let sig = [base_sigma * cs[N], base_sigma * cs[N], base_sigma * cs[N]];
+             let tex = device.create_texture(&TextureDescriptor {
+             lift_base * (N.N + fade_tint * (hue[N] - N.N)),
+             lift_base * (N.N + fade_tint * (hue[N] - N.N)),
+             ops: Operations {
+             resolve_target: None,
+             sample_count: N,
+             self.tex_a.create_view(&TextureViewDescriptor::default())
+             self.write_uniform(&self.aberration_ub, &[offset, N.N, N.N, N.N]);
+             self.write_uniform(&self.bloom_blend_ub, &[amount, N.N, N.N, N.N]);
+             self.write_uniform(&self.blur_ubN, &[N.N, N.N, N.N, N.N]);
+             self.write_uniform(&self.color_ub, &Params::color_settings_identity());
+             self.write_uniform(&self.color_wheels_ub, &self.params.color_wheels_uniform());
+             self.write_uniform(&self.combine_ub, &[amount, consts.halation_ring, N.N, N.N]);
+             self.write_uniform(&self.film_density_ub, &self.params.film_density_uniform());
+             self.write_uniform(&self.grain_ub, &self.params.grain_uniform(self.frame_count));
+             self.write_uniform(&self.split_tone_ub, &self.params.split_tone_uniform());
+             self.write_uniform(&self.vignette_ub, &self.params.vignette_uniform());
+             tex
+             view: target,
+         !self.bool("no-color-wheels", false)
+         .ok_or("No GPU adapter found")?;
+         [
+         [
+         [
+         [
+         ]
+         ];
+         }
+         }
+         }
+         }
+         }
+         }
+         }
+         }
+         }
+         }
+         }
+         }
+         }
+         });
+         }))
+         })],
+         // --- Camera Shake ---
+         // --- Decode to linear light (start of light-transport bracket) ---
+         // --- Encode back to sRGB (end of light-transport bracket) ---
+         // --- Readback ---
+         // Highlight strength is a fraction of the shadow scale; the N.N default
+         // Shadows and highlights tint independently from their own hues.
+         // The light-transport group runs in linear light. Only bracket the chain
+         // Upload the baked LUT as a N^N rgbaNfloat ND texture (alpha = N).
+         // with decode/encode passes when at least one of those effects is active,
+         + output.stdout[neighbor * N + N] as uN
+         + output.stdout[neighbor * N + N] as uN;
+         assert!((u[N] - (-N.N)).abs() < N.N); // shadowB
+         assert!((u[N] - (-N.N)).abs() < N.N); // shadowG
+         assert!((u[N] - N.N).abs() < N.N); // highlightR (scale N.N)
+         dimension: TextureDimension::DN,
+         entries: &[
+         entries: &[
+         entries: &[
+         entries: &[
+         Err(e) => {
+         if light_group_active {
+         if light_group_active {
+         if self.params.bloom_enabled() {
+         if self.params.camera_shake_enabled() {
+         if self.params.color_wheels_enabled() {
+         if self.params.film_density_enabled() {
+         if self.params.grain_enabled() {
+         if self.params.split_tone_enabled() {
+         if self.params.vignette_enabled() {
+         label: None,
+         label: None,
+         label: None,
+         label: None,
+         label: Some("combine_bind_group"),
+         layout,
+         layout,
+         layout,
+         layout,
+         let amount = self.num("split-tone-amount", N.N);
+         let bg = passes::make_std_bind_group(
+         let core_tex = passes::create_texture(&device, half_w, half_h, INTERMEDIATE_FORMAT);
+         let fade_hue = consts.fade_color_hues.get(fade_color).copied();
+         let half_h = (self.height / N).max(N);
+         let half_w = (self.width / N).max(N);
+         let lift = [
+         let lut_tex = lut.map(|data| {
+         let mid_r = pivot * -N.N;
+         let mut current_is_b = false;
+         let output_tex = passes::create_texture(&device, width, height, OUTPUT_FORMAT);
+         let pivot = self.num("split-tone-pivot", N.N);
+         let sampler = device.create_sampler(&SamplerDescriptor {
+         let src_tex = device.create_texture(&TextureDescriptor {
+         let v = |k: &str, n: fN| self.num(k, n);
+         panic!("Sidecar failed: {stderr}");
+         sample_count: N,
+         self.queue.submit(std::iter::once(encoder.finish()));
+     }
+     }
+     }
+     }
+     }
+     }
+     }
+     };
+     })
+     })
+     })
+     })
+     // Send one red frame on stdin
+     /// Color wheels uniform:
+     /// Identity color settings (passthrough)
+     device.create_texture(&TextureDescriptor {
+     for i in N..(width * height) as usize {
+     let bloomed = output.stdout[neighbor * N] as uN
+     let mut frame = vec![NuN; frame_size];
+     pub fn color_settings_identity() -> [fN; N] {
+     pub fn color_wheels_enabled(&self) -> bool {
+     pub fn color_wheels_uniform(&self) -> [fN; N] {
+     pub fn film_density_enabled(&self) -> bool {
+     pub fn split_tone_uniform(&self) -> [fN; N] {
+ }
+ }
+ }
+ }
+ }
+ }
+ #[test]
+ const COLOR_WHEEL_KEYS: [(&str, fN); N] = [
+ impl GpuRenderer {
+ pub fn create_texture(device: &Device, width: uN, height: uN, format: TextureFormat) -> Texture {
+ pub struct Params {
+(B[m 
+(B[m 
+(B[m 
+(B[m 
+(B[m 
+(B[m 
+(B[m 
+(B[m 
+(B[m 
+(B[m 
+(B[m                     &current_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m                     &current_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m                 );
+(B[m                 );
+(B[m                 * crate::render_constants::resolution_scale(self.height);
+(B[m                 * crate::render_constants::resolution_scale(self.height);
+(B[m                 &current_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m                 &current_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m                 &current_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m                 &current_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m                 &current_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m                 &current_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m                 &current_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m                 &current_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m                 &current_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m                 &current_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m                 &current_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m                 &current_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m                 &current_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m                 &self.core_tex.create_view(&TextureViewDescriptor::default()),
+(B[m                 &self.half_a.create_view(&TextureViewDescriptor::default()),
+(B[m                 &self.half_b.create_view(&TextureViewDescriptor::default()),
+(B[m                 &self.half_b.create_view(&TextureViewDescriptor::default()),
+(B[m                 &self.src_tex.create_view(&TextureViewDescriptor::default()),
+(B[m                 let bg = passes::make_std_bind_group(
+(B[m                 mip_level_count: N,
+(B[m                 store: StoreOp::Store,
+(B[m             );
+(B[m             );
+(B[m             );
+(B[m             );
+(B[m             );
+(B[m             );
+(B[m             );
+(B[m             );
+(B[m             );
+(B[m             );
+(B[m             );
+(B[m             );
+(B[m             );
+(B[m             );
+(B[m             );
+(B[m             );
+(B[m             );
+(B[m             }
+(B[m             } else {
+(B[m             // Color must write somewhere other than its tex_a input.
+(B[m             &color_input,
+(B[m             let bg = passes::make_std_bind_group(
+(B[m             let h_bg = passes::make_std_bind_group(
+(B[m             let h_bg = passes::make_std_bind_group(
+(B[m             let v_bg = passes::make_std_bind_group(
+(B[m             let v_bg = passes::make_std_bind_group(
+(B[m             mip_level_count: N,
+(B[m             N.N,
+(B[m             self.write_uniform(&self.blit_ub, &[self.frame_count as fN, dither, N.N, N.N]);
+(B[m             swap!();
+(B[m             swap!();
+(B[m             swap!();
+(B[m             swap!();
+(B[m             swap!();
+(B[m             swap!();
+(B[m             swap!();
+(B[m             swap!();
+(B[m             swap!();
+(B[m             swap!();
+(B[m             swap!();
+(B[m         .map_err(|e| format!("Device request failed: {e}"))?;
+(B[m         );
+(B[m         );
+(B[m         );
+(B[m         ]
+(B[m         ]
+(B[m         ]
+(B[m         ],
+(B[m         ],
+(B[m         ],
+(B[m         ],
+(B[m         }
+(B[m         assert!((u[N] + u[N] + u[N]).abs() < N.N);
+(B[m         frame[i * N + N] = N; // A
+(B[m         let hue = hue_to_rgb(fade_hue.unwrap_or(N.N));
+(B[m         let instance = Instance::new(&InstanceDescriptor {
+(B[m         mip_level_count: N,
+(B[m         Ok(r) => r,
+(B[m     }
+(B[m     }
+(B[m ];
+(B[m }
+(B[m }
+(B[m[Nm-                    &self.core_tex.create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                    &self.core_tex.create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &other_tex!().create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &other_tex!().create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &other_tex!().create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &other_tex!().create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &other_tex!().create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &other_tex!().create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &other_tex!().create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &other_tex!().create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &other_tex!().create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &other_tex!().create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &other_tex!().create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &self.half_a.create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &self.half_a.create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &self.half_a.create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &self.half_b.create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &self.half_b.create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &self.output_tex.create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                &self.tex_a.create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-                N.N / half_w as fN, N.N, N.N, N.N,
+(B[m[Nm-                N.N, N.N / half_h as fN, N.N, N.N,
+(B[m[Nm-                psf[N][N], psf[N][N], psf[N][N], psf[N][N],
+(B[m[Nm-                psf[N][N], psf[N][N], psf[N][N], psf[N][N],
+(B[m[Nm-                sig[N], sig[N], sig[N], N.N,
+(B[m[Nm-                sig[N], sig[N], sig[N], N.N,
+(B[m[Nm-            ..Default::default()
+(B[m[Nm-            ]);
+(B[m[Nm-            ]);
+(B[m[Nm-            &current_tex!().create_view(&TextureViewDescriptor::default()));
+(B[m[Nm-            BindGroupEntry { binding: N, resource: BindingResource::Sampler(sampler) },
+(B[m[Nm-            BindGroupEntry { binding: N, resource: BindingResource::Sampler(sampler) },
+(B[m[Nm-            BindGroupEntry { binding: N, resource: BindingResource::Sampler(sampler) },
+(B[m[Nm-            BindGroupEntry { binding: N, resource: BindingResource::Sampler(sampler) },
+(B[m[Nm-            BindGroupEntry { binding: N, resource: BindingResource::TextureView(core) },
+(B[m[Nm-            BindGroupEntry { binding: N, resource: BindingResource::TextureView(lut) },
+(B[m[Nm-            BindGroupEntry { binding: N, resource: BindingResource::TextureView(overlay) },
+(B[m[Nm-            BindGroupEntry { binding: N, resource: BindingResource::TextureView(scatter) },
+(B[m[Nm-            BindGroupEntry { binding: N, resource: uniform.as_entire_binding() },
+(B[m[Nm-            BindGroupEntry { binding: N, resource: uniform.as_entire_binding() },
+(B[m[Nm-            BindGroupEntry { binding: N, resource: uniform.as_entire_binding() },
+(B[m[Nm-            highlight_r, highlight_b, highlight_g, N.N,
+(B[m[Nm-            label: Some("hance-gpu"),
+(B[m[Nm-            lift[N], lift[N], lift[N], N.N,
+(B[m[Nm-            mid_r, amount, protect, N.N,
+(B[m[Nm-            preset.shoulder[N], preset.shoulder[N], preset.shoulder[N],
+(B[m[Nm-            v("gain-r", N.N), v("gain-g", N.N), v("gain-b", N.N), N.N,
+(B[m[Nm-            v("gamma-r", N.N), v("gamma-g", N.N), v("gamma-b", N.N), N.N,
+(B[m[Nm-        }, None))
+(B[m[Nm-        frame[i * N + N] = N;   // B
+(B[m[Nm-        frame[i * N + N] = N;   // G
+(B[m[Nm-        let aberration_pipeline = passes::create_pipeline(&device, VERT, ABERRATION_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm-        let blend_pipeline = passes::create_pipeline(&device, VERT, BLEND_FRAG, &blend_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm-        let blit_pipeline = passes::create_pipeline(&device, VERT, BLIT_FRAG, &std_layout, OUTPUT_FORMAT);
+(B[m[Nm-        let blur_pipeline = passes::create_pipeline(&device, VERT, BLUR_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm-        let color_wheels_pipeline = passes::create_pipeline(&device, VERT, COLOR_WHEELS_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm-        let colorspace_pipeline = passes::create_pipeline(&device, VERT, COLORSPACE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm-        let combine_pipeline = passes::create_pipeline(&device, VERT, COMBINE_FRAG, &combine_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm-        let film_density_pipeline = passes::create_pipeline(&device, VERT, FILM_DENSITY_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm-        let grain_pipeline = passes::create_pipeline(&device, VERT, GRAIN_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm-        let lut_pipeline = passes::create_pipeline(&device, VERT, LUT_FRAG, &lut_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm-        let scatter_blur_pipeline = passes::create_pipeline(&device, VERT, SCATTER_BLUR_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm-        let shake_pipeline = passes::create_pipeline(&device, VERT, SHAKE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm-        let split_tone_pipeline = passes::create_pipeline(&device, VERT, SPLIT_TONE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm-        let threshold_pipeline = passes::create_pipeline(&device, VERT, THRESHOLD_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm-        let vignette_pipeline = passes::create_pipeline(&device, VERT, VIGNETTE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm-        macro_rules! other_tex { () => { if current_is_b { &self.tex_a } else { &self.tex_b } } }
+(B[m[Nm-        macro_rules! swap { () => { current_is_b = !current_is_b; } }
+(B[m[Nm-    ("gain-r", N.N), ("gain-g", N.N), ("gain-b", N.N),
+(B[m[Nm-    ("gamma-r", N.N), ("gamma-g", N.N), ("gamma-b", N.N),
+(B[m[Nm+                                             // Tint is mean-neutral: channels sum to zero.
+(B[m[Nm+                        consts.halation_threshold[N],
+(B[m[Nm+                        consts.halation_threshold[N],
+(B[m[Nm+                        N.N,
+(B[m[Nm+                        N.N,
+(B[m[Nm+                    .camera_shake_uniform(self.frame_count, self.width),
+(B[m[Nm+                    .create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                    .output_tex
+(B[m[Nm+                    .params
+(B[m[Nm+                    ],
+(B[m[Nm+                    &[
+(B[m[Nm+                    &bg,
+(B[m[Nm+                    &bg,
+(B[m[Nm+                    &mut encoder,
+(B[m[Nm+                    &mut encoder,
+(B[m[Nm+                    &self.blur_pipeline,
+(B[m[Nm+                    &self.blur_ubN,
+(B[m[Nm+                    &self.core_tex.create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                    &self.core_tex.create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                    &self.device,
+(B[m[Nm+                    &self.device,
+(B[m[Nm+                    &self.sampler,
+(B[m[Nm+                    &self.sampler,
+(B[m[Nm+                    &self.std_layout,
+(B[m[Nm+                    &self.std_layout,
+(B[m[Nm+                    &self.tex_a
+(B[m[Nm+                    &self.tex_a
+(B[m[Nm+                    &self.tex_b
+(B[m[Nm+                    &self.tex_b
+(B[m[Nm+                    &self.threshold_pipeline,
+(B[m[Nm+                    &self.threshold_ub,
+(B[m[Nm+                    &self.threshold_ub,
+(B[m[Nm+                    a: N.N,
+(B[m[Nm+                    b: N.N,
+(B[m[Nm+                    depth_or_array_layers: LUT_N,
+(B[m[Nm+                    depth_or_array_layers: LUT_N,
+(B[m[Nm+                    g: N.N,
+(B[m[Nm+                    height: LUT_N,
+(B[m[Nm+                    height: LUT_N,
+(B[m[Nm+                    N.N / half_h as fN,
+(B[m[Nm+                    N.N / half_w as fN,
+(B[m[Nm+                    N.N,
+(B[m[Nm+                    N.N,
+(B[m[Nm+                    N.N,
+(B[m[Nm+                    N.N,
+(B[m[Nm+                    N.N,
+(B[m[Nm+                    N.N,
+(B[m[Nm+                    N.N,
+(B[m[Nm+                    N.N,
+(B[m[Nm+                    psf[N][N],
+(B[m[Nm+                    psf[N][N],
+(B[m[Nm+                    psf[N][N],
+(B[m[Nm+                    psf[N][N],
+(B[m[Nm+                    psf[N][N],
+(B[m[Nm+                    psf[N][N],
+(B[m[Nm+                    psf[N][N],
+(B[m[Nm+                    psf[N][N],
+(B[m[Nm+                    r: N.N,
+(B[m[Nm+                    sig[N],
+(B[m[Nm+                    sig[N],
+(B[m[Nm+                    sig[N],
+(B[m[Nm+                    sig[N],
+(B[m[Nm+                    sig[N],
+(B[m[Nm+                    sig[N],
+(B[m[Nm+                    width: LUT_N,
+(B[m[Nm+                    width: LUT_N,
+(B[m[Nm+                ..Default::default()
+(B[m[Nm+                .any(|(k, neutral)| self.num(k, *neutral) != *neutral)
+(B[m[Nm+                .iter()
+(B[m[Nm+                );
+(B[m[Nm+                );
+(B[m[Nm+                );
+(B[m[Nm+                ],
+(B[m[Nm+                ],
+(B[m[Nm+                }
+(B[m[Nm+                }
+(B[m[Nm+                } else {
+(B[m[Nm+                } else {
+(B[m[Nm+                },
+(B[m[Nm+                },
+(B[m[Nm+                }),
+(B[m[Nm+                * consts.blur_sigma_factor
+(B[m[Nm+                * crate::render_constants::render_constants().blur_sigma_factor
+(B[m[Nm+                &[
+(B[m[Nm+                &[
+(B[m[Nm+                &[N.N / half_w as fN, N.N, sigma, N.N],
+(B[m[Nm+                &[N.N, N.N / half_h as fN, sigma, N.N],
+(B[m[Nm+                &bg,
+(B[m[Nm+                &bg,
+(B[m[Nm+                &bg,
+(B[m[Nm+                &bg,
+(B[m[Nm+                &bg,
+(B[m[Nm+                &bg,
+(B[m[Nm+                &bg,
+(B[m[Nm+                &bg,
+(B[m[Nm+                &bg,
+(B[m[Nm+                &bg,
+(B[m[Nm+                &bg,
+(B[m[Nm+                &blend_bg,
+(B[m[Nm+                &combine_bg,
+(B[m[Nm+                &ds_bg,
+(B[m[Nm+                &h_bg,
+(B[m[Nm+                &h_bg,
+(B[m[Nm+                &lut_view,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &mut encoder,
+(B[m[Nm+                &other_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &other_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &other_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &other_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &other_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &other_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &other_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &other_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &other_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &other_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &other_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &self
+(B[m[Nm+                &self
+(B[m[Nm+                &self.aberration_pipeline,
+(B[m[Nm+                &self.aberration_ub,
+(B[m[Nm+                &self.blend_layout,
+(B[m[Nm+                &self.blend_pipeline,
+(B[m[Nm+                &self.blit_pipeline,
+(B[m[Nm+                &self.blit_ub,
+(B[m[Nm+                &self.bloom_blur_ubN,
+(B[m[Nm+                &self.bloom_blur_ubN,
+(B[m[Nm+                &self.bloom_blur_ubN,
+(B[m[Nm+                &self.bloom_blur_ubN,
+(B[m[Nm+                &self.blur_pipeline,
+(B[m[Nm+                &self.blur_pipeline,
+(B[m[Nm+                &self.blur_pipeline,
+(B[m[Nm+                &self.blur_ubN,
+(B[m[Nm+                &self.color_wheels_pipeline,
+(B[m[Nm+                &self.color_wheels_ub,
+(B[m[Nm+                &self.colorspace_pipeline,
+(B[m[Nm+                &self.colorspace_pipeline,
+(B[m[Nm+                &self.combine_layout,
+(B[m[Nm+                &self.combine_pipeline,
+(B[m[Nm+                &self.decode_ub,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.device,
+(B[m[Nm+                &self.encode_ub,
+(B[m[Nm+                &self.film_density_pipeline,
+(B[m[Nm+                &self.film_density_ub,
+(B[m[Nm+                &self.grain_pipeline,
+(B[m[Nm+                &self.grain_ub,
+(B[m[Nm+                &self.half_a.create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &self.half_a.create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &self.half_a.create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &self.half_b.create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &self.half_b.create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &self.lut_layout,
+(B[m[Nm+                &self.lut_pipeline,
+(B[m[Nm+                &self.sampler,
+(B[m[Nm+                &self.sampler,
+(B[m[Nm+                &self.sampler,
+(B[m[Nm+                &self.sampler,
+(B[m[Nm+                &self.sampler,
+(B[m[Nm+                &self.sampler,
+(B[m[Nm+                &self.sampler,
+(B[m[Nm+                &self.sampler,
+(B[m[Nm+                &self.sampler,
+(B[m[Nm+                &self.sampler,
+(B[m[Nm+                &self.sampler,
+(B[m[Nm+                &self.sampler,
+(B[m[Nm+                &self.sampler,
+(B[m[Nm+                &self.sampler,
+(B[m[Nm+                &self.sampler,
+(B[m[Nm+                &self.sampler,
+(B[m[Nm+                &self.scatter_blur_pipeline,
+(B[m[Nm+                &self.scatter_blur_pipeline,
+(B[m[Nm+                &self.scatter_blur_ubN,
+(B[m[Nm+                &self.scatter_blur_ubN,
+(B[m[Nm+                &self.scatter_blur_ubN,
+(B[m[Nm+                &self.scatter_blur_ubN,
+(B[m[Nm+                &self.shake_pipeline,
+(B[m[Nm+                &self.shake_ub,
+(B[m[Nm+                &self.shake_ub,
+(B[m[Nm+                &self.split_tone_pipeline,
+(B[m[Nm+                &self.split_tone_ub,
+(B[m[Nm+                &self.std_layout,
+(B[m[Nm+                &self.std_layout,
+(B[m[Nm+                &self.std_layout,
+(B[m[Nm+                &self.std_layout,
+(B[m[Nm+                &self.std_layout,
+(B[m[Nm+                &self.std_layout,
+(B[m[Nm+                &self.std_layout,
+(B[m[Nm+                &self.std_layout,
+(B[m[Nm+                &self.std_layout,
+(B[m[Nm+                &self.std_layout,
+(B[m[Nm+                &self.std_layout,
+(B[m[Nm+                &self.std_layout,
+(B[m[Nm+                &self.std_layout,
+(B[m[Nm+                &self.std_layout,
+(B[m[Nm+                &self.std_layout,
+(B[m[Nm+                &self.tex_a.create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+                &self.vignette_pipeline,
+(B[m[Nm+                &self.vignette_ub,
+(B[m[Nm+                &v_bg,
+(B[m[Nm+                &v_bg,
+(B[m[Nm+                binding: N,
+(B[m[Nm+                binding: N,
+(B[m[Nm+                binding: N,
+(B[m[Nm+                binding: N,
+(B[m[Nm+                binding: N,
+(B[m[Nm+                binding: N,
+(B[m[Nm+                binding: N,
+(B[m[Nm+                binding: N,
+(B[m[Nm+                binding: N,
+(B[m[Nm+                binding: N,
+(B[m[Nm+                binding: N,
+(B[m[Nm+                binding: N,
+(B[m[Nm+                binding: N,
+(B[m[Nm+                binding: N,
+(B[m[Nm+                binding: N,
+(B[m[Nm+                current_is_b = !current_is_b;
+(B[m[Nm+                depth_or_array_layers: N,
+(B[m[Nm+                depth_or_array_layers: N,
+(B[m[Nm+                depth_or_array_layers: N,
+(B[m[Nm+                ExtentNd {
+(B[m[Nm+                height,
+(B[m[Nm+                height: self.height,
+(B[m[Nm+                height: self.height,
+(B[m[Nm+                if current_is_b {
+(B[m[Nm+                if current_is_b {
+(B[m[Nm+                label: Some("hance-gpu"),
+(B[m[Nm+                load: LoadOp::Clear(Color {
+(B[m[Nm+                N.N
+(B[m[Nm+                N.N
+(B[m[Nm+                passes::run_pass(
+(B[m[Nm+                passes::run_pass(
+(B[m[Nm+                resource: BindingResource::Sampler(sampler),
+(B[m[Nm+                resource: BindingResource::Sampler(sampler),
+(B[m[Nm+                resource: BindingResource::Sampler(sampler),
+(B[m[Nm+                resource: BindingResource::Sampler(sampler),
+(B[m[Nm+                resource: BindingResource::TextureView(base),
+(B[m[Nm+                resource: BindingResource::TextureView(base),
+(B[m[Nm+                resource: BindingResource::TextureView(core),
+(B[m[Nm+                resource: BindingResource::TextureView(input),
+(B[m[Nm+                resource: BindingResource::TextureView(lut),
+(B[m[Nm+                resource: BindingResource::TextureView(overlay),
+(B[m[Nm+                resource: BindingResource::TextureView(scatter),
+(B[m[Nm+                resource: BindingResource::TextureView(texture),
+(B[m[Nm+                resource: uniform.as_entire_binding(),
+(B[m[Nm+                resource: uniform.as_entire_binding(),
+(B[m[Nm+                resource: uniform.as_entire_binding(),
+(B[m[Nm+                self.write_uniform(
+(B[m[Nm+                size: ExtentNd {
+(B[m[Nm+                width,
+(B[m[Nm+                width: self.width,
+(B[m[Nm+                width: self.width,
+(B[m[Nm+            .create_command_encoder(&CommandEncoderDescriptor { label: None });
+(B[m[Nm+            .device
+(B[m[Nm+            () => {
+(B[m[Nm+            () => {
+(B[m[Nm+            () => {
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            );
+(B[m[Nm+            } else {
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            },
+(B[m[Nm+            };
+(B[m[Nm+            };
+(B[m[Nm+            };
+(B[m[Nm+            };
+(B[m[Nm+            && COLOR_WHEEL_KEYS
+(B[m[Nm+            &bg,
+(B[m[Nm+            &blend_layout,
+(B[m[Nm+            &combine_layout,
+(B[m[Nm+            &current_tex!().create_view(&TextureViewDescriptor::default()),
+(B[m[Nm+            &device,
+(B[m[Nm+            &device,
+(B[m[Nm+            &device,
+(B[m[Nm+            &device,
+(B[m[Nm+            &device,
+(B[m[Nm+            &device,
+(B[m[Nm+            &device,
+(B[m[Nm+            &device,
+(B[m[Nm+            &device,
+(B[m[Nm+            &device,
+(B[m[Nm+            &DeviceDescriptor {
+(B[m[Nm+            &mut encoder,
+(B[m[Nm+            &self.color_pipeline,
+(B[m[Nm+            &self.color_ub,
+(B[m[Nm+            &self.device,
+(B[m[Nm+            &self.sampler,
+(B[m[Nm+            &self.std_layout,
+(B[m[Nm+            &std_layout,
+(B[m[Nm+            &std_layout,
+(B[m[Nm+            &std_layout,
+(B[m[Nm+            &std_layout,
+(B[m[Nm+            &std_layout,
+(B[m[Nm+            &std_layout,
+(B[m[Nm+            &std_layout,
+(B[m[Nm+            &std_layout,
+(B[m[Nm+            ABERRATION_FRAG,
+(B[m[Nm+            amount,
+(B[m[Nm+            BindGroupEntry {
+(B[m[Nm+            BindGroupEntry {
+(B[m[Nm+            BindGroupEntry {
+(B[m[Nm+            BindGroupEntry {
+(B[m[Nm+            BindGroupEntry {
+(B[m[Nm+            BindGroupEntry {
+(B[m[Nm+            BindGroupEntry {
+(B[m[Nm+            BindGroupEntry {
+(B[m[Nm+            BindGroupEntry {
+(B[m[Nm+            BindGroupEntry {
+(B[m[Nm+            BindGroupEntry {
+(B[m[Nm+            BindGroupEntry {
+(B[m[Nm+            BindGroupEntry {
+(B[m[Nm+            BindGroupEntry {
+(B[m[Nm+            BindGroupEntry {
+(B[m[Nm+            BLEND_FRAG,
+(B[m[Nm+            COLOR_WHEELS_FRAG,
+(B[m[Nm+            COLORSPACE_FRAG,
+(B[m[Nm+            COMBINE_FRAG,
+(B[m[Nm+            consts.fade_tint_strength
+(B[m[Nm+            contrast, brightness, saturation, gamma, wb, tint, bleach, N.N, lift[N], lift[N],
+(B[m[Nm+            depth_or_array_layers: N,
+(B[m[Nm+            ExtentNd {
+(B[m[Nm+            ExtentNd {
+(B[m[Nm+            FILM_DENSITY_FRAG,
+(B[m[Nm+            height,
+(B[m[Nm+            highlight_b,
+(B[m[Nm+            highlight_g,
+(B[m[Nm+            highlight_r,
+(B[m[Nm+            INTERMEDIATE_FORMAT,
+(B[m[Nm+            INTERMEDIATE_FORMAT,
+(B[m[Nm+            INTERMEDIATE_FORMAT,
+(B[m[Nm+            INTERMEDIATE_FORMAT,
+(B[m[Nm+            INTERMEDIATE_FORMAT,
+(B[m[Nm+            INTERMEDIATE_FORMAT,
+(B[m[Nm+            INTERMEDIATE_FORMAT,
+(B[m[Nm+            INTERMEDIATE_FORMAT,
+(B[m[Nm+            INTERMEDIATE_FORMAT,
+(B[m[Nm+            INTERMEDIATE_FORMAT,
+(B[m[Nm+            let base_sigma = radius
+(B[m[Nm+            let dither = if self.params.bool("no-dither", false) {
+(B[m[Nm+            let sigma = radius
+(B[m[Nm+            lift[N], N.N,
+(B[m[Nm+            mid_r,
+(B[m[Nm+            N.N
+(B[m[Nm+            N.N
+(B[m[Nm+            N.N
+(B[m[Nm+            N.N,
+(B[m[Nm+            N.N,
+(B[m[Nm+            N.N,
+(B[m[Nm+            N.N,
+(B[m[Nm+            N.N,
+(B[m[Nm+            N.N,
+(B[m[Nm+            N.N, N.N, N.N, N.N, N.N, N.N, N.N, N.N, N.N, N.N, N.N, N.N,
+(B[m[Nm+            None,
+(B[m[Nm+            passes::create_pipeline(&device, VERT, BLIT_FRAG, &std_layout, OUTPUT_FORMAT);
+(B[m[Nm+            passes::create_pipeline(&device, VERT, BLUR_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm+            passes::create_pipeline(&device, VERT, COLOR_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm+            passes::create_pipeline(&device, VERT, GRAIN_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm+            passes::create_pipeline(&device, VERT, LUT_FRAG, &lut_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm+            passes::create_pipeline(&device, VERT, SHAKE_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            passes::run_pass(
+(B[m[Nm+            preset.shoulder[N],
+(B[m[Nm+            preset.shoulder[N],
+(B[m[Nm+            preset.shoulder[N],
+(B[m[Nm+            preset.toe[N],
+(B[m[Nm+            preset.toe[N],
+(B[m[Nm+            preset.toe[N],
+(B[m[Nm+            protect,
+(B[m[Nm+            SCATTER_BLUR_FRAG,
+(B[m[Nm+            self.write_uniform(
+(B[m[Nm+            self.write_uniform(
+(B[m[Nm+            self.write_uniform(
+(B[m[Nm+            self.write_uniform(
+(B[m[Nm+            self.write_uniform(
+(B[m[Nm+            shadow_b,
+(B[m[Nm+            shadow_g,
+(B[m[Nm+            shadow_r,
+(B[m[Nm+            size: ExtentNd {
+(B[m[Nm+            SPLIT_TONE_FRAG,
+(B[m[Nm+            THRESHOLD_FRAG,
+(B[m[Nm+            v("gain-b", N.N),
+(B[m[Nm+            v("gain-g", N.N),
+(B[m[Nm+            v("gain-r", N.N),
+(B[m[Nm+            v("gamma-b", N.N),
+(B[m[Nm+            v("gamma-g", N.N),
+(B[m[Nm+            v("gamma-r", N.N),
+(B[m[Nm+            v("lift-b", N.N),
+(B[m[Nm+            v("lift-g", N.N),
+(B[m[Nm+            v("lift-r", N.N),
+(B[m[Nm+            VERT,
+(B[m[Nm+            VERT,
+(B[m[Nm+            VERT,
+(B[m[Nm+            VERT,
+(B[m[Nm+            VERT,
+(B[m[Nm+            VERT,
+(B[m[Nm+            VERT,
+(B[m[Nm+            VERT,
+(B[m[Nm+            VERT,
+(B[m[Nm+            VERT,
+(B[m[Nm+            VIGNETTE_FRAG,
+(B[m[Nm+            width,
+(B[m[Nm+        "expected halation to bloom energy into neighboring pixels"
+(B[m[Nm+        "Output frame size mismatch"
+(B[m[Nm+        );
+(B[m[Nm+        );
+(B[m[Nm+        );
+(B[m[Nm+        );
+(B[m[Nm+        );
+(B[m[Nm+        );
+(B[m[Nm+        );
+(B[m[Nm+        );
+(B[m[Nm+        );
+(B[m[Nm+        );
+(B[m[Nm+        );
+(B[m[Nm+        ))
+(B[m[Nm+        [
+(B[m[Nm+        ]
+(B[m[Nm+        }
+(B[m[Nm+        }
+(B[m[Nm+        }
+(B[m[Nm+        } else {
+(B[m[Nm+        } else {
+(B[m[Nm+        },
+(B[m[Nm+        };
+(B[m[Nm+        };
+(B[m[Nm+        &init.params,
+(B[m[Nm+        bloomed > N,
+(B[m[Nm+        frame_size,
+(B[m[Nm+        frame[i * N + N] = N; // B
+(B[m[Nm+        frame[i * N + N] = N; // G
+(B[m[Nm+        frame[i * N] = N; // R
+(B[m[Nm+        height: uN,
+(B[m[Nm+        init.height,
+(B[m[Nm+        init.lut.as_deref(),
+(B[m[Nm+        init.width,
+(B[m[Nm+        let (device, queue) = pollster::block_on(adapter.request_device(
+(B[m[Nm+        let aberration_pipeline = passes::create_pipeline(
+(B[m[Nm+        let blend_pipeline = passes::create_pipeline(
+(B[m[Nm+        let blit_pipeline =
+(B[m[Nm+        let blur_pipeline =
+(B[m[Nm+        let color_pipeline =
+(B[m[Nm+        let color_wheels_pipeline = passes::create_pipeline(
+(B[m[Nm+        let colorspace_pipeline = passes::create_pipeline(
+(B[m[Nm+        let combine_pipeline = passes::create_pipeline(
+(B[m[Nm+        let fade_tint = if fade_hue.is_some() {
+(B[m[Nm+        let film_density_pipeline = passes::create_pipeline(
+(B[m[Nm+        let grain_pipeline =
+(B[m[Nm+        let lut_pipeline =
+(B[m[Nm+        let mut encoder = self
+(B[m[Nm+        let protect = if self.bool("split-tone-protect-neutrals", false) {
+(B[m[Nm+        let scatter_blur_pipeline = passes::create_pipeline(
+(B[m[Nm+        let shake_pipeline =
+(B[m[Nm+        let split_tone_pipeline = passes::create_pipeline(
+(B[m[Nm+        let threshold_pipeline = passes::create_pipeline(
+(B[m[Nm+        let vignette_pipeline = passes::create_pipeline(
+(B[m[Nm+        lut: Option<&[fN]>,
+(B[m[Nm+        macro_rules! current_tex {
+(B[m[Nm+        macro_rules! other_tex {
+(B[m[Nm+        macro_rules! swap {
+(B[m[Nm+        output.stdout.len(),
+(B[m[Nm+        passes::run_pass(
+(B[m[Nm+        raw_params: &HashMap<String, serde_json::Value>,
+(B[m[Nm+        size: ExtentNd {
+(B[m[Nm+        width: uN,
+(B[m[Nm+    ("gain-b", N.N),
+(B[m[Nm+    ("gain-g", N.N),
+(B[m[Nm+    ("gain-r", N.N),
+(B[m[Nm+    ("gamma-b", N.N),
+(B[m[Nm+    ("gamma-g", N.N),
+(B[m[Nm+    ("gamma-r", N.N),
+(B[m[Nm+    ("lift-b", N.N),
+(B[m[Nm+    ("lift-g", N.N),
+(B[m[Nm+    ("lift-r", N.N),
+(B[m[Nm+    ) -> Result<Self, String> {
+(B[m[Nm+    ) {
+(B[m[Nm+    );
+(B[m[Nm+    );
+(B[m[Nm+    assert_eq!(
+(B[m[Nm+    assert!(
+(B[m[Nm+    let mut gpu = match renderer::GpuRenderer::new(
+(B[m[Nm+    pub fn new(
+[Nm-                    &self.device, &self.std_layout,
+[Nm-                    &self.device, &self.std_layout,
+[Nm-                    &self.sampler, &self.blur_ubN,
+[Nm-                    &self.sampler, &self.threshold_ub,
+[Nm-                &self.device, &self.blend_layout,
+[Nm-                &self.device, &self.combine_layout,
+[Nm-                &self.device, &self.lut_layout,
+[Nm-                &self.device, &self.std_layout,
+[Nm-                &self.device, &self.std_layout,
+[Nm-                &self.device, &self.std_layout,
+[Nm-                &self.device, &self.std_layout,
+[Nm-                &self.device, &self.std_layout,
+[Nm-                &self.device, &self.std_layout,
+[Nm-                &self.device, &self.std_layout,
+[Nm-                &self.device, &self.std_layout,
+[Nm-                &self.device, &self.std_layout,
+[Nm-                &self.device, &self.std_layout,
+[Nm-                &self.device, &self.std_layout,
+[Nm-                &self.device, &self.std_layout,
+[Nm-                &self.device, &self.std_layout,
+[Nm-                &self.device, &self.std_layout,
+[Nm-                &self.device, &self.std_layout,
+[Nm-                &self.sampler, &lut_view,
+[Nm-                &self.sampler, &self.aberration_ub,
+[Nm-                &self.sampler, &self.blit_ub,
+[Nm-                &self.sampler, &self.bloom_blur_ubN,
+[Nm-                &self.sampler, &self.bloom_blur_ubN,
+[Nm-                &self.sampler, &self.blur_ubN,
+[Nm-                &self.sampler, &self.color_wheels_ub,
+[Nm-                &self.sampler, &self.decode_ub,
+[Nm-                &self.sampler, &self.encode_ub,
+[Nm-                &self.sampler, &self.film_density_ub,
+[Nm-                &self.sampler, &self.grain_ub,
+[Nm-                &self.sampler, &self.scatter_blur_ubN,
+[Nm-                &self.sampler, &self.scatter_blur_ubN,
+[Nm-                &self.sampler, &self.shake_ub,
+[Nm-                &self.sampler, &self.split_tone_ub,
+[Nm-                &self.sampler, &self.vignette_ub,
+[Nm-                ExtentNd { width: LUT_N, height: LUT_N, depth_or_array_layers: LUT_N },
+[Nm-                load: LoadOp::Clear(Color { r: N.N, g: N.N, b: N.N, a: N.N }),
+[Nm-                passes::run_pass(&mut encoder, &self.blur_pipeline, &bg,
+[Nm-                passes::run_pass(&mut encoder, &self.threshold_pipeline, &bg,
+[Nm-                self.write_uniform(&self.threshold_ub, &[consts.halation_threshold[N], consts.halation_threshold[N], N.N, N.N]);
+[Nm-                size: ExtentNd { width: LUT_N, height: LUT_N, depth_or_array_layers: LUT_N },
+[Nm-            && COLOR_WHEEL_KEYS.iter().any(|(k, neutral)| self.num(k, *neutral) != *neutral)
+[Nm-            &self.device, &self.std_layout,
+[Nm-            &self.sampler, &self.color_ub,
+[Nm-            BindGroupEntry { binding: N, resource: BindingResource::TextureView(base) },
+[Nm-            BindGroupEntry { binding: N, resource: BindingResource::TextureView(base) },
+[Nm-            BindGroupEntry { binding: N, resource: BindingResource::TextureView(input) },
+[Nm-            BindGroupEntry { binding: N, resource: BindingResource::TextureView(texture) },
+[Nm-            contrast, brightness, saturation, gamma, wb, tint, bleach, N.N,
+[Nm-            ExtentNd { width: self.width, height: self.height, depth_or_array_layers: N },
+[Nm-            ExtentNd { width: self.width, height: self.height, depth_or_array_layers: N },
+[Nm-            let base_sigma = radius * consts.blur_sigma_factor
+[Nm-            let dither = if self.params.bool("no-dither", false) { N.N } else { N.N };
+[Nm-            let sigma = radius * crate::render_constants::render_constants().blur_sigma_factor
+[Nm-            passes::run_pass(&mut encoder, &self.aberration_pipeline, &bg,
+[Nm-            passes::run_pass(&mut encoder, &self.blend_pipeline, &blend_bg,
+[Nm-            passes::run_pass(&mut encoder, &self.blit_pipeline, &bg,
+[Nm-            passes::run_pass(&mut encoder, &self.blur_pipeline, &ds_bg,
+[Nm-            passes::run_pass(&mut encoder, &self.blur_pipeline, &h_bg,
+[Nm-            passes::run_pass(&mut encoder, &self.blur_pipeline, &v_bg,
+[Nm-            passes::run_pass(&mut encoder, &self.color_wheels_pipeline, &bg,
+[Nm-            passes::run_pass(&mut encoder, &self.colorspace_pipeline, &bg,
+[Nm-            passes::run_pass(&mut encoder, &self.colorspace_pipeline, &bg,
+[Nm-            passes::run_pass(&mut encoder, &self.combine_pipeline, &combine_bg,
+[Nm-            passes::run_pass(&mut encoder, &self.film_density_pipeline, &bg,
+[Nm-            passes::run_pass(&mut encoder, &self.grain_pipeline, &bg,
+[Nm-            passes::run_pass(&mut encoder, &self.lut_pipeline, &bg,
+[Nm-            passes::run_pass(&mut encoder, &self.scatter_blur_pipeline, &h_bg,
+[Nm-            passes::run_pass(&mut encoder, &self.scatter_blur_pipeline, &v_bg,
+[Nm-            passes::run_pass(&mut encoder, &self.shake_pipeline, &bg,
+[Nm-            passes::run_pass(&mut encoder, &self.split_tone_pipeline, &bg,
+[Nm-            passes::run_pass(&mut encoder, &self.vignette_pipeline, &bg,
+[Nm-            preset.toe[N], preset.toe[N], preset.toe[N],
+[Nm-            self.write_uniform(&self.bloom_blur_ubN, &[N.N / half_w as fN, N.N, sigma, N.N]);
+[Nm-            self.write_uniform(&self.bloom_blur_ubN, &[N.N, N.N / half_h as fN, sigma, N.N]);
+[Nm-            self.write_uniform(&self.scatter_blur_ubN, &[
+[Nm-            self.write_uniform(&self.scatter_blur_ubN, &[
+[Nm-            self.write_uniform(&self.shake_ub, &self.params.camera_shake_uniform(self.frame_count, self.width));
+[Nm-            shadow_r, shadow_b, shadow_g, N.N,
+[Nm-            size: ExtentNd { width, height, depth_or_array_layers: N },
+[Nm-            v("lift-r", N.N), v("lift-g", N.N), v("lift-b", N.N), N.N,
+[Nm-        [N.N, N.N, N.N, N.N, N.N, N.N, N.N, N.N, N.N, N.N, N.N, N.N]
+[Nm-        // Tint is mean-neutral: channels sum to zero.
+[Nm-        frame[i * N] = N;     // R
+[Nm-        let (device, queue) = pollster::block_on(adapter.request_device(&DeviceDescriptor {
+[Nm-        let color_pipeline = passes::create_pipeline(&device, VERT, COLOR_FRAG, &std_layout, INTERMEDIATE_FORMAT);
+[Nm-        let fade_tint = if fade_hue.is_some() { consts.fade_tint_strength } else { N.N };
+[Nm-        let mut encoder = self.device.create_command_encoder(&CommandEncoderDescriptor { label: None });
+[Nm-        let protect = if self.bool("split-tone-protect-neutrals", false) { N.N } else { N.N };
+[Nm-        macro_rules! current_tex { () => { if current_is_b { &self.tex_b } else { &self.tex_a } } }
+[Nm-        passes::run_pass(&mut encoder, &self.color_pipeline, &bg,
+[Nm-        size: ExtentNd { width, height, depth_or_array_layers: N },
+[Nm-    ("lift-r", N.N), ("lift-g", N.N), ("lift-b", N.N),
+[Nm-    assert_eq!(output.stdout.len(), frame_size, "Output frame size mismatch");
+[Nm-    assert!(bloomed > N, "expected halation to bloom energy into neighboring pixels");
+[Nm-    let mut gpu = match renderer::GpuRenderer::new(init.width, init.height, &init.params, init.lut.as_deref()) {
+[Nm-    pub fn new(width: uN, height: uN, raw_params: &HashMap<String, serde_json::Value>, lut: Option<&[fN]>) -> Result<Self, String> {
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/main.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/params.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/params.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/params.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/params.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/params.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/params.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/params.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/params.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/params.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/params.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/passes.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/passes.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/passes.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/passes.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/passes.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/passes.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/src/renderer.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/tests/smoke.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/tests/smoke.rs:N:
+Diff in /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/tests/smoke.rs:N:

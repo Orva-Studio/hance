@@ -1,0 +1,3 @@
+    Entry point of type library 'bun-types' specified in compilerOptions
+  The file is in the program because:
+error TSN: Cannot find type definition file for 'bun-types'.

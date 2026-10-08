@@ -1,0 +1,576 @@
+eNe/upload-and-preview.spec.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+eNe/upload-and-preview.spec.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/cli/__tests__/cli.test.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/cli/__tests__/effect-flags.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/cli/__tests__/eNe/audio-sync.test.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/__tests__/eNe/gpu-export.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/cli/__tests__/eNe/gpu-export.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/cli/__tests__/eNe/hance.eNe.test.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/__tests__/eNe/hance.eNe.test.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/__tests__/eNe/hance.eNe.test.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/__tests__/eNe/hance.eNe.test.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/__tests__/eNe/hance.eNe.test.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/__tests__/eNe/hance.eNe.test.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/__tests__/eNe/hance.eNe.test.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/__tests__/eNe/hance.eNe.test.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/__tests__/gpu/grain.test.ts:N:N: error unicorn(consistent-function-scoping): Function `renderOnce` does not capture any variables from its parent scope help: Move `renderOnce` to the outer scope to avoid recreating it on every call.
+packages/cli/__tests__/gpu/halation.test.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/cli/__tests__/gpu/halation.test.ts:N:N: error unicorn(consistent-function-scoping): Function `distinctLevels` does not capture any variables from its parent scope help: Move `distinctLevels` to the outer scope to avoid recreating it on every call.
+packages/cli/__tests__/gpu/halation.test.ts:N:N: error unicorn(consistent-function-scoping): Function `lum` does not capture any variables from its parent scope help: Move `lum` to the outer scope to avoid recreating it on every call.
+packages/cli/__tests__/skills-guards.test.ts:N:N: error unicorn(no-array-sort): Use `Array#toSorted()` instead of `Array#sort()`. help: `Array#sort()` mutates the original array. Use `Array#toSorted()` to return a new sorted array without modifying the original.
+packages/cli/__tests__/skills-guards.test.ts:N:N: error unicorn(no-array-sort): Use `Array#toSorted()` instead of `Array#sort()`. help: `Array#sort()` mutates the original array. Use `Array#toSorted()` to return a new sorted array without modifying the original.
+packages/cli/src/cli.ts:N:N: error harness(max-lines): File is N lines (max N). Split it into modules under src/features/<name>/ instead of growing it.
+packages/cli/src/cli.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/cli/src/cli.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/cli/src/cli.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/cli.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/cli.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/cli.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/cli.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/cli.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/cli.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/cli.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/cli.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/cli.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/cli.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/cli.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/cli.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/cli.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/cli.ts:N:N: error harness(no-em-dash): No em dashes in user-facing copy. Use a plain dash `-`.
+packages/cli/src/cli.ts:N:N: error harness(no-em-dash): No em dashes in user-facing copy. Use a plain dash `-`.
+packages/cli/src/cli.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/cli/src/cli.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/cli/src/commands/config.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/config.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/config.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/config.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/preset.ts:N:N: error eslint(no-useless-escape): Unnecessary escape character '/' help: Replace `\/` with `/`.
+packages/cli/src/commands/preset.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/cli/src/commands/preset.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/cli/src/commands/preset.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/cli/src/commands/preset.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/preset.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/preset.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/preset.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/preset.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/preset.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/preset.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/preview.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/cli/src/commands/preview.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/cli/src/commands/preview.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/preview.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/preview.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/preview.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/cli/src/commands/preview.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/cli/src/commands/preview.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/cli/src/commands/preview.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/cli/src/commands/skills.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/cli/src/commands/skills.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/cli/src/commands/skills.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/skills.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/skills.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/skills.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/skills.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/skills.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/commands/skills.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/cli/src/commands/skills.ts:N:N: error unicorn(no-array-sort): Use `Array#toSorted()` instead of `Array#sort()`. help: `Array#sort()` mutates the original array. Use `Array#toSorted()` to return a new sorted array without modifying the original.
+packages/cli/src/commands/skills.ts:N:N: error unicorn(no-array-sort): Use `Array#toSorted()` instead of `Array#sort()`. help: `Array#sort()` mutates the original array. Use `Array#toSorted()` to return a new sorted array without modifying the original.
+packages/cli/src/config.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/cli/src/config.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/config.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/effect-flags.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/cli/src/effect-flags.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/cli/src/effect-flags.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/cli/src/effect-flags.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/cli/src/effect-flags.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/cli/src/effect-flags.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/cli/tsconfig.json: error typescript(tsconfig-error): Invalid tsconfig help: Cannot find type definition file for 'bun-types'.
+packages/core/__tests__/looks.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/core/__tests__/lut-export.test.ts:N:N: error unicorn(no-array-sort): Use `Array#toSorted()` instead of `Array#sort()`. help: `Array#sort()` mutates the original array. Use `Array#toSorted()` to return a new sorted array without modifying the original.
+packages/core/__tests__/lut-export.test.ts:N:N: error unicorn(no-array-sort): Use `Array#toSorted()` instead of `Array#sort()`. help: `Array#sort()` mutates the original array. Use `Array#toSorted()` to return a new sorted array without modifying the original.
+packages/core/__tests__/lut-profiles.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/core/__tests__/presets.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/core/__tests__/presets.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/core/__tests__/render-constants.test.ts:N:N: error unicorn(no-array-sort): Use `Array#toSorted()` instead of `Array#sort()`. help: `Array#sort()` mutates the original array. Use `Array#toSorted()` to return a new sorted array without modifying the original.
+packages/core/__tests__/schema.test.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/core/__tests__/schema.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/core/__tests__/schema.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/core/__tests__/schema.test.ts:N:N: error unicorn(consistent-function-scoping): Function `expectNeutral` does not capture any variables from its parent scope help: Move `expectNeutral` to the outer scope to avoid recreating it on every call.
+packages/core/src/export-presets.ts:N:N: error harness(no-em-dash): No em dashes in user-facing copy. Use a plain dash `-`.
+packages/core/src/film-density.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/core/src/lut-export.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/core/src/lut-export.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/core/src/lut-export.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/core/src/preset-index.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/core/src/preset-index.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/core/src/preset-index.ts:N:N: error unicorn(no-array-sort): Use `Array#toSorted()` instead of `Array#sort()`. help: `Array#sort()` mutates the original array. Use `Array#toSorted()` to return a new sorted array without modifying the original.
+packages/core/src/preset-index.ts:N:N: error unicorn(no-array-sort): Use `Array#toSorted()` instead of `Array#sort()`. help: `Array#sort()` mutates the original array. Use `Array#toSorted()` to return a new sorted array without modifying the original.
+packages/core/src/presets.ts:N:N: error eslint(no-unneeded-ternary): Unnecessary use of boolean literals in conditional expression help: Remove this ternary operator
+packages/core/src/presets.ts:N:N: error eslint(no-unneeded-ternary): Unnecessary use of boolean literals in conditional expression help: Remove this ternary operator
+packages/core/src/presets.ts:N:N: error eslint(no-unneeded-ternary): Unnecessary use of boolean literals in conditional expression help: Remove this ternary operator
+packages/core/src/presets.ts:N:N: error eslint(no-unneeded-ternary): Unnecessary use of boolean literals in conditional expression help: Remove this ternary operator
+packages/core/src/presets.ts:N:N: error eslint(no-unneeded-ternary): Unnecessary use of boolean literals in conditional expression help: Remove this ternary operator
+packages/core/src/presets.ts:N:N: error eslint(no-unneeded-ternary): Unnecessary use of boolean literals in conditional expression help: Remove this ternary operator
+packages/core/src/presets.ts:N:N: error eslint(no-unneeded-ternary): Unnecessary use of boolean literals in conditional expression help: Remove this ternary operator
+packages/core/src/presets.ts:N:N: error eslint(no-unneeded-ternary): Unnecessary use of boolean literals in conditional expression help: Remove this ternary operator
+packages/core/src/presets.ts:N:N: error eslint(no-unneeded-ternary): Unnecessary use of boolean literals in conditional expression help: Remove this ternary operator
+packages/core/src/presets.ts:N:N: error eslint(no-unneeded-ternary): Unnecessary use of boolean literals in conditional expression help: Remove this ternary operator
+packages/core/src/presets.ts:N:N: error eslint(no-unneeded-ternary): Unnecessary use of boolean literals in conditional expression help: Remove this ternary operator
+packages/core/src/presets.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/core/src/presets.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/core/src/presets.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/core/src/presets.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/core/src/presets.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/core/src/presets.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/core/src/presets.ts:N:N: error unicorn(no-array-sort): Use `Array#toSorted()` instead of `Array#sort()`. help: `Array#sort()` mutates the original array. Use `Array#toSorted()` to return a new sorted array without modifying the original.
+packages/core/src/render-constants.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/core/src/render-constants.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/core/src/render-constants.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/core/src/schema.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/core/tsconfig.json: error typescript(tsconfig-error): Invalid tsconfig help: Cannot find type definition file for 'bun-types'.
+packages/desktop/__tests__/desktop.test.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an any value.
+packages/desktop/__tests__/desktop.test.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .dependencies on an `any` value.
+packages/desktop/__tests__/desktop.test.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .dependencies on an `any` value.
+packages/desktop/__tests__/desktop.test.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .name on an `any` value.
+packages/desktop/__tests__/desktop.test.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .scripts on an `any` value.
+packages/desktop/__tests__/desktop.test.ts:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/desktop/__tests__/desktop.test.ts:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/desktop/__tests__/desktop.test.ts:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/desktop/__tests__/desktop.test.ts:N:N: error unicorn(no-array-sort): Use `Array#toSorted()` instead of `Array#sort()`. help: `Array#sort()` mutates the original array. Use `Array#toSorted()` to return a new sorted array without modifying the original.
+packages/desktop/__tests__/desktop.test.ts:N:N: error unicorn(no-array-sort): Use `Array#toSorted()` instead of `Array#sort()`. help: `Array#sort()` mutates the original array. Use `Array#toSorted()` to return a new sorted array without modifying the original.
+packages/desktop/electrobun.config.ts:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/desktop/electrobun.config.ts:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/desktop/electrobun.config.ts:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/desktop/electrobun.config.ts:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/desktop/electrobun.config.ts:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/desktop/electrobun.config.ts:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/desktop/electrobun.config.ts:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/desktop/src/bun/index.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/desktop/src/bun/index.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/desktop/src/bun/index.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/desktop/src/bun/index.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/desktop/src/bun/index.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/desktop/src/bun/index.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/desktop/src/bun/index.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/desktop/src/bun/index.ts:N:N: error typescript(no-floating-promises): Promises must be awaited, add void operator to ignore. help: The promise must end with a call to .catch, or end with a call to .then with a rejection handler, or be explicitly marked as ignored with the `void` operator.
+packages/desktop/src/bun/index.ts:N:N: error typescript(no-misused-promises): Promise returned in function argument where a void return was expected.
+packages/desktop/src/bun/index.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an any value.
+packages/desktop/src/bun/index.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .data on an `any` value.
+packages/desktop/src/bun/index.ts:N:N: error typescript(strict-boolean-expressions): Unexpected any value in conditional. help: Use a more specific type to ensure type safety.
+packages/desktop/src/bun/server.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/desktop/src/bun/server.ts:N:N: error harness(no-em-dash): No em dashes in user-facing copy. Use a plain dash `-`.
+packages/desktop/src/bun/server.ts:N:N: error react-hooks(rules-of-hooks): React Hook "useBundledGpuSidecar" is called in function "startUiServer" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word "use".
+packages/desktop/src/bun/server.ts:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-argument): Unsafe argument of type any assigned to a parameter of type string.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an error typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an error typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an error typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an error typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an error typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an error typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an error typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an error typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an error typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an error typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an error typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an error typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an error typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an error typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-assignment): Unsafe assignment of an error typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-call): Unsafe call of a(n) `error` type typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .array on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .boolean on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .coerce on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .default on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .default on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .default on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .draft on an `any` value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .heroImage on an `any` value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .heroImage on an `any` value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .object on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .object on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .optional on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .optional on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .refine on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .string on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .string on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .string on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .string on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .string on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .string on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .string on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-member-access): Unsafe member access .string on an `error` typed value.
+packages/docs/src/content.config.ts:N:N: error typescript(no-unsafe-return): Unsafe return of a value of type `any`.
+packages/docs/src/content.config.ts:N:N: error typescript(strict-boolean-expressions): Unexpected any value in conditional. help: Use a more specific type to ensure type safety.
+packages/docs/src/layouts/Base.astro:N:N: error harness(no-em-dash): No em dashes in user-facing copy. Use a plain dash `-`.
+packages/docs/src/pages/blog/[...slug].astro:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/docs/src/pages/blog/[...slug].astro:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/docs/src/pages/blog/[...slug].astro:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/docs/src/pages/blog/index.astro:N:N: error unicorn(no-array-sort): Use `Array#toSorted()` instead of `Array#sort()`. help: `Array#sort()` mutates the original array. Use `Array#toSorted()` to return a new sorted array without modifying the original.
+packages/docs/src/pages/index.astro:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/docs/src/pages/index.astro:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/docs/src/pages/index.astro:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/docs/src/pages/index.astro:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/docs/src/pages/index.astro:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/docs/src/pages/index.astro:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/docs/src/pages/index.astro:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/docs/src/pages/index.astro:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/docs/src/pages/index.astro:N:N: error harness(no-em-dash): No em dashes in user-facing copy. Use a plain dash `-`.
+packages/docs/src/pages/index.astro:N:N: error unicorn(consistent-function-scoping): Function `fmt` does not capture any variables from its parent scope help: Move `fmt` to the outer scope to avoid recreating it on every call.
+packages/gpu/__tests__/export-cancel.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/gpu/__tests__/lut-bake.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/gpu/__tests__/lut-bake.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/gpu/__tests__/lut-bake.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/gpu/__tests__/lut-bake.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/gpu/src/export.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/gpu/src/export.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/gpu/src/export.ts:N:N: error eslint(no-unmodified-loop-condition): 'stopPolling' is not modified in this loop.
+packages/gpu/src/export.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/gpu/src/export.ts:N:N: error harness(no-em-dash): No em dashes in user-facing copy. Use a plain dash `-`.
+packages/gpu/src/lut-bake.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/gpu/src/wgpu-renderer.ts:N:N: error eslint(no-unused-vars): Parameter 'params' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+packages/gpu/src/wgpu-renderer.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/gpu/src/wgpu-renderer.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/try/src/App.tsx:N:N: error harness(max-lines): File is N lines (max N). Split it into modules under src/features/<name>/ instead of growing it.
+packages/try/src/App.tsx:N:N: error harness(no-em-dash): No em dashes in user-facing copy. Use a plain dash `-`.
+packages/try/src/App.tsx:N:N: error react-hooks(exhaustive-deps): React Hook useCallback has a missing dependency: 'transform' help: Either include it or remove the dependency array.
+packages/try/src/App.tsx:N:N: error react-hooks(exhaustive-deps): React Hook useCallback has unnecessary dependency: look help: Either include it or remove the dependency array.
+packages/try/src/App.tsx:N:N: error react(memo-dependencies): Found extra memoization dependencies help: Extra dependencies can cause a value to update more often than it should, resulting in performance problems such as excessive renders or effects firing too often
+packages/try/src/App.tsx:N:N: error react(memo-dependencies): Found missing/extra memoization dependencies help: Missing dependencies can cause a value to update less often than it should, resulting in stale UI. Extra dependencies can cause a value to update more often than it should, resulting in performance problems such as excessive renders or effects firing too often
+packages/try/src/App.tsx:N:N: error react(refs): Cannot access refs during render help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+packages/try/src/App.tsx:N:N: error react(refs): Cannot access refs during render help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+packages/try/src/App.tsx:N:N: error typescript(no-floating-promises): Promises must be awaited, add void operator to ignore. help: The promise must end with a call to .catch, or end with a call to .then with a rejection handler, or be explicitly marked as ignored with the `void` operator.
+packages/try/src/App.tsx:N:N: error typescript(no-misused-promises): Promise-returning function provided to attribute where a void return was expected.
+packages/try/src/App.tsx:N:N: error typescript(no-misused-promises): Promise-returning function provided to attribute where a void return was expected.
+packages/try/src/App.tsx:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/try/src/App.tsx:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/try/src/App.tsx:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/try/src/App.tsx:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/try/src/App.tsx:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/try/src/App.tsx:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/try/src/App.tsx:N:N: error unicorn(prefer-add-event-listener): Prefer `addEventListener()` over their `on`-function counterparts. help: `addEventListener()` can register multiple handlers and accepts options such as `{ once: true }`; assigning to `on<event>` replaces any previously registered handler.
+packages/try/src/Landing.tsx:N:N: error harness(no-em-dash): No em dashes in user-facing copy. Use a plain dash `-`.
+packages/try/src/Landing.tsx:N:N: error harness(no-em-dash): No em dashes in user-facing copy. Use a plain dash `-`.
+packages/try/src/Landing.tsx:N:N: error harness(no-em-dash): No em dashes in user-facing copy. Use a plain dash `-`.
+packages/try/src/Landing.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/try/src/Landing.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/try/src/Landing.tsx:N:N: error typescript(strict-boolean-expressions): Unexpected nullable string value in conditional. help: Handle the nullish and empty string cases explicitly.
+packages/try/src/Landing.tsx:N:N: error typescript(strict-boolean-expressions): Unexpected object value in conditional. An object is always truthy.
+packages/try/src/looks.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/try/src/looks.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/try/src/looks.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/try/src/looks.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/try/src/looks.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/try/src/looks.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/try/src/looks.ts:N:N: error typescript(no-unnecessary-type-assertion): This assertion is unnecessary since the receiver accepts the original type of the expression.
+packages/try/src/looks.ts:N:N: error typescript(no-unnecessary-type-assertion): This assertion is unnecessary since the receiver accepts the original type of the expression.
+packages/try/src/looks.ts:N:N: error typescript(no-unsafe-type-assertion): Unsafe assertion from `any` detected. help: Consider using type guards or a safer assertion.
+packages/try/src/looks.ts:N:N: error typescript(no-unsafe-type-assertion): Unsafe type assertion: type 'Record<string, string>' is more narrow than the original type.
+packages/try/src/looks.ts:N:N: error unicorn(no-array-sort): Use `Array#toSorted()` instead of `Array#sort()`. help: `Array#sort()` mutates the original array. Use `Array#toSorted()` to return a new sorted array without modifying the original.
+packages/try/src/main.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/try/src/node-stub.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/try/src/node-stub.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/try/src/node-stub.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/try/src/node-stub.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/try/src/node-stub.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/try/src/node-stub.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/try/src/node-stub.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/try/src/node-stub.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/try/src/node-stub.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/try/src/useThumbnails.ts:N:N: error react(exhaustive-effect-dependencies): Found extra effect dependencies help: Extra dependencies can cause an effect to fire more often than it should, resulting in performance problems such as excessive renders and side effects
+packages/try/src/useThumbnails.ts:N:N: error react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+packages/try/src/useThumbnails.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/__tests__/colorWheelMath.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/colorWheelMath.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/fetchJson.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/lut-api.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/__tests__/lut-api.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/__tests__/lut-api.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/__tests__/lut-api.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/__tests__/lut-api.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/__tests__/lut-api.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/ui/__tests__/LutExportModal.test.tsx:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/ui/__tests__/path-lane.eNe.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/__tests__/proxy-stream.eNe.test.ts:N:N: error eslint(no-unused-vars): Identifier 'afterAll' is imported but never used. help: Consider removing this import.
+packages/ui/__tests__/TopBar.test.tsx:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/TopBar.test.tsx:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/TopBar.test.tsx:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/useExport.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/useExport.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/useExport.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/useExport.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/useExport.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/useExport.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/useExport.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/useExport.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/useExport.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/useExport.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/useExport.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/useExport.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/useExport.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/__tests__/useHistory.test.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/ui/__tests__/useHistory.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/__tests__/useHistory.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/__tests__/useHistory.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/__tests__/useHistory.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/__tests__/useHistory.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/__tests__/useHistory.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/__tests__/useHistory.test.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/app/App.tsx:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/ui/app/App.tsx:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/ui/app/App.tsx:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/ui/app/App.tsx:N:N: error eslint(no-shadow): 'activeLook' is already declared in the upper scope. help: Consider renaming 'activeLook' to avoid shadowing the variable from the outer scope.
+packages/ui/app/App.tsx:N:N: error eslint(no-shadow): 'file' is already declared in the upper scope. help: Consider renaming 'file' to avoid shadowing the variable from the outer scope.
+packages/ui/app/App.tsx:N:N: error eslint(no-shadow): 'file' is already declared in the upper scope. help: Consider renaming 'file' to avoid shadowing the variable from the outer scope.
+packages/ui/app/App.tsx:N:N: error eslint(no-shadow): 'file' is already declared in the upper scope. help: Consider renaming 'file' to avoid shadowing the variable from the outer scope.
+packages/ui/app/App.tsx:N:N: error eslint(no-shadow): 'sourcePath' is already declared in the upper scope. help: Consider renaming 'sourcePath' to avoid shadowing the variable from the outer scope.
+packages/ui/app/App.tsx:N:N: error harness(max-lines): File is N lines (max N). Split it into modules under src/features/<name>/ instead of growing it.
+packages/ui/app/App.tsx:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/App.tsx:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/App.tsx:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/App.tsx:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/App.tsx:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/App.tsx:N:N: error harness(no-console): No console. Use the project logger.
+packages/ui/app/App.tsx:N:N: error harness(no-console): No console. Use the project logger.
+packages/ui/app/App.tsx:N:N: error harness(no-console): No console. Use the project logger.
+packages/ui/app/App.tsx:N:N: error react-hooks(exhaustive-deps): React Hook useCallback has a missing dependency: 'canvasTransform' help: Either include it or remove the dependency array.
+packages/ui/app/App.tsx:N:N: error react-hooks(exhaustive-deps): React Hook useEffect has a missing dependency: 'canvasTransform' help: Either include it or remove the dependency array.
+packages/ui/app/App.tsx:N:N: error react-hooks(exhaustive-deps): React Hook useEffect has missing dependencies: 'refreshLooks', 'history', and 'loadLook' help: Either include it or remove the dependency array.
+packages/ui/app/App.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/app/App.tsx:N:N: error unicorn(prefer-add-event-listener): Prefer `addEventListener()` over their `on`-function counterparts. help: `addEventListener()` can register multiple handlers and accepts options such as `{ once: true }`; assigning to `on<event>` replaces any previously registered handler.
+packages/ui/app/components/AboutModal.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/AboutModal.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/AboutModal.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/AboutModal.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/AboutModal.tsx:N:N: error react(purity): Cannot call impure function during render help: `Date` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component re-renders
+packages/ui/app/components/Canvas.tsx:N:N: error jsx-aNy(alt-text): Missing `alt` attribute. help: Must have `alt` prop, either with meaningful text, or an empty string for decorative images.
+packages/ui/app/components/Canvas.tsx:N:N: error jsx-aNy(media-has-caption): Missing `<track>` element with captions inside `<audio>` or `<video>` element help: Media elements such as `<audio>` and `<video>` must have a `<track>` for captions.
+packages/ui/app/components/Canvas.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/Canvas.tsx:N:N: error react-hooks(exhaustive-deps): React Hook useEffect has missing dependencies: 'onRendererReady', 'onCanvasReady', 'onVideoReady', and 'onError' help: Either include it or remove the dependency array.
+packages/ui/app/components/Canvas.tsx:N:N: error react(exhaustive-effect-dependencies): Found missing/extra effect dependencies help: Missing dependencies can cause an effect to fire less often than it should. Extra dependencies can cause an effect to fire more often than it should, resulting in performance problems such as excessive renders and side effects
+packages/ui/app/components/Canvas.tsx:N:N: error react(refs): Cannot access refs during render help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+packages/ui/app/components/Canvas.tsx:N:N: error react(refs): Cannot access refs during render help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+packages/ui/app/components/Canvas.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/app/components/Canvas.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/app/components/Canvas.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/app/components/Canvas.tsx:N:N: error unicorn(prefer-add-event-listener): Prefer `addEventListener()` over their `on`-function counterparts. help: `addEventListener()` can register multiple handlers and accepts options such as `{ once: true }`; assigning to `on<event>` replaces any previously registered handler.
+packages/ui/app/components/Canvas.tsx:N:N: error unicorn(prefer-add-event-listener): Prefer `addEventListener()` over their `on`-function counterparts. help: `addEventListener()` can register multiple handlers and accepts options such as `{ once: true }`; assigning to `on<event>` replaces any previously registered handler.
+packages/ui/app/components/Canvas.tsx:N:N: error unicorn(prefer-add-event-listener): Prefer `addEventListener()` over their `on`-function counterparts. help: `addEventListener()` can register multiple handlers and accepts options such as `{ once: true }`; assigning to `on<event>` replaces any previously registered handler.
+packages/ui/app/components/Canvas.tsx:N:N: error unicorn(prefer-add-event-listener): Prefer `addEventListener()` over their `on`-function counterparts. help: `addEventListener()` can register multiple handlers and accepts options such as `{ once: true }`; assigning to `on<event>` replaces any previously registered handler.
+packages/ui/app/components/Canvas.tsx:N:N: error unicorn(prefer-add-event-listener): Prefer `addEventListener()` over their `on`-function counterparts. help: `addEventListener()` can register multiple handlers and accepts options such as `{ once: true }`; assigning to `on<event>` replaces any previously registered handler.
+packages/ui/app/components/Canvas.tsx:N:N: error unicorn(prefer-add-event-listener): Prefer `addEventListener()` over their `on`-function counterparts. help: `addEventListener()` can register multiple handlers and accepts options such as `{ once: true }`; assigning to `on<event>` replaces any previously registered handler.
+packages/ui/app/components/ColorWheelsControls.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/ColorWheelsControls.tsx:N:N: error jsx-aNy(interactive-supports-focus): Elements with the 'button' interactive role must be tabbable. help: Add `tabIndex={N}` to make the element reachable via sequential keyboard navigation.
+packages/ui/app/components/ColorWheelsControls.tsx:N:N: error jsx-aNy(prefer-tag-over-role): Prefer `button` over `role` attribute `button`. help: Replace HTML elements with `role` attribute `button` to corresponding semantic HTML tag `button`.
+packages/ui/app/components/ColorWheelsControls.tsx:N:N: error jsx-aNy(prefer-tag-over-role): Prefer `button` over `role` attribute `button`. help: Replace HTML elements with `role` attribute `button` to corresponding semantic HTML tag `button`.
+packages/ui/app/components/ColorWheelsControls.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/ui/app/components/CompareOverlay.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/ui/app/components/CompareOverlay.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/ui/app/components/CompareOverlay.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/ui/app/components/CompareOverlay.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/ui/app/components/ComparePage.tsx:N:N: error jsx-aNy(media-has-caption): Missing `<track>` element with captions inside `<audio>` or `<video>` element help: Media elements such as `<audio>` and `<video>` must have a `<track>` for captions.
+packages/ui/app/components/ComparePage.tsx:N:N: error react(immutability): This value cannot be modified help: Modifying a variable defined outside a component or hook is not allowed. Consider using an effect
+packages/ui/app/components/ComparePage.tsx:N:N: error react(no-unstable-nested-components): Do not define components during render. help: Move this component definition out of the parent component `ComparePage` and pass data as props.
+packages/ui/app/components/ComparePage.tsx:N:N: error react(static-components): Cannot create components during render help: Components created during render will reset their state each time they are created. Declare components outside of render
+packages/ui/app/components/DeleteLookModal.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/DeleteLookModal.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/DeleteLookModal.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/DeleteLookModal.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/EffectGroup.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/EffectGroup.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/ExportModal.tsx:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/components/ExportModal.tsx:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/components/ExportModal.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/ExportModal.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/ExportModal.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/ExportModal.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/Landing.tsx:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/components/Landing.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/Landing.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/LookCard.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/LookCard.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/LookContextMenu.tsx:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/components/LookContextMenu.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/LookInfoModal.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/LookInfoModal.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/LookInfoModal.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/LookInfoModal.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/LookInfoModal.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/app/components/LookInfoModal.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/app/components/LooksPanel.tsx:N:N: error jsx-aNy(no-autofocus): The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users. help: Remove the `autoFocus` attribute.
+packages/ui/app/components/LutExportModal.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/LutExportModal.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/LutExportModal.tsx:N:N: error jsx-aNy(label-has-associated-control): A form label must be associated with a control. help: Either give the label a `htmlFor` attribute with the id of the associated control, or wrap the label around the control.
+packages/ui/app/components/LutExportModal.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/LutExportModal.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/NewLookModal.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/NewLookModal.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/NewLookModal.tsx:N:N: error jsx-aNy(label-has-associated-control): A form label must be associated with a control. help: Either give the label a `htmlFor` attribute with the id of the associated control, or wrap the label around the control.
+packages/ui/app/components/NewLookModal.tsx:N:N: error jsx-aNy(label-has-associated-control): A form label must be associated with a control. help: Either give the label a `htmlFor` attribute with the id of the associated control, or wrap the label around the control.
+packages/ui/app/components/NewLookModal.tsx:N:N: error jsx-aNy(label-has-associated-control): A form label must be associated with a control. help: Either give the label a `htmlFor` attribute with the id of the associated control, or wrap the label around the control.
+packages/ui/app/components/NewLookModal.tsx:N:N: error jsx-aNy(label-has-associated-control): A form label must be associated with a control. help: Either give the label a `htmlFor` attribute with the id of the associated control, or wrap the label around the control.
+packages/ui/app/components/NewLookModal.tsx:N:N: error jsx-aNy(no-autofocus): The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users. help: Remove the `autoFocus` attribute.
+packages/ui/app/components/NewLookModal.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/NewLookModal.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/RangeSlider.tsx:N:N: error jsx-aNy(click-events-have-key-events): Enforce a clickable non-interactive element has at least one keyboard event listener. help: Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+packages/ui/app/components/RangeSlider.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/ResizeDivider.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/SplitToneControls.tsx:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/components/SplitToneControls.tsx:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/components/Timeline.tsx:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/ui/app/components/Timeline.tsx:N:N: error eslint(no-shadow): 'e' is already declared in the upper scope. help: Consider renaming 'e' to avoid shadowing the variable from the outer scope.
+packages/ui/app/components/Timeline.tsx:N:N: error jsx-aNy(no-static-element-interactions): Static HTML elements with event handlers require a role. help: Add a role attribute to this element, or use a semantic HTML element instead.
+packages/ui/app/components/Timeline.tsx:N:N: error react(exhaustive-effect-dependencies): Found missing effect dependencies help: Missing dependencies can cause an effect to fire less often than it should
+packages/ui/app/components/Timeline.tsx:N:N: error react(immutability): Cannot modify local variables after render completes help: This argument is a function which may reassign or mutate `videoRef` after render, which can cause inconsistent behavior on subsequent renders. Consider using state instead
+packages/ui/app/components/Timeline.tsx:N:N: error react(immutability): Cannot modify local variables after render completes help: This argument is a function which may reassign or mutate `videoRef` after render, which can cause inconsistent behavior on subsequent renders. Consider using state instead
+packages/ui/app/components/Timeline.tsx:N:N: error react(immutability): Cannot modify local variables after render completes help: This argument is a function which may reassign or mutate `videoRef` after render, which can cause inconsistent behavior on subsequent renders. Consider using state instead
+packages/ui/app/components/Timeline.tsx:N:N: error react(immutability): This value cannot be modified help: Do not mutate component props or hook arguments. If the value should change, update it where it is owned and pass an update callback, or use local state
+packages/ui/app/components/Timeline.tsx:N:N: error react(immutability): This value cannot be modified help: Do not mutate component props or hook arguments. If the value should change, update it where it is owned and pass an update callback, or use local state
+packages/ui/app/components/Timeline.tsx:N:N: error react(immutability): This value cannot be modified help: Do not mutate component props or hook arguments. If the value should change, update it where it is owned and pass an update callback, or use local state
+packages/ui/app/components/Timeline.tsx:N:N: error react(memo-dependencies): Found missing memoization dependencies help: Missing dependencies can cause a value to update less often than it should, resulting in stale UI
+packages/ui/app/components/Timeline.tsx:N:N: error react(memo-dependencies): Found missing memoization dependencies help: Missing dependencies can cause a value to update less often than it should, resulting in stale UI
+packages/ui/app/components/Timeline.tsx:N:N: error react(memo-dependencies): Found missing memoization dependencies help: Missing dependencies can cause a value to update less often than it should, resulting in stale UI
+packages/ui/app/components/Timeline.tsx:N:N: error react(refs): Cannot access refs during render help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+packages/ui/app/components/Timeline.tsx:N:N: error react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+packages/ui/app/components/Timeline.tsx:N:N: error react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+packages/ui/app/components/Timeline.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/ui/app/components/Timeline.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/ui/app/components/Timeline.tsx:N:N: error unicorn(consistent-function-scoping): Function `pad` does not capture any variables from its parent scope help: Move `pad` to the outer scope to avoid recreating it on every call.
+packages/ui/app/components/TopBar.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/app/components/TopBar.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/ui/app/components/ViewModeToolbar.tsx:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/gpu/renderer.ts:N:N: error eslint(no-shadow): 'halfH' is already declared in the upper scope. help: Consider renaming 'halfH' to avoid shadowing the variable from the outer scope.
+packages/ui/app/gpu/renderer.ts:N:N: error eslint(no-shadow): 'halfW' is already declared in the upper scope. help: Consider renaming 'halfW' to avoid shadowing the variable from the outer scope.
+packages/ui/app/gpu/renderer.ts:N:N: error eslint(no-unused-vars): Variable 'blendUB' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+packages/ui/app/gpu/renderer.ts:N:N: error eslint(no-unused-vars): Variable 'blurUBN' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+packages/ui/app/gpu/renderer.ts:N:N: error harness(max-lines): File is N lines (max N). Split it into modules under src/features/<name>/ instead of growing it.
+packages/ui/app/gpu/renderer.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/app/hooks/__tests__/useExport.test.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/ui/app/hooks/__tests__/useExport.test.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useCanvasInput.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useCanvasInput.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useCanvasInput.ts:N:N: error react-hooks(exhaustive-deps): React Hook useEffect has a missing dependency: 'canvasTransform' help: Either include it or remove the dependency array.
+packages/ui/app/hooks/useCanvasInput.ts:N:N: error react-hooks(exhaustive-deps): React Hook useEffect has a missing dependency: 'canvasTransform' help: Either include it or remove the dependency array.
+packages/ui/app/hooks/useCanvasInput.ts:N:N: error react(exhaustive-effect-dependencies): Found missing/extra effect dependencies help: Missing dependencies can cause an effect to fire less often than it should. Extra dependencies can cause an effect to fire more often than it should, resulting in performance problems such as excessive renders and side effects
+packages/ui/app/hooks/useCanvasInput.ts:N:N: error react(exhaustive-effect-dependencies): Found missing/extra effect dependencies help: Missing dependencies can cause an effect to fire less often than it should. Extra dependencies can cause an effect to fire more often than it should, resulting in performance problems such as excessive renders and side effects
+packages/ui/app/hooks/useCanvasInput.ts:N:N: error react(refs): Cannot access refs during render help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+packages/ui/app/hooks/useCanvasInput.ts:N:N: error react(refs): Cannot access refs during render help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+packages/ui/app/hooks/useCanvasInput.ts:N:N: error react(refs): Cannot access refs during render help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+packages/ui/app/hooks/useCanvasRect.ts:N:N: error react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+packages/ui/app/hooks/useCanvasRect.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/ui/app/hooks/useCanvasTransform.ts:N:N: error react(refs): Cannot access refs during render help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+packages/ui/app/hooks/useCanvasTransform.ts:N:N: error unicorn(no-array-reverse): Use `Array#toReversed()` instead of `Array#reverse()`. help: `Array#reverse()` mutates the original array. Use `Array#toReversed()` to return a new reversed array without modifying the original.
+packages/ui/app/hooks/useExport.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/ui/app/hooks/useExport.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/ui/app/hooks/useExport.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useExport.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useExport.ts:N:N: error react(memo-dependencies): Found extra memoization dependencies help: Extra dependencies can cause a value to update more often than it should, resulting in performance problems such as excessive renders or effects firing too often
+packages/ui/app/hooks/useFirstFrame.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/ui/app/hooks/useFirstFrame.ts:N:N: error react(refs): Cannot access refs during render help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+packages/ui/app/hooks/useFirstFrame.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/app/hooks/useHistory.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useHistory.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useHistory.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useHistory.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useHistory.ts:N:N: error react(refs): Cannot access refs during render help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+packages/ui/app/hooks/useHistory.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/app/hooks/useHistory.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/app/hooks/useLooks.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useLooks.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useLooks.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useLooks.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useLooks.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useLooks.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/ui/app/hooks/useLooks.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/ui/app/hooks/useMenuActions.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useMenuActions.ts:N:N: error react(refs): Cannot access refs during render help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+packages/ui/app/hooks/useProxyStream.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/ui/app/hooks/useProxyStream.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/ui/app/hooks/useProxyStream.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/ui/app/hooks/useProxyStream.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/ui/app/hooks/useProxyStream.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useProxyStream.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useProxyStream.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useProxyStream.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/ui/app/hooks/useResizable.ts:N:N: error eslint(no-shadow): 'e' is already declared in the upper scope. help: Consider renaming 'e' to avoid shadowing the variable from the outer scope.
+packages/ui/app/hooks/useResizable.ts:N:N: error react-hooks(exhaustive-deps): React Hook useCallback has a missing dependency: 'reverse' help: Either include it or remove the dependency array.
+packages/ui/app/hooks/useResizable.ts:N:N: error react(memo-dependencies): Found missing memoization dependencies help: Missing dependencies can cause a value to update less often than it should, resulting in stale UI
+packages/ui/app/hooks/useUndoRedo.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useUndoRedo.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/hooks/useUndoRedo.ts:N:N: error react(refs): Cannot access refs during render help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+packages/ui/app/index.tsx:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/app/lib/captureFrame.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/ui/app/lib/fetchJson.ts:N:N: error eslint(preserve-caught-error): There is no cause error attached to this new thrown error. help: Preserve the original error by using the `cause` property when re-throwing errors.
+packages/ui/app/lib/fetchJson.ts:N:N: error eslint(preserve-caught-error): There is no cause error attached to this new thrown error. help: Preserve the original error by using the `cause` property when re-throwing errors.
+packages/ui/app/lib/fetchJson.ts:N:N: error eslint(preserve-caught-error): There is no cause error attached to this new thrown error. help: Preserve the original error by using the `cause` property when re-throwing errors.
+packages/ui/app/lib/fetchJson.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/lib/fetchJson.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/lib/fetchJson.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/lib/fetchJson.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/app/lib/lookThumbnails.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/app/lib/lookThumbnails.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/lib/transcode.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/server.ts:N:N: error eslint(func-style): Expected a function declaration. help: Enforce the consistent use of either `function` declarations or expressions assigned to variables
+packages/ui/server.ts:N:N: error harness(max-lines): File is N lines (max N). Split it into modules under src/features/<name>/ instead of growing it.
+packages/ui/server.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/server.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/server.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/server.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/server.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/server.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/server.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/server.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/server.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/server.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/server.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/server.ts:N:N: error harness(no-as-cast): No `as` casts. Narrow with a type guard or parse the value (e.g. zod) instead.
+packages/ui/server.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/ui/server.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/ui/server.ts:N:N: error harness(no-console): No console. Use the project logger.
+packages/ui/server.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion.
+packages/ui/server.ts:N:N: error typescript(no-non-null-assertion): Forbidden non-null assertion. help: Consider using the optional chain operator `?.` instead. `x!.y` is equivalent to `x.y` at runtime and will throw if `x` is `null` or `undefined`, but `x?.y` will return `undefined`.
+packages/ui/tsconfig.json: error typescript(tsconfig-error): Invalid tsconfig help: Cannot find type definition file for 'bun-types'.
+scripts/build-preset-index.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/build-ui.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/build-ui.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/build-ui.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/build-ui.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/gen-skills.ts:N:N: error eslint(no-shadow): 'root' is already declared in the upper scope. help: Consider renaming 'root' to avoid shadowing the variable from the outer scope.
+scripts/gen-skills.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/gen-skills.ts:N:N: error harness(no-em-dash): No em dashes in user-facing copy. Use a plain dash `-`.
+scripts/gen-skills.ts:N:N: error unicorn(no-array-sort): Use `Array#toSorted()` instead of `Array#sort()`. help: `Array#sort()` mutates the original array. Use `Array#toSorted()` to return a new sorted array without modifying the original.
+scripts/pack-local.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/prepare-npm.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/prepare-npm.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/prepare-npm.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/prepare-npm.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/release.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/release.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/release.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/release.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/release.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/stage-release.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/stage-release.ts:N:N: error harness(no-console): No console. Use the project logger.
+scripts/stage-release.ts:N:N: error harness(no-em-dash): No em dashes in user-facing copy. Use a plain dash `-`.
+scripts/stage-release.ts:N:N: error harness(no-em-dash): No em dashes in user-facing copy. Use a plain dash `-`.
+tsconfig.json: error typescript(tsconfig-error): Invalid tsconfig help: Cannot find type definition file for 'bun-types'.

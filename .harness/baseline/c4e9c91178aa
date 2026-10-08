@@ -1,0 +1,198 @@
+
+
+
+
+
+
+
+
+
+
+  │
+  │
+  │
+   │
+   │
+   │
+   │
+  │  
+  │  
+     
+     
+     
+   │  
+   │  
+   │  
+   │  
+   │  
+   │  
+  │         ━━━━━━━━━
+   │            │
+   │            ━━━━━━━
+  │                                                              ━━━━━━━━━━━━ unmatched license allowance
+                     └── wgpu vN.N.N (*)
+                 │   └── hance-gpu vN.N.N
+         │   │       └── hance-gpu vN.N.N
+         │   │       └── hance-gpu vN.N.N
+        │           └── wgpu vN.N.N (*)
+        │       │   └── hance-gpu vN.N.N
+                 ├── wgpu vN.N.N
+                 └── wgpu vN.N.N (*)
+                 └── wgpu vN.N.N (*)
+                 └── wgpu vN.N.N (*)
+                 └── wgpu-core vN.N.N
+         │       └── hance-gpu vN.N.N
+             │   └── hance-gpu vN.N.N
+             │   └── hance-gpu vN.N.N
+             │   └── hance-gpu vN.N.N
+         │       ├── wgpu vN.N.N (*)
+         │       ├── wgpu vN.N.N (*)
+         │       └── wgpu-core vN.N.N (*)
+         │       └── wgpu-core vN.N.N (*)
+     │   │       └── hance-gpu vN.N.N
+        │       ├── wgpu vN.N.N
+         │   │   └── wgpu vN.N.N
+         │   │   └── wgpu vN.N.N
+    │           └── wgpu vN.N.N (*)
+    │           ├── wgpu vN.N.N (*)
+        │       └── wgpu-core vN.N.N
+    │           ├── wgpu-core vN.N.N (*)
+    │           └── wgpu-hal vN.N.N (*)
+    │       │   └── hance-gpu vN.N.N
+   │            rejected: license is not explicitly allowed
+             ├── wgpu vN.N.N
+             ├── wgpu vN.N.N
+             ├── wgpu vN.N.N
+             ├── wgpu vN.N.N (*)
+             └── wgpu-core vN.N.N
+             └── wgpu-core vN.N.N
+             └── wgpu-core vN.N.N
+             └── wgpu-core vN.N.N (*)
+             └── wgpu-hal vN.N.N
+         │   └── wgpu vN.N.N
+     │       ├── wgpu vN.N.N (*)
+         │   ├── wgpu-core vN.N.N
+         │   ├── wgpu-core vN.N.N
+     │       └── wgpu-core vN.N.N (*)
+         │   └── wgpu-hal vN.N.N
+         │   └── wgpu-hal vN.N.N
+    │       └── parking_lot vN.N.N
+    │       ├── wgpu vN.N.N
+     │   │   └── wgpu vN.N.N
+    │       └── wgpu-core vN.N.N
+        │   └── wgpu-hal vN.N.N
+           bans ok: N errors, N warnings, N notes
+         └── gpu-allocator vN.N.N
+         ├── naga vN.N.N
+         ├── naga vN.N.N
+         ├── wgpu-core vN.N.N
+         └── wgpu-core vN.N.N (*)
+         ├── wgpu-core vN.N.N (*)
+         └── wgpu-hal vN.N.N
+         └── wgpu-hal vN.N.N
+         └── wgpu-hal vN.N.N
+         └── wgpu-hal vN.N.N
+         └── wgpu-hal vN.N.N (*)
+        ├── metal vN.N.N
+        ├── wgpu vN.N.N (*)
+     │   ├── wgpu-core vN.N.N
+        ├── wgpu-core vN.N.N (*)
+     │   └── wgpu-hal vN.N.N
+        └── wgpu-hal vN.N.N (*)
+        └── wgpu-hal vN.N.N (*)
+    │   └── gpu-alloc vN.N.N (*)
+    │   └── gpu-descriptor vN.N.N (*)
+    │   └── naga vN.N.N (*)
+    │   └── parking_lot_core vN.N.N
+        sources ok: N errors, N warnings, N notes
+    │   ├── wgpu-core vN.N.N (*)
+    │   └── wgpu-hal vN.N.N
+    │   └── wgpu-hal vN.N.N (*)
+    │   └── wgpu-hal vN.N.N (*)
+    │   └── wgpu-hal vN.N.N (*)
+   ├   - FSF Free/Libre
+     └── gpu-allocator vN.N.N
+     └── gpu-descriptor vN.N.N
+     └── indexmap vN.N.N
+     └── metal vN.N.N
+     └── naga vN.N.N
+     ├── naga vN.N.N
+     └── thiserror vN.N.N
+     └── thiserror vN.N.N
+     ├── wgpu-core vN.N.N (*)
+     └── wgpu-hal vN.N.N (*)
+     - [`pastey`]: a fork of paste and is aimed to be a drop-in replacement with additional features for paste crate
+     - [`with_builtin_macros`]: crate providing a [superset of `paste`'s functionality including general `macro_rules!` eager expansions](https://docs.rs/with_builtin_macros/N.N.N/with_builtin_macros/macro.with_eager_expansions.html)  and `concat!`/`concat_idents!` macros
+     [`pastey`]: https://crates.io/crates/pastey
+     [`with_builtin_macros`]: https://crates.io/crates/with_builtin_macros
+     ## Possible Alternative(s)
+    └── core-graphics-types vN.N.N
+    ├── gpu-alloc vN.N.N
+    ├── gpu-alloc-types vN.N.N
+    ├── gpu-descriptor vN.N.N
+    ├── gpu-descriptor-types vN.N.N
+   │ ╰──────────────────────────────────────────────────────────────────────┘ lock entries
+   │ ╰──────────────────────────────────────────────────────────────────────┘ lock entries
+   │ ╰───────────────────────────────────────────────────────────────────────────┘ lock entries
+    ├── metal vN.N.N
+    ├── naga vN.N.N
+    ├── redox_syscall vN.N.N
+    ├── spirv vN.N.N+sdk-N.N.N.N
+     that this project is not longer maintained as well as archived the repository
+   │ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ unmaintained advisory detected
+    ├── wgpu vN.N.N (*)
+    ├── wgpu-core vN.N.N (*)
+    ├── wgpu-hal vN.N.N (*)
+    └── wgpu-types vN.N.N
+   ┌─ /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/Cargo.lock:N:N
+   ┌─ /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/Cargo.lock:N:N
+   ┌─ /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/Cargo.lock:N:N
+   ┌─ /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/Cargo.lock:N:N
+   ┌─ /Users/robray/.cargo/registry/src/index.crates.io-NcfNcNbNbNf/hexf-parse-N.N.N/Cargo.toml:N:N
+   ├ Advisory: https://rustsec.org/advisories/RUSTSEC-N-N
+   ├ Announcement: https://github.com/dtolnay/paste
+   ├ CCN-N.N - Creative Commons Zero vN.N Universal:
+   ├ hashbrown vN.N.N
+   ├ hashbrown vN.N.N
+   ├ hexf-parse vN.N.N
+   ├ ID: RUSTSEC-N-N
+  │ ╰─────────────────────────────────────────────────────────────────────┘ lock entries
+   ├ paste vN.N.N
+   ├ Solution: No safe upgrade is available!
+   ├ The creator of the crate `paste` has stated in the [`README.md`](https://github.com/dtolnay/paste/blob/master/README.md) 
+   ├ thiserror vN.N.N
+   ├ thiserror vN.N.N
+   ├ thiserror-impl vN.N.N
+   ├ thiserror-impl vN.N.N
+  ┌─ /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/Cargo.lock:N:N
+  ┌─ /private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu/deny.toml:N:N
+  ├ bitflags vN.N.N
+  ├ bitflags vN.N.N
+  ├ hance-gpu vN.N.N (*)
+   licenses FAILED: N errors, N warnings, N notes
+  ┌─ path+file:///private/tmp/claude-N/-Users-robray-skills/NddbNdN-dffN-NfN-NbdN-NdafbNabN/scratchpad/wt/hance/packages/wgpu#hance-gpu@N.N.N-synthesized.toml:N:N
+ ├ hance-gpu vN.N.N
+ ├ hance-gpu vN.N.N (*)
+ advisories FAILED: N errors, N warnings, N notes
+error[rejected]: failed to satisfy license requirements
+error[unlicensed]: hance-gpu = N.N.N is unlicensed
+error[unmaintained]: paste - no longer maintained
+N │ ╭ bitflags N.N.N registry+https://github.com/rust-lang/crates.io-index
+N │ │ bitflags N.N.N registry+https://github.com/rust-lang/crates.io-index
+N │ ╭ hashbrown N.N.N registry+https://github.com/rust-lang/crates.io-index
+N │ │ hashbrown N.N.N registry+https://github.com/rust-lang/crates.io-index
+N │ ╭ thiserror N.N.N registry+https://github.com/rust-lang/crates.io-index
+N │ │ thiserror N.N.N registry+https://github.com/rust-lang/crates.io-index
+N │ ╭ thiserror-impl N.N.N registry+https://github.com/rust-lang/crates.io-index
+N │ │ thiserror-impl N.N.N registry+https://github.com/rust-lang/crates.io-index
+N │ allow = ["MIT", "Apache-N.N", "Unicode-N.N", "ISC", "Zlib", "BSD-N-Clause", "BSD-N-Clause"]
+N │ license = "CCN-N.N"
+N │ name = "hance-gpu"
+N │ paste N.N.N registry+https://github.com/rust-lang/crates.io-index
+warning[duplicate]: found N duplicate entries for crate 'bitflags'
+warning[duplicate]: found N duplicate entries for crate 'hashbrown'
+warning[duplicate]: found N duplicate entries for crate 'thiserror-impl'
+warning[duplicate]: found N duplicate entries for crate 'thiserror'
+warning[license-not-encountered]: license was not encountered
+warning[no-license-field]: license expression was not specified in manifest for crate 'hance-gpu = N.N.N'
+warning[unlicensed]: a valid license expression could not be retrieved for the crate

@@ -1,0 +1,529 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    = help: an `as` cast can become silently lossy if the types change in the future
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_lossless
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_precision_loss
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_precision_loss
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_precision_loss
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_precision_loss
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_precision_loss
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_precision_loss
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_precision_loss
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_precision_loss
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_precision_loss
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#default_trait_access
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#default_trait_access
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#default_trait_access
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#expect_used
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#float_cmp
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#float_cmp
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#float_cmp
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#float_cmp
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#float_cmp
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#float_cmp
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#float_cmp
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#float_cmp
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#float_cmp
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#float_cmp
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#float_cmp
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#if_not_else
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#manual_div_ceil
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#manual_div_ceil
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#manual_div_ceil
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#ptr_as_ptr
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#too_many_lines
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#too_many_lines
+    = help: to override `-D warnings` add `#[allow(clippy::cast_lossless)]`
+    = help: to override `-D warnings` add `#[allow(clippy::cast_precision_loss)]`
+    = help: to override `-D warnings` add `#[allow(clippy::default_trait_access)]`
+    = help: to override `-D warnings` add `#[allow(clippy::expect_used)]`
+    = help: to override `-D warnings` add `#[allow(clippy::float_cmp)]`
+    = help: to override `-D warnings` add `#[allow(clippy::if_not_else)]`
+    = help: to override `-D warnings` add `#[allow(clippy::manual_div_ceil)]`
+    = help: to override `-D warnings` add `#[allow(clippy::ptr_as_ptr)]`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+    = note: `-D clippy::cast-lossless` implied by `-D warnings`
+    = note: `-D clippy::cast-precision-loss` implied by `-D warnings`
+    = note: `-D clippy::default-trait-access` implied by `-D warnings`
+    = note: `-D clippy::expect-used` implied by `-D warnings`
+    = note: `-D clippy::float-cmp` implied by `-D warnings`
+    = note: `-D clippy::if-not-else` implied by `-D warnings`
+    = note: `-D clippy::manual-div-ceil` implied by `-D warnings`
+    = note: `-D clippy::ptr-as-ptr` implied by `-D warnings`
+    = note: `-D clippy::too-many-lines` implied by `-D warnings`
+    = note: if this value is `None`, it will panic
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+    |                                                                   ^^^^^^^^^^^^^
+    |                                                              ^^^^^^^^^^^^^
+    |                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider comparing them within some margin of error: `(self.num(k, *neutral) - *neutral).abs() > error_margin`
+    |                                                 ^^^^^^^^^^^^^^^^^^^^^^^
+    |                                          ^^^^^^^^^^^^
+    |                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try `pointer::cast`, a safer alternative: `data.as_ptr().cast::<uN>()`
+    |                                       ^^^^^^^^^^^^^^^^^^
+    |                                  ^^^^^^^^^^^^^^^^^^ help: try: `PipelineCompilationOptions::default()`
+    |                                  ^^^^^^^^^^^^^^^^^^ help: try: `PipelineCompilationOptions::default()`
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider using `.div_ceil()`: `(width * N).div_ceil(N)`
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider using `.div_ceil()`: `(self.width * N).div_ceil(N)`
+    |                            ^^^^^^^^^^^^^
+    |                       ^^^^^^^^^^^^^
+    |                      ^^^^^^^^^^^^^^^^^^ help: try: `MultisampleState::default()`
+    |                   ^^^^^^^^^^^^^^^^^^ help: consider using `.div_ceil()`: `size.div_ceil(N)`
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |             ^^^^^^^^^^^^^^^^^^
+    |             ^^^^^^^^^^^^^^^^^^
+    |         ^^^^^^^^^^^^^^^^^^^^^
+    |         ^^^^^^^^^^^^^^^^^^^^^
+    |         ^^^^^^^^^^^^^^^^^^^^^
+    |         ^^^^^^^^^^^^^^^^^^^^^
+    |         ^^^^^^^^^^^^^^^^^^^^^
+    |         ^^^^^^^^^^^^^^^^^^^^^^
+    |         ^^^^^^^^^^^^^^^^^^^^^^^
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |  ______________________^
+    | |__________________________________________________________________^
+    | |_________^
+   --> src/params.rs:N:N
+   --> src/params.rs:N:N
+   --> src/params.rs:N:N
+   --> src/params.rs:N:N
+   --> src/params.rs:N:N
+   --> src/params.rs:N:N
+   --> src/params.rs:N:N
+   --> src/params.rs:N:N
+   --> src/params.rs:N:N
+   --> src/params.rs:N:N
+   --> src/params.rs:N:N
+   --> src/params.rs:N:N
+   --> src/params.rs:N:N
+   --> src/params.rs:N:N
+   --> src/params.rs:N:N
+   --> src/params.rs:N:N
+   --> src/passes.rs:N:N
+   --> src/passes.rs:N:N
+   --> src/passes.rs:N:N
+   --> src/passes.rs:N:N
+   --> src/renderer.rs:N:N
+   --> src/renderer.rs:N:N
+   --> src/renderer.rs:N:N
+   --> src/renderer.rs:N:N
+   --> src/renderer.rs:N:N
+   --> src/renderer.rs:N:N
+   --> src/renderer.rs:N:N
+   --> src/renderer.rs:N:N
+   --> src/renderer.rs:N:N
+   --> src/renderer.rs:N:N
+   --> src/renderer.rs:N:N
+   --> src/renderer.rs:N:N
+   = help: an `as` cast can become silently lossy if the types change in the future
+   = help: an `as` cast can become silently lossy if the types change in the future
+   = help: an `as` cast can become silently lossy if the types change in the future
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_lossless
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_lossless
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_lossless
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_possible_truncation
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_possible_truncation
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_precision_loss
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#cast_precision_loss
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#doc_markdown
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#expect_used
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#manual_let_else
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#map_unwrap_or
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#redundant_closure_for_method_calls
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#redundant_closure_for_method_calls
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#single_match_else
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#unreadable_literal
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#unwrap_used
+   = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+   = help: if this is intentional allow the lint with `#[allow(clippy::cast_possible_truncation)]` ...
+   = help: to override `-D warnings` add `#[allow(clippy::cast_lossless)]`
+   = help: to override `-D warnings` add `#[allow(clippy::cast_possible_truncation)]`
+   = help: to override `-D warnings` add `#[allow(clippy::cast_precision_loss)]`
+   = help: to override `-D warnings` add `#[allow(clippy::doc_markdown)]`
+   = help: to override `-D warnings` add `#[allow(clippy::manual_let_else)]`
+   = help: to override `-D warnings` add `#[allow(clippy::map_unwrap_or)]`
+   = help: to override `-D warnings` add `#[allow(clippy::redundant_closure_for_method_calls)]`
+   = help: to override `-D warnings` add `#[allow(clippy::single_match_else)]`
+   = help: to override `-D warnings` add `#[allow(clippy::unreadable_literal)]`
+   = help: to override `-D warnings` add `#[allow(clippy::unwrap_used)]`
+   = note: `-D clippy::cast-lossless` implied by `-D warnings`
+   = note: `-D clippy::cast-possible-truncation` implied by `-D warnings`
+   = note: `-D clippy::cast-precision-loss` implied by `-D warnings`
+   = note: `-D clippy::doc-markdown` implied by `-D warnings`
+   = note: `-D clippy::manual-let-else` implied by `-D warnings`
+   = note: `-D clippy::map-unwrap-or` implied by `-D warnings`
+   = note: `-D clippy::redundant-closure-for-method-calls` implied by `-D warnings`
+   = note: `-D clippy::single-match-else` implied by `-D warnings`
+   = note: `-D clippy::unreadable-literal` implied by `-D warnings`
+   = note: `-D clippy::unwrap-used` implied by `-D warnings`
+   = note: if this value is an `Err`, it will panic
+   = note: if this value is an `Err`, it will panic
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |
+   |                       ^^^^^^^^^^^^^^ help: replace the closure with the method itself: `serde_json::Value::as_fN`
+   |                       ^^^^^^^^^^^^^^^ help: replace the closure with the method itself: `serde_json::Value::as_bool`
+   |                      ^^^^^^^^
+   |                     ^^^^^^^^
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |             ^^^^^^^^^ help: consider: `N.N_N_N`
+   |             ^^^^^^^^^^^^^^^^^
+   |           ^^^^^^^^
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |         ^^^^^^^^^^^^^^^^^^^^^^^
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |     ^^^^^^^^^^^^^^^^^^^
+   |  _______________^
+   | |________________________________^
+   | |______^
+   | |_____^
+  --> src/colorspace.rs:N:N
+  --> src/colorspace.rs:N:N
+  --> src/main.rs:N:N
+  --> src/main.rs:N:N
+  --> src/main.rs:N:N
+  --> src/params.rs:N:N
+  --> src/params.rs:N:N
+  --> src/params.rs:N:N
+  --> src/params.rs:N:N
+  --> src/params.rs:N:N
+  --> src/render_constants.rs:N:N
+  --> src/render_constants.rs:N:N
+  --> src/render_constants.rs:N:N
+  --> tests/smoke.rs:N:N
+  --> tests/smoke.rs:N:N
+  --> tests/smoke.rs:N:N
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#wildcard_imports
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-N.N.N/index.html#wildcard_imports
+  = help: to override `-D warnings` add `#[allow(clippy::wildcard_imports)]`
+  = note: `-D clippy::wildcard-imports` implied by `-D warnings`
+  |
+  |
+  |
+  |
+  |     ^^^^^^^ help: try: `wgpu::{Device, BindGroupLayout, BindGroupLayoutDescriptor, BindGroupLayoutEntry, ShaderStages, BindingType, TextureSampleType, TextureViewDimension, SamplerBindingType, BufferBindingType, TextureView, Sampler, BindGroup, BindGroupDescriptor, BindGroupEntry, BindingResource, Buffer, TextureFormat, RenderPipeline, ShaderModuleDescriptor, ShaderSource, PipelineLayoutDescriptor, RenderPipelineDescriptor, VertexState, FragmentState, ColorTargetState, ColorWrites, PrimitiveState, PrimitiveTopology, Texture, TextureDescriptor, ExtentNd, TextureDimension, TextureUsages, BufferDescriptor, BufferUsages, CommandEncoder, RenderPassDescriptor, RenderPassColorAttachment, Operations, LoadOp, Color, StoreOp}`
+  |     ^^^^^^^ help: try: `wgpu::{TextureFormat, Device, Queue, Texture, BindGroupLayout, Sampler, RenderPipeline, Buffer, Instance, InstanceDescriptor, Backends, RequestAdapterOptions, PowerPreference, DeviceDescriptor, SamplerDescriptor, FilterMode, TextureDescriptor, ExtentNd, TextureDimension, TextureUsages, TexelCopyTextureInfo, OriginNd, TextureAspect, TexelCopyBufferLayout, BufferDescriptor, BufferUsages, CommandEncoderDescriptor, TextureViewDescriptor, TextureViewDimension, TexelCopyBufferInfo, MapMode, Maintain}`
+ --> src/passes.rs:N:N
+ --> src/renderer.rs:N:N
+...  |
+...  |
+error: `as` casting between raw pointers without changing their constness
+error: called `map(<f>).unwrap_or(<a>)` on an `Option` value
+error: calling `MultisampleState::default()` is more clear than this expression
+error: calling `PipelineCompilationOptions::default()` is more clear than this expression
+error: calling `PipelineCompilationOptions::default()` is more clear than this expression
+error: casting `fN` to `fN` may truncate the value
+error: casting `fN` to `iN` may truncate the value
+error: casting `iN` to `fN` may cause a loss of precision (`iN` is N bits wide, but `fN`'s mantissa is only N bits wide)
+error: casting `uN` to `fN` may cause a loss of precision (`uN` is N bits wide, but `fN`'s mantissa is only N bits wide)
+error: casting `uN` to `fN` may cause a loss of precision (`uN` is N bits wide, but `fN`'s mantissa is only N bits wide)
+error: casting `uN` to `fN` may cause a loss of precision (`uN` is N bits wide, but `fN`'s mantissa is only N bits wide)
+error: casting `uN` to `fN` may cause a loss of precision (`uN` is N bits wide, but `fN`'s mantissa is only N bits wide)
+error: casting `uN` to `fN` may cause a loss of precision (`uN` is N bits wide, but `fN`'s mantissa is only N bits wide)
+error: casting `uN` to `fN` may cause a loss of precision (`uN` is N bits wide, but `fN`'s mantissa is only N bits wide)
+error: casting `uN` to `fN` may cause a loss of precision (`uN` is N bits wide, but `fN`'s mantissa is only N bits wide)
+error: casting `uN` to `fN` may cause a loss of precision (`uN` is N bits wide, but `fN`'s mantissa is only N bits wide)
+error: casting `uN` to `fN` may cause a loss of precision (`uN` is N bits wide, but `fN`'s mantissa is only N bits wide)
+error: casting `uN` to `fN` may cause a loss of precision (`uN` is N bits wide, but `fN`'s mantissa is only N bits wide)
+error: casts from `uN` to `uN` can be expressed infallibly using `From`
+error: casts from `uN` to `uN` can be expressed infallibly using `From`
+error: casts from `uN` to `uN` can be expressed infallibly using `From`
+error: casts from `uN` to `uN` can be expressed infallibly using `From`
+error: could not compile `hance-gpu` (bin "hance-gpu" test) due to N previous errors
+error: could not compile `hance-gpu` (bin "hance-gpu") due to N previous errors
+error: could not compile `hance-gpu` (test "smoke") due to N previous errors
+error: item in documentation is missing backticks
+error: long literal lacking separators
+error: manually reimplementing `div_ceil`
+error: manually reimplementing `div_ceil`
+error: manually reimplementing `div_ceil`
+error: redundant closure
+error: redundant closure
+error: strict comparison of `fN` or `fN`
+error: strict comparison of `fN` or `fN`
+error: strict comparison of `fN` or `fN`
+error: strict comparison of `fN` or `fN`
+error: strict comparison of `fN` or `fN`
+error: strict comparison of `fN` or `fN`
+error: strict comparison of `fN` or `fN`
+error: strict comparison of `fN` or `fN`
+error: strict comparison of `fN` or `fN`
+error: strict comparison of `fN` or `fN`
+error: strict comparison of `fN` or `fN`
+error: this could be rewritten as `let...else`
+error: this function has too many lines (N/N)
+error: this function has too many lines (N/N)
+error: unnecessary boolean `not` operation
+error: usage of wildcard import
+error: usage of wildcard import
+error: used `expect()` on a `Result` value
+error: used `expect()` on an `Option` value
+error: used `unwrap()` on a `Result` value
+error: you seem to be trying to use `match` for destructuring a single pattern. Consider using `if let`
+help: consider writing
+help: try
+help: try
+help: try
+help: use `map_or(<a>, <f>)` instead
+help: use `uN::from` instead
+help: use `uN::from` instead
+help: use `uN::from` instead
+help: use `uN::from` instead
+N -             .map(|v| v as fN)
+N -             .unwrap_or(fallback)
+N -             size: (bytes_per_row * height) as uN,
+N -         + output.stdout[neighbor * N + N] as uN
+N -         + output.stdout[neighbor * N + N] as uN;
+N -     let bloomed = output.stdout[neighbor * N] as uN
+N - /// Mirrors FilmDensityPreset in packages/core/src/render-constants.ts.
+N +             .map_or(fallback, |v| v as fN)
+N +             eprintln!("Usage: hance-gpu <init-json|init-json-file>");
+N +             self.write_uniform(&self.color_ub, &Params::color_settings_identity());
+N +             self.write_uniform(&self.color_ub, &self.params.color_settings_uniform());
+N +             size: uN::from(bytes_per_row * height),
+N +             std::process::exit(N);
+N +         }
+N +         } else {
+N +         };
+N +         + uN::from(output.stdout[neighbor * N + N])
+N +         + uN::from(output.stdout[neighbor * N + N]);
+N +         eprintln!("Usage: hance-gpu <init-json|init-json-file>");
+N +         std::process::exit(N);
+N +     let bloomed = uN::from(output.stdout[neighbor * N])
+N + /// Mirrors `FilmDensityPreset` in packages/core/src/render-constants.ts.
+N |                 N.N / half_w as fN, N.N, N.N, N.N,
+N |                 N.N, N.N / half_h as fN, N.N, N.N,
+N |             .and_then(|v| v.as_bool())
+N |             .and_then(|v| v.as_fN())
+N |             .map(|v| v as fN)
+N |             && COLOR_WHEEL_KEYS.iter().any(|(k, neutral)| self.num(k, *neutral) != *neutral)
+N |             compilation_options: Default::default(),
+N |             compilation_options: Default::default(),
+N |             frame_count as fN,
+N |             frame_count as fN,
+N |             let x = i as fN / N.N;
+N |             self.write_uniform(&self.blit_ub, &[self.frame_count as fN, dither, N.N, N.N]);
+N |             self.write_uniform(&self.bloom_blur_ubN, &[N.N / half_w as fN, N.N, sigma, N.N]);
+N |             self.write_uniform(&self.bloom_blur_ubN, &[N.N, N.N / half_h as fN, sigma, N.N]);
+N |             size: (bytes_per_row * height) as uN,
+N |           let preset = consts
+N |         [amplitude, periodN, periodN, frame_count as fN]
+N |         + output.stdout[neighbor * N + N] as uN
+N |         + output.stdout[neighbor * N + N] as uN;
+N |         assert_eq!(msg.params.get("contrast").unwrap().as_fN().unwrap(), N.N);
+N |         assert_eq!(u[N], N.N);
+N |         assert_eq!(u[N], N.N);
+N |         assert_eq!(u[N], N.N);
+N |         assert_eq!(u[N], N.N);
+N |         assert_eq!(u[N], N.N);
+N |         assert_eq!(u[N], N.N);
+N |         assert_eq!(u[N], N.N);
+N |         assert_eq!(u[N], N.N);
+N |         assert_eq!(u[N], N.N); // ISO defaults to the neutral baseline
+N |         let amplitude = (amount * N.N) / width as fN;
+N |         let bytes_per_row = ((self.width * N + N) / N) * N;
+N |         let bytes_per_row = ((width * N + N) / N) * N;
+N |         multisample: Default::default(),
+N |         serde_json::from_str(RENDER_CONSTANTS_JSON).expect("valid render.json constants")
+N |         stdout.flush().unwrap();
+N |       let arg = match std::env::args().nth(N) {
+N |     frame_height as fN / render_constants().reference_height
+N |     if c <= N.N {
+N |     let aligned = ((size + N) / N) * N;
+N |     let bloomed = output.stdout[neighbor * N] as uN
+N |     match h as iN {
+N |     pub fn new(width: uN, height: uN, raw_params: &HashMap<String, serde_json::Value>, lut: Option<&[fN]>) -> Result<Self, String> {
+N |     pub fn render_frame(&mut self, input: &[uN]) -> Vec<uN> {
+N |     unsafe { std::slice::from_raw_parts(data.as_ptr() as *const uN, data.len() * N) }
+N | /         if !self.params.bool("no-color-settings", false) {
+N | /         self.map
+N | /     let arg = match std::env::args().nth(N) {
+N | /// Mirrors FilmDensityPreset in packages/core/src/render-constants.ts.
+N | |             .and_then(|v| v.as_fN())
+N | |             .expect("warm-classic film density preset must exist");
+N | |             .film_density_presets
+N | |             .get(key)
+N | |             .get(preset_name)
+N | |             .map(|v| v as fN)
+N | |             .or_else(|| consts.film_density_presets.get("warm-classic"))
+N | |             .unwrap_or(fallback)
+N | |             eprintln!("Usage: hance-gpu <init-json|init-json-file>");
+N | |             eprintln!("Usage: hance-gpu <init-json|init-json-file>");
+N | |             self.write_uniform(&self.color_ub, &Params::color_settings_identity());
+N | |             self.write_uniform(&self.color_ub, &self.params.color_settings_uniform());
+N | |         }
+N | |         } else {
+N | |         None => {
+N | |         None => {
+N | |         Some(arg) => arg,
+N | |         Some(arg) => arg,
+N | |     };
+N | |     };
+N | use wgpu::*;
+N | use wgpu::*;
+N ~         if self.params.bool("no-color-settings", false) {
+N ~     };
+N ~     let arg = if let Some(arg) = std::env::args().nth(N) { arg } else {
+N ~     let Some(arg) = std::env::args().nth(N) else {
